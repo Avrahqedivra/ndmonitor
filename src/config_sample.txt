@@ -70,34 +70,37 @@ export const __allowed__socket_clients__: any[] = [
 ]
 
 // sets default theme (dark or light)
-export const __theme__: string          = "light_theme"
+export const __theme__: string                  = "light_theme"
 
 // Authorization of access to dashboard as admin
 // use http://mysite:port?admin to log as admin
-export const admin_user__: string       = 'admin'
+export const admin_user__: string               = 'admin'
 
 // Authorization of access to dashboard# as user
-export const __web_auth__: boolean      =  true
+export const __web_auth__: boolean              =  true
 
 // secret salt key for passcode generator
-export const __web_secret_key__: string = "SECRETKEY"
+export const __web_secret_key__: string         = "SECRETKEY"
 
 // do not log listeners ip maps (useless ?)
-export const __do_ipmap__: boolean      = true
+export const __do_ipmap__: boolean              = true
 
 // Display lastactive TG table
-export const __lastActiveTg__: boolean  = true
+export const __lastActiveTg__: boolean          = true
 // Max lines in lastactive table (0 means all TGs defined in TG_ORDER list)
-export const __last_active_size__: number = 0
+export const __last_active_size__: number       = 0
 // Lastheard file size
-export const __lastheard_size__: number = 8000
+export const __lastheard_size__: number         = 8000
 // Nb lines in first packet sent to dashboard
-export const __traffic_size__: number   = 7000
+export const __traffic_size__: number           = 7000
+// Nb lines in first packet sent to dashboard
+export const __traffic_last_N_days__: number    = 0
 // Display percent
-export const __displayPercent__: boolean = true
+export const __displayPercent__: boolean        = true
 
-export  let __siteLogo__: string              = 'sitelogo.html'
-export  let __buttonBar__: string             = 'buttonbar.html'
+export  let __siteLogo__: string                = 'sitelogo.html'
+export  let __buttonBar__: string               = 'buttonbar.html'
+export const __footer__: string                 = 'footer.html'
 
 // Files and stuff for loading alias files for mapping numbers to names
 export const __peer_url__: string               = 'https://database.radioid.net/static/rptrs.json'
