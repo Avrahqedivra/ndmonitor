@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
+        <title>NDMonitor</title>
+        
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+        <link rel="stylesheet" href="logplus_template.css">
+
+	    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629), HBJSON (c) JMC 2021" />
+
+        <style>
+            div[name="hbtables"] {
+                width: fit-content;
+                padding-top: 2rem;
+            }
+
+            .tables {
+                margin-top: 0;
+            }
+
+            .bridges {
+                margin-bottom: 2rem;
+            }
+        </style>
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+            __BUTTON_BAR__
+
+            <div id="siteHeader" style="display:none">
+                
+                <div name="hbtables" id="hbtables" class="tables bridges tablefixed">
+                    <div id="insertPoint">
+                        <div style="font-size:2rem; color:var(--color-fg-infoline); padding-top: 5rem;width:var(--table-width);">Téléchargement de la liste en cours...</div>
+                    </div>
+                </div>
+            
+                <div id="footer">
+                    __FOOTER__
+                </div> 
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+        </center>
+    </body>
+
+<script type="text/javascript">
+    bridges = [];
+	hideAllTG = false;
+
+    var lastheardOpen = true;
+    var sock = null;
+    var displayLines = parseInt("__DISPLAY_LINES__");
+    var tgfilter = new Set("__TGID_FILTER__".split(','));
+
+    function doBridges(t) {
+        if (t != null)  {
+            bridges = t;
+
+            var content = "";
+
+            cleaned = true;  
+            bgClass = 'tgWhite';
+            var cnt = 0;
+            $("table.bridges").remove();
+            
+            for (const bridge in bridges) {
+            	var emptyTable = (cnt > 0) ? "<br>":"";
+            	
+                emptyTable = '<table class="tables bridges tablefixed">'
+                   	+'<thead>' 
+                        +'<tr class="headerRow">'
+                            +'<th class="thbrsystem">'+bridge+'</th>'
+                            +'<th class="thbrslot">Slot</th>'
+                            +'<th class="thbrtg">TG#</th>'
+                            +'<th class="thlbrstatus">Status</th>'
+                            +'<th class="thbrtimeout">Timeout</th>'
+                            +'<th class="thbraction">Timeout Action</th>'
+                            +'<th class="thbrcnx">Connected TG#</th>'
+                            +'<th class="thbrdiscnx">Disconnected TG#</th>'
+                        +'</tr>'
+                    +'</thead>'
+                    +'<tbody id="bridge' + cnt + '"></tbody></table>';
+
+                $('#insertPoint').append(emptyTable);
+
+                var items = bridges[bridge];
+
+                for (const item in items) {
+                    var b = items[item];
+
+                    var trigon = b.TRIG_ON.split(",");
+                    var trigoff = b.TRIG_OFF.split(",");
+
+                    var trigon_content = "<select class='trigon' bridge='" + bridge + "' item='" + item + "'>";
+                    for(let i=0; i<trigon.length; i++) {
+                        trigon_content += "<option>" + trigon[i] + "</option>";
+                        break;
+                    }
+                    trigon_content += "</select>";
+
+                    var trigoff_content = "<select class='trigoff' bridge='" + bridge + "' item='" + item + "'>";
+                    for(let i=0; i<trigoff.length; i++) {
+                        trigoff_content += "<option>" + trigoff[i] + "</option>";
+                        break;
+                    }
+                    trigoff_content += "</select>";
+
+                    if (b.ACTIVE == "Connected")
+                        online = "connected";
+                    else
+                        online = "disconnected";
+  
+                    content = "<tr class='" + bgClass + "'>";
+                        content += "<td>" + item + "</td>";
+                        content += "<td>" + b.TS + "</td>";
+                        content += "<td>" + b.TGID + "</td>";
+                        content += "<td>" + b.EXP_TIME + "</td>";
+                        content += "<td>" + b.TO_ACTION + "</td>";
+                        content += "<td class='"+ online +"'>" + b.ACTIVE + "</td>";
+
+                        if (trigon.length > 0 && trigon[0] != "")
+                            content += "<td>" + trigon_content + "</td>";
+                        else
+                            content += "<td></td>";
+
+                        if (trigoff.length > 0 && trigoff[0] != "")
+                            content += "<td>" + trigoff_content + "</td>";
+                        else
+                            content += "<td></td>";
+
+                    content += "</tr>";
+
+                    $("#bridge" + cnt).append(content);
+                }
+
+                cnt++;
+            }
+        }
+    }
+    
+    function log(msg) {
+        console.log(msg);
+    };
+
+    function hasClass(elem, className) {
+        return elem.className.split(' ').indexOf(className) > -1;
+    }
+
+    $(document).ready(function() {
+        // document ready occurs before windows.onLoad
+        if (getConfigFromLocalStorage != null) {
+            getConfigFromLocalStorage();
+
+            if (document.documentElement.className != settings[0].config.theme)
+                document.documentElement.className = settings[0].config.theme;
+        }
+
+        initMenubar();
+
+        // fills the select options on click
+        // as they are empty on init
+        document.addEventListener('click', function (e) {
+            var select = e.target;
+            var option = "";
+
+            if (hasClass(select, 'trigon')) {
+                $(select).empty().hide();
+
+                var items = bridges[select.getAttribute('bridge')];
+                var b = items[select.getAttribute('item')];
+                var trigon = b.TRIG_ON.split(",");
+
+                for(let i=0; i<trigon.length; i++) {
+                    option = new Option(trigon[i], trigon[i]);
+                    if (i == 0)
+                        $(option).prop('selected', true);
+                    $(select).append(option);
+                }
+
+                $(select).change().show();
+            } 
+            else 
+            if (hasClass(select, 'trigoff')) {
+                $(select).empty().hide();
+
+                var items = bridges[select.getAttribute('bridge')];
+                var b = items[select.getAttribute('item')];
+                var trigoff = b.TRIG_OFF.split(",");
+
+                for(let i=0; i<trigoff.length; i++) {
+                    option = new Option(trigoff[i], trigoff[i]);
+                    if (i == 0)
+                        $(option).prop('selected', true);
+                    $(select).append(option);
+                }
+
+                $(select).change().show();
+            }
+        }, false);
+    })
+
+    window.onload = function() {
+        var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=bridges";
+
+        if (isNaN(displayLines))
+            displayLines = 10;
+
+        function WSConnection() {
+            'use strict';
+            this.socket = {};
+        }
+
+        WSConnection.prototype.connect = (url) => {
+            'use strict';
+
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url);
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url);
+                else {
+                    log("Browser does not support WebSocket!");
+                    resolve();
+                }
+
+                this.socket.onopen = () => {
+                    log("Connected to " + url)
+                    resolve();
+                };
+
+                this.socket.onmessage = (e) => {
+                    var data = null;
+
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
+
+                        data = JSON.parse(e.data);
+
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.BTABLE && data.BTABLE.BRIDGES) {
+                                $("#insertPoint div").remove();
+                                doBridges(data.BTABLE.BRIDGES);
+                            }
+                        }
+                        else 
+                        if (data.STATUS)
+                            log(data.STATUS);
+                    } catch(error) {
+                        log(error);
+                    }
+                };
+
+                socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error);
+                    reject(error);
+                };
+
+                socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                    this.sock = null;
+                };
+            });
+        };
+
+        WSConnection.prototype.disconnect = () => {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        };
+        
+
+        socket = new WSConnection().connect(wsuri);
+
+        $("#menubar").show();
+        $("#siteHeader").show();
+    };
+
+    window.onunload = () => {
+        tgfilter = new Set("__TGID_FILTER__".split(','));
+
+        if (socket != null && socket != {})
+            socket.disconnect();
+    }
+ </script>
+</html>

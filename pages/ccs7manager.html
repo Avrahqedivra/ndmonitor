@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <title>CCS7 Manager</title>
+	    <meta name="description" content="CCS7 Manager - copyright (c) 2021, 2023 jmc - F4JDN. All rights reserved."/>
+
+        <link rel="stylesheet" href="theme_template.css"/>
+        <link rel="stylesheet" href="mysite_template.css"/>
+        <link rel="stylesheet" href="ccs7manager.css">
+    </head>
+    <body>
+        <div id="help" class="help">
+            <div class="caption">
+                <div class="title">Help</div>
+                <div id="help_close" class="close_ccs7">&times;</div>
+            </div>
+            <div class="help_content">
+                <p>1 - Select a database</p>
+                <p>2 - Click on Download</p>
+                <p>3 - When download completes (STATUS = DOWNLOADED)</p>
+                <p>4 - Select a country or ALL (Contacts count should update)</p>
+                <p>5 - Select your device(s)</p>
+                <p>6 - Click on Export CSV</p>
+                <p style="margin-top:1.5rem;">nb : CTRL & SHIFT keys allow multiple selections in both lists.</p>
+            </div>
+        </div>
+
+        <center>
+            <div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+                
+            __BUTTON_BAR__
+
+            <div id="siteHeader" style="display:none">    
+                <br/>
+                <div id="listenersModal" class="modal_ccs7">
+                    <!-- Modal content -->
+                    <div class="modal-content_ccs7">
+                        <div class="caption">
+                            <div class="title">WebCCS7 Manager by F4JDN based on F4IKZ version</div>
+                            <div class="close_ccs7" onclick="location.href='index.html';">&times;</div>
+                            <div id="help_ccs7" class="help_ccs7">?</div>
+                        </div>
+                        <div style="display: inline-block; width:22rem">
+                            <fieldset class="group countryGroup">
+                                <legend>Country :</legend> 
+                                <select id="countries" multiple class="style widthHeight" disabled></select>
+
+                                <div style="margin-top: 0.25rem;">
+                                    <div style="display: inline-block;">
+                                        <input type="checkbox" id="chkAll" disabled>
+                                        <label for="chkAll">ALL</label>
+                                    </div>
+
+                                    <div style="display: inline-block; margin-left: 3rem;">
+                                        <input type="checkbox" id="chkNoCountries" disabled>
+                                        <label for="chkNoCountries">No countries</label>
+                                    </div>
+                                </div>
+                                <div style="margin: 0.5rem 0 0 0.25rem;">
+                                    <span>Contacts selected :</span>&nbsp;<span id="nbcontacts">0</span>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="group databaseGroup">
+                                <legend>Databases :</legend> 
+                                <select id="databaseList">
+                                    <option idx="2" value="https://database.radioid.net/static/users.json">RadioID [Licenced]</option>
+                                    <option idx="3" value="https://ham-digital.org/status/users.json">Ham Digital [Licenced]</option>
+                                    <option idx="4" value="https://www.radioid.net/static/rptrs.json">RadioID [Repeaters]</option>
+                                    
+                                    <!-- DONT FORGET TO ADJUST THOSE FOLLOWING URLS AND LABELS TO YOUR WEBSITE -->
+                                    <option idx="1" value="http://francophonie.link/local_subscriber_ids.json">Francophonie [Unlicenced]</option>
+                                    <option idx="5" value="http://francophonie.link/active_subscriber_ids.json">Active subscribers</option>
+                                </select> 
+
+                                <div style="padding-top: 1.0rem;">
+                                    <input type="file" id="openfile" accept=".json" style="display:none">
+                                    <button style="margin-left: 0.25rem; width: 9rem;" type="button" id="openjson">Open JSON</button>
+                                    <button style="margin-right: 0.25rem; width: 9rem; float: right;" type="button" id="update">Download</button>
+                                    <div style="margin: 1rem 0 0 0.25rem;">Version Date: 28/06/2022</div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        
+                        <div style="width:23rem; vertical-align: top; float: right; margin-right: 2rem">
+                            <fieldset class="group deviceGroup">
+                                <legend>Devices :</legend> 
+                                <select id="devices" class="style widthHeight" multiple disabled></select>
+
+                                <div style="margin-top: 1.5rem;">
+                                    <div style="display: inline-block;">
+                                        <input type="checkbox" id="chkDevicesAll" disabled>
+                                        <label for="chkDevicesAll">ALL</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <div style="padding-top: 1.0rem;">
+                                <button style="margin-left: 0.25rem; width: 9rem;" type="button" id="export">Export CSV</button>
+                                <button style="margin-right: 0.25rem; width: 9rem; float: right;" type="button" disabled>Output Folder</button>
+                                <input type="text" style="background-color: transparent; margin: 1rem 0.25rem 0 0.25rem; width: 100%;" id="downloadfolder" value="C:\Users\~\Downloads" readonly>
+                            </div>
+                        </div>
+                        
+                        <footer class="footer_ccs7">
+                            <div class="static">STATUS:</div><div class="status" id="loaded"></div>
+                        </footer>
+                    </div>
+                </div>
+
+                <div id="footer">
+                    <span>NDMonitor v__VERSION__ NodeJS by <a href=https://github.com/avrahqedivra/NDMonitor>jmc - F4JDN </a>2021-2023.</span>
+                </div>
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+            <div id="overlay"></div>
+        </center>        
+    </body>
+<!--
+    // https://web.dev/browser-fs-access/
+    // http://danml.com/download.html
+    // https://stackoverflow.com/questions/2376745/does-html5-allow-you-to-interact-with-local-client-files-from-within-a-browser
+-->    
+    <script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>    
+    <script type="application/javascript" src="devices.js"></script>
+    <script type="application/javascript" src="localstorage.js"></script> 
+
+    <script type="application/javascript">
+        String.prototype.capitalize = function (lower) {
+            return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
+                return a.toUpperCase();
+            });
+        };
+
+        function sanity(pString)
+        {
+            if (pString == undefined)
+                return "";
+
+            var str = "" + pString;
+            if (str != null) {
+                str = str.replace("\u2020", "+").replace(",", " ").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            }
+
+            return str;
+        }
+
+        /// <summary>
+        /// Format CSV Line with given Radio pattern
+        /// </summary>
+        /// <param name="pNum"></param>
+        /// <param name="pRadio"></param>
+        /// <param name="pUser"></param>
+        /// <returns>CSV Line to add on CSV File</returns>
+        function getRadiopattern(pNum, pRadio, pUser)
+        {
+            var pattern = "";
+            var callsign = "";
+            var fname = "";
+            var name = "";
+            var surname = "";
+            var city = "";
+            var state = "";
+            var country = "";
+            var  remarks = "";
+            var radio_id = "";
+            var id = "";
+
+            try {                
+                // if dealing with repeaters
+                if (databaseIdx == 4) {
+                    radio_id = sanity(pUser.id);
+                    id = parseInt(radio_id);
+                    if (id < 1 || id > 16777215)
+                        return pattern;
+
+                    callsign = sanity(pUser.callsign);
+                    city = sanity(pUser.city).capitalize(true);
+                    state = sanity(pUser.state).capitalize(true);
+                    country = sanity(pUser.country).capitalize(true);
+
+                    fname = sanity(pUser.trustee).capitalize(true);
+                    name = sanity(pUser.ipsc_network).capitalize(true);
+                    surname = sanity(pUser.assigned).capitalize(true);
+                    remarks = sanity(pUser.ts_linked);
+                } else {
+                    radio_id = (pUser.radio_id == null || pUser.radio_id == "") ? sanity(pUser.id) : sanity(pUser.radio_id);
+                    id = parseInt(radio_id);
+                    if (id < 1 || id > 16777215)
+                        return pattern;
+
+                    callsign = sanity(pUser.callsign);
+                    city = sanity(pUser.city).capitalize(true);
+                    state = sanity(pUser.state).capitalize(true);
+                    country = sanity(pUser.country).capitalize(true);
+
+                    fname = sanity(pUser.fname).capitalize(true);
+                    name = sanity(pUser.name).capitalize(true);
+                    surname = sanity(pUser.surname).capitalize(true);
+                    remarks = sanity(pUser.remarks);
+                }
+
+                if (fname == "")
+                    fname = name;
+
+                wholename = (fname + " " + surname).trim();
+
+                switch (pRadio) {
+                    case "OpenGD77":
+                        pattern = pNum + "," + callsign + "," + wholename + "," + radio_id + ",private,on,none,none";
+                        break;
+                    case "AnyTone":
+                        pattern = pNum + "," + radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + "," + remarks + ",0,0,";
+                        break;
+                    case "AnyToneNX":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + "," + remarks + ",0,0,";
+                        break;
+                    case "GD77":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + "," + city + "," + state + "," + country + ",";
+                        break;
+                    case "HD1":
+                        pattern = "Private Call," + callsign + " " + fname + "," + city + "," + state + "," + country + "," + radio_id;
+                        break;
+                    case "MOTO":
+                        pattern = "" + callsign + " " + fname + "," + radio_id;
+                        break;
+                    case "RT3S":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + "" + "," + city + "," + state + "," + country;
+                        break;
+                    case "RT52":
+                        pattern = radio_id + "," + wholename + "," + "1" + ",0," + callsign + "," + city + "," + state + "," + country + "," + "1";
+                        break;
+                    case "TYT":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + "," + city + "," + state + "," + country + "," + ",,,,,";
+                        break;
+                    case "BAOFENG":
+                        pattern = callsign + ",2," + radio_id + ",0";
+                        break;
+                    case "DVPI":
+                        pattern = radio_id + "," + callsign + "," + fname;
+                        break;
+                    case "PISTAR":
+                        pattern = radio_id + "\t" + callsign + "\t" + fname;
+                        break;
+                    case "NEXTION":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country;
+                        break;
+                    case "BLUEDV":
+                        pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + ",DMR";
+                        break;
+                }
+                return pattern;
+            } catch(e) {
+                return pattern;
+            }
+        }
+
+        function export_Contacts() {
+            $("#devices :selected").each(function() {
+                var rp;
+                var subset = getCountryUsers();
+                var device = $(this).val();
+                
+                var ext = ".csv";
+                var content = "";
+
+                $("#loaded").text("Generating " + device + " file");
+
+                switch(device) {
+                    case "HD1":     content = "Call Type,Contacts Alias,City,Province,Country,Call ID\r\n"; break;
+                    case "MOTO":    content = "Name,radio_id\r\n"; break;
+                    case "RT52":    content = "Id,Name,Call Type,Call Alert,Call Sign,City,Province,Country,Remarks\r\n"; break;
+                    case "RT3S":    content = "Radio ID,CallSign,Name,Nickname,City,State,Country\r\n"; break;
+                    case "AnyTone": content = "No.,Radio ID,Callsign,Name,City,State,Country,Remarks,Call Type,Call Alert\r\n"; break;
+                    case "AnyToneNX": content = "Radio ID,Callsign,Name,City,State,Country,Remarks,Call Type,Call Alert\r\n"; break;
+                    case "GD77":    content = "Radio ID,Callsign,Name,NickName,City,State,Country,Remarks\r\n"; break;
+					case "TYT":     content = "Radio ID,Callsign,Name,NickName,City,State,Country\r\n"; break;
+                    case "BAOFENG": content = "Contact Name,Call Type,Call ID,Call Receive Tone\r\n"; break;
+                    case "NEXTION": content = "RADIO_ID,CALLSIGN,FIRST_NAME,LAST_NAME,CITY,STATE,COUNTRY\r\n"; break;
+
+                    case "PISTAR":  ext = ".dat"; break;
+
+                    case "DVPI":
+                    case "BLUEDV":  
+                    case "OPENGD77":
+                    default:
+                            break;
+                }
+
+                for(let i=0; i < subset.length; i++) {
+                    if (i % 100 == 0) {
+                        var percentComplete = Math.trunc((i / subset.length) * 100);
+                        $("#loaded").text("Exporting: " + percentComplete + " % completed");
+                    }
+
+                    if ((rp = getRadiopattern(i, device, subset[i])).length > 0)
+                        content += rp + "\r\n";
+                }
+                
+                if (databaseIdx == "4")
+                    writeSingleFile("Repeaters_" + device + ext, content);
+                else
+                    writeSingleFile("Contacts_" + device + ext, content);
+            });
+
+            $("#loaded").text("Finished Process");
+        }
+
+        // simulate download
+        function writeSingleFile(filename, content) {
+            let blob = new Blob([content], { type: "text/plain;" });
+            let link = document.createElement("a");
+            window.URL = window.URL || window.webkitURL;
+            link.download = filename;
+            link.href = window.URL.createObjectURL(blob);
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(link.href);
+            }, 250);
+        }
+
+        function readSingleFile(file) {
+            if (file) {
+                var reader = new FileReader();
+                reader.addEventListener('loadend', function() {
+                    if (reader.result != null) {
+                        userJson = JSON.parse(reader.result); // Parse the result into an object
+                        
+                        if (userJson.results != null) {
+                            userJson = userJson.results;
+                            databaseIdx = "1";
+                            $('#databaseList option[idx='+databaseIdx+']').prop('selected', true);
+                        } else if (userJson.users != null) {
+                                userJson = userJson.users;
+                                databaseIdx = "2";
+                                $('#databaseList option[idx='+databaseIdx+']').prop('selected', true);
+                        }
+                        else {
+                            userJson = [];
+                        }
+                    }
+                });
+
+                reader.readAsText(file);
+            }
+        }
+
+        function getCountryUsers() {
+            var subset = [];
+
+            var all = $('#chkAll').is(":checked");
+            var noCountries = $('#chkNoCountries').is(":checked");
+
+            if (all) {
+                if (noCountries)
+                    for(let i=0; i < userJson.length; i++) {
+                        if (userJson[i].country ==  null || userJson[i].country == "")
+                            subset.push(userJson[i]);
+                }
+                else {
+                    subset = userJson;
+                }
+            } else {
+                var countrySet = new Set();
+
+                $("#countries :selected").each(function() {
+                    countrySet.add($(this).val()); 
+                });
+
+                for(let i=0; i < userJson.length; i++) {
+                    if (countrySet.has(userJson[i].country))
+                        subset.push(userJson[i]);
+                }
+            }
+
+            return subset;
+        }
+
+        function RecordsPerCountry(cc) {
+            var count = 0;
+
+            if (userJson != null) {
+                for(let i=0; i < userJson.length; i++) {
+                    if (userJson[i].country ==  cc)
+                        count++;
+                }
+            }
+            return count;
+        }
+
+        function NumberOfRecords() {
+            var count = 0;
+
+            var all = $('#chkAll').is(":checked");
+            var noCountries = $('#chkNoCountries').is(":checked");
+
+            if (all) {
+                if (noCountries) {
+                    for(let i=0; i < userJson.length; i++) {
+                        if (userJson[i].country ==  null || userJson[i].country == "")
+                            count++;
+                    }
+                }
+                else {
+                    count = userJson.length;
+                }
+            } else {
+                var countrySet = new Set();
+
+                $("#countries :selected").each(function() {
+                    countrySet.add($(this).val()); 
+                });
+
+                for(let i=0; i < userJson.length; i++) {
+                    if (countrySet.has(userJson[i].country))
+                        count++;
+                }
+            }
+
+            return count;
+        }
+
+        function compare( a, b ) {
+            if ( a.country < b.country ){
+                return -1;
+            }
+            if ( a.country > b.country ){
+                return 1;
+            }
+            return 0;
+        }
+
+        // progression des transferts depuis le serveur jusqu'au client (téléchargement)
+        function updateProgress (evt) {
+            if (evt.lengthComputable) {
+                var percentComplete = Math.trunc((evt.loaded / evt.total) * 100);
+                $("#loaded").text("Downloading: " + percentComplete + " % completed");
+            } else {
+                $("#loaded").text("Downloading...");
+            }
+        }
+
+        function updateCountriesUI() {
+            setTimeout(() => {
+                var flag = !$("#countries option").length;
+                $("#countries").prop("disabled", flag);
+                $("#chkAll").prop("disabled", flag);
+                $("#chkNoCountries").prop("disabled", flag);
+            }, 125);
+        }
+
+        function updateDevicesUI() {
+            setTimeout(() => {
+                // var flag = !$("#countries :selected").length;
+                var flag = NumberOfRecords() == 0;
+                $("#devices").prop("disabled", flag);
+                $("#chkDevicesAll").prop("disabled", flag);
+            }, 125);
+        }
+
+        function transferComplete(evt) {
+            $('#countries').empty();
+
+            if (userJson.length > 0) {
+                $("#loaded").text("Wait... Sorting and normalizing country names");
+
+                if (Array.isArray(userJson) && userJson[0].results != null)
+                    userJson = userJson[0].results;
+
+                userJson.sort(compare);
+
+                for(let i=0; i < userJson.length; i++)
+                    userJson[i].country = userJson[i].country.capitalize(true);
+
+                // deal with defined countries users
+                for(let i=0; i < userJson.length; i++) {
+                    var country = userJson[i].country;
+
+                    if (country != "" && !$("#countries option[value='"+country+"']").length) {
+                        var nb = RecordsPerCountry(country)
+                        if (nb > 0)
+                            $('#countries').append($('<option></option>').attr('users', nb).val(country).text(country + " (" + nb + ")"));
+                    }
+                }
+
+                // deal with undefined countries users 
+                var nb = RecordsPerCountry("");
+                if (nb > 0)
+                    $('#countries').append($('<option></option>').attr('users', nb).val("").text("Undefined" + " (" + nb + ")"));
+
+                setTimeout(() => {
+                    // check all after new download
+                    $('#chkAll').prop("checked", true);
+                    $('#countries option').prop('selected', true);
+
+                    $("#loaded").text("Loading completed");
+                    $("#update").attr("disabled", false);
+                    $("#nbcontacts").text(NumberOfRecords());
+                
+                    updateCountriesUI();
+                    updateDevicesUI();
+                }, 1000);
+            }
+        }
+
+        function transferFailed(evt) {
+            $("#loaded").text("Download Error - Please Try Again");
+            $("#update").attr("disabled", false);
+            $("#nbcontacts").text(NumberOfRecords());
+
+            setTimeout(() => {
+                updateCountriesUI();
+                updateDevicesUI();
+            }, 250);
+        }
+
+        function transferCanceled(evt) {
+            $("#loaded").text("Download Cancelled by User");
+            $("#update").attr("disabled", false);
+            $("#nbcontacts").text(NumberOfRecords());
+
+            setTimeout(() => {
+                updateCountriesUI();
+                updateDevicesUI();
+            }, 250);
+        }
+
+        function log(msg) {
+            console.log(msg);
+        };
+
+        function createCORSRequest(method, url) {
+            var xhr = new XMLHttpRequest();
+            if ("withCredentials" in xhr)
+                xhr.open(method, url, true);
+            else if (typeof XDomainRequest != "undefined") {
+                xhr = new XDomainRequest();
+                xhr.open(method, url);
+            } else {
+                xhr = null;
+            }
+
+            return xhr;
+        }
+
+        function download(filename) {
+            userJson = [];
+            $("#loaded").text("User list download starting");
+
+            const url = filename;
+            var headers = new Headers({
+                'Content-Type': 'application/json'
+            });
+            
+            var xhr = createCORSRequest("GET", filename);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    $("#update").attr("disabled", false);
+
+                    userJson = JSON.parse(xhr.responseText);
+
+                    switch(databaseIdx) {
+                        case "1":
+                        case "5":
+                            userJson = userJson.results;
+                            break;
+
+                        case "2":
+                        case "3":
+                            userJson = userJson.users;
+                            break;
+
+                        case "4":   // repeaters, format is different
+                            userJson = userJson.rptrs;
+                            break;
+
+                        default:
+                            break;
+                    }   
+                        
+                    if (!Array.isArray(userJson))
+                        userJson = [userJson];
+                }
+            };            
+
+            xhr.addEventListener("progress", updateProgress, false);
+            xhr.addEventListener("load", transferComplete, false);
+            xhr.addEventListener("error", transferFailed, false);
+            xhr.addEventListener("abort", transferCanceled, false);
+            xhr.send();
+        }
+
+        function requestFileFromServer(filename) {
+            userJson = [];
+            $("#loaded").text("User list download starting");
+
+            var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=ccs7";
+
+            socket = new WebSocket(wsuri);
+
+            socket.onopen = function (event) {
+                socket.onmessage = function (event) {
+                    response = JSON.parse(event.data);
+                    if (response.FILENAME != null && response.FILENAME != "") {
+                        socket.close();
+                        
+                        download(window.location.protocol + "//" + window.location.hostname + ":" + window.location.port +"/" + response.FILENAME);
+                    }
+                }
+
+                socket.send(JSON.stringify({"fileurl": filename }));
+            };
+        }
+
+        $(document).ready(function() {
+            socket = null;
+            hideAllTG = false;
+            userJson = [];
+
+            // document ready occurs before windows.onLoad
+            if (getConfigFromLocalStorage != null) {
+                getConfigFromLocalStorage();
+
+                if (document.documentElement.className != settings[0].config.theme)
+                    document.documentElement.className = settings[0].config.theme;
+            }
+
+            initMenubar();
+
+            // Check for the various File API support.
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                // if ((window.navigator.userAgentString.indexOf("Chrome") > -1) && chrome["downloads"] != null && chrome.downloads["showDefaultFolder"] != null)
+                //     $("#downloadfolder").val(chrome.downloads.showDefaultFolder());
+
+                // countries.forEach(function(e, i){
+                //     $('#countries').append($('<option></option>').val(e.name).text(e.name)); 
+                // });
+
+                devices.forEach(function(e, i){
+                    $('#devices').append($('<option></option>').val(e.value).text(e.name)); 
+                });
+
+                $(document).on("change", "#devices", function() {
+                    $("#chkdevicesAll").prop('checked', false);
+                    $("#export").prop("disabled", !$("#devices :selected").length);
+                });
+
+                $(document).on("change", "#countries", function() {
+                    $('#chkAll').prop('checked', false);
+                    $("#nbcontacts").text(NumberOfRecords());
+                    updateDevicesUI();
+                });
+
+                $(document).on("change", "#chkAll", function() {
+                    // select all
+                    $('#countries option').prop('selected', this.checked);
+                    $('#chkNoCountries').prop('checked', false);
+                    $("#nbcontacts").text(NumberOfRecords());
+                    updateDevicesUI();
+                });
+
+                $(document).on("change", "#chkNoCountries", function() {
+                    $('#countries option').prop('selected', false);
+                    $('#chkAll').prop('checked', false);
+                    $("#nbcontacts").text(NumberOfRecords());
+                    updateDevicesUI();
+                });
+
+                $(document).on("change", "#chkdevicesAll", function() {
+                    $('#devices option').prop('selected', true);
+                    $("#export").prop("disabled", !NumberOfRecords() || !$("#devices :selected").length);
+                });
+
+                $(document).on("change", "#databaseList", function() {
+                    $('#countries').empty();
+                    databaseIdx = $(this).find(':selected').attr('idx');
+                    database = this.value;
+                    
+                    $("#loaded").text("");
+                    updateCountriesUI();
+                    updateDevicesUI();
+                });
+
+                $(document).on("click", "#update", function() {
+                    $("#update").attr("disabled", true);
+                    requestFileFromServer(database);
+                });
+
+                $(document).on("click", "#openjson", function() {
+                    document.getElementById("openfile").click();
+                });
+
+                $(document).on("click", "#export", function() {
+                    export_Contacts();
+                });
+
+                $(document).on("click", "#help_ccs7", function(e) {
+                    $("#overlay").show();
+                    $("#help").show();                    
+                });                
+
+                $(document).on("click", "#help_close, #overlay", function(e) {
+                    $("#help").hide();
+                    $("#overlay").hide();
+                });                
+
+                $(document).on("change", "#openfile", function() {
+                    var file = document.getElementById("openfile");
+                    if (file)
+                        readSingleFile(file.files[0]);
+                });
+
+                $("#databaseList").change();
+                $("#export").prop("disabled", !NumberOfRecords() || !$("#devices :selected").length);
+            } else {
+                alert('The File APIs are not fully supported in this browser.');
+            }
+        });
+
+        $("#menubar").show();
+        $("#siteHeader").show();
+    </script>
+</html>

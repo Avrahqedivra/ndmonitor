@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
+	    <meta name="description" content="Copyright (c) 2021, 2023 jmc - F4JDN. All rights reserved."/>
+        <title>NDMonitor</title>
+        
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/jquery.bxslider.min.css" />
+
+        <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+        <style>
+            .tabOnline {
+                color: var(--color-online);
+            }
+            .bxslider {
+                width: 100% !important;
+            }
+            .bx-wrapper {
+                max-width: 80rem !important;
+                border: 0 !important;
+                background: var(--color-page) !important;
+                color: var(--color-light);
+                box-shadow: unset !important;
+                font-weight: bold;
+                height: 2rem;
+                max-height: 2rem;
+                margin-bottom: 0 !important;
+                white-space: nowrap;
+            }
+            .sliderItem {
+                cursor: grab;
+                font-size: 1.6rem;
+                display: inline-block;
+                width: 8rem;
+                -webkit-user-select: none; /* Safari */
+                -moz-user-select: none; /* Firefox */
+                -ms-user-select: none; /* IE10+/Edge */
+                user-select: none; /* Standard */
+            }
+            .sliderItem:hover {
+                border-bottom: 1px solid red;
+            }
+            .sliderItem.active {
+                border-bottom: 2px solid red;
+            }
+        </style>
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+            __BUTTON_BAR__
+
+            <div id="siteHeader" style="display: none">
+                <!-- The Modal -->
+                <div id="listenersModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content-listeners">
+                        <span class="close close-listeners">&times;</span>
+                        <table class="tables tablefixed">
+                            <thead id="theadListeners" tbodyid="listeners">
+                                <tr class="headerRow">
+                                    <th class="thlscallsign">Callsign</th>
+                                    <th class="thlsip">IP</th>
+                                    <th class="thlsport">Port</th>
+                                    <th class="thlsnetid">NetID</th>
+                                    </tr>
+                            </thead>
+                            <tbody id="listeners">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- The Modal -->
+                <div id="followUpModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content-followup">
+                        <span class="close close-followup">&times;</span>
+                        <table class="tablefixed">
+                            <thead id="theadFollowUp" tbodyid="followup">
+                                <tr class="headerRow">
+                                    <th class="thlename">Name</th>
+                                    <th class="thledate">Date</th>
+                                    <th class="thletime">Time</th>
+                                    <th class="thletg">TG</th>
+                                    <th class="thlelog">LOG</th>
+                                    <th class="thledelay">TX</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followup">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div name="hbtables">
+                    <br><br>
+                    <div class="bxslider"></div>
+                    <br>
+                    <div id="insertPoint"></div>
+                </div>
+
+                <div id="footer">
+                    __FOOTER__
+                </div> 
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+        </center>
+    </body>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // document ready occurs before windows.onLoad
+        if (getConfigFromLocalStorage != null) {
+            getConfigFromLocalStorage();
+
+            if (document.documentElement.className != settings[0].config.theme)
+                document.documentElement.className = settings[0].config.theme;
+        }
+
+        initMenubar();
+
+        // https://bxslider.com/options/
+        bxSlider = $('.bxslider').bxSlider({
+            controls: false,
+            pager: false,
+            minSlides: 8,
+            maxSlides: 8,
+            moveSlides: 1,
+            touchEnabled: true,
+        });
+
+        $(".bx-prev").click(function(e) {
+		    e.preventDefault();
+		    bxSlider.goToPrevSlide();
+	    });
+
+	    $(".bx-next").click(function(e) {
+		    e.preventDefault();		
+		    bxSlider.goToNextSlide();
+	    });
+
+        $(window).click(function(e) {
+            if (event.target == document.getElementById("listenersModal"))
+                $("#listenersModal").hide();
+        });        
+
+        $(document).on("click", ".lastheard thead", function() {
+            $("#hblink"+$(this).attr('tgid')).toggle(100);
+        });
+
+        $(document).on("click", ".network thead", function() {
+            $("#"+$(this).attr('tbodyid')).toggle(100);
+        });
+
+        $(document).on("click", ".close", function() {
+            $("#listenersModal").hide();
+			$("#followUpModal").hide();
+        });
+
+        $(document).on("click", ".sliderItem", function(e) {
+            tabActive = $(this).attr("tgid");
+            hideInactiveTables();
+        });
+
+        $(document).on("dblclick", "#btnlisteners", function(e) {
+            if (e.ctrlKey) {
+                $("#listeners tr").remove();
+                var content = "";
+
+                listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
+
+                listenerList.forEach(swl => {
+                    content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+                });
+
+                $("#listeners").append(content);
+                $("#listenersModal").show();
+            }
+        });
+
+        $("#siteHeader").show();
+    });
+</script> 
+
+<script type="text/javascript">
+    var lastheardOpen = true;
+    var traffic = [];
+    var sock = null;
+    var displayLines = parseInt("__DISPLAY_LINES__");    
+
+    hideAllTG = false;
+    listenerList = [];
+    tabActive = "208";
+    tgfilter = new Set("__TGID_FILTER__".split(','));
+    tgorder = new Set("__TGID_ORDER__".split(','));
+    tghilite = new Set("__TGID_HILITE__".split(','));
+    dynamic_tg = ("__DYNAMIC_TG__" == "True") ? true : false;
+    hide_dmrid = new Set("__HIDE_DMRID__".split(','));
+
+    try {
+        tgbeacons = JSON.parse('__TGID_BEACONS__');
+    } catch(e) {
+        tgbeacons = {};
+    }
+
+	try {
+		tgsettings = JSON.parse('__TGID_SETTINGS__');
+	} catch(e) {
+		tgsettings = {};
+	}
+
+    function hideInactiveTables() {
+        $(".sliderItem").removeClass("active");
+
+        $('table.tables', $('#insertPoint')).each(function () {
+            t = $($(this)[0]);
+            if (t.attr("id") != "tbtgId"+tabActive) {
+                t.hide();
+            } else {
+                t.show();
+            }
+        });
+
+        $("#div"+tabActive).addClass("active");
+
+        // $("#insertPoint").children('table.tables').each(t => {
+        //     t = $($(this)[0]);
+        //     if (t.attr("id") != "tbtgId"+tabActive)
+        //         t.hide();
+        //     else
+        //         t.show();
+        // });
+    }
+
+    //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+    function uniqByKeepFirst(a, key) {
+        let seen = new Set();
+        return a.filter(item => {
+            let k = key(item);
+            return seen.has(k) ? false : seen.add(k);
+        });
+    }
+
+    function uniqByKeepLast(a, key) {
+        return [
+            ...new Map(
+                a.map(x => [key(x), x])
+            ).values()
+        ]
+    }
+
+    function checkDeadOnline() {
+        try {
+            var found = false;
+
+            for(let i=0; i < traffic.length; i++) {
+                if (traffic[i].PACKET == "START") {
+                    var t = new Date(traffic[i].DATE + " " + traffic[i].TIME);
+                    if ((Date.now() - t.getTime()) > 240000) {
+                        found = true;
+                        traffic[i].PACKET = "END";
+                    }
+                }
+            }
+
+            if (found)
+                doTraffic(traffic);
+
+        } catch(error) {
+
+        }
+    }
+
+    function followUpdUser(dmrid) {
+        $("#followup tr").remove();
+        var content = "";
+        var bgClass = "";
+
+        traffic.forEach(om => {
+            if (om.PACKET == "END" && om.DMRID == dmrid) {
+                if (tghilite.has(om.TGID))
+                        bgClass = 'tgWhite';
+                    else
+                        bgClass = 'tgGreen';
+
+                var delay = (om.DELAY == 0) ? "PTT":om.DELAY;
+                if (om.DELAY == 0)
+                    bgClass += " darker ";
+
+                content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" + om.TGID + "</td><td class='alias ellipsis'>" + om.ALIAS + "</td><td class='delay'>" + delay + "</td></tr>";
+            }                
+        });
+
+        $("#followup").append(content);
+        $("#followUpModal").show();
+    }
+
+    function doTraffic(t) {
+        if (t != null)  {
+            if (Array.isArray(t))
+                traffic = t;
+            else
+                traffic.unshift(t);
+
+            if (traffic.length > 0) {
+                checkDeadOnline();
+
+                // keeps the n last unique items
+                // traffic = uniqByKeepLast(traffic, it => it.DMRID);
+
+                var content = "";
+
+                cleaned = true;
+                $(".lastheard tbody tr").remove(); 
+
+                $(".sliderItem").removeClass("tabOnline");
+
+                for(var i=0; i < traffic.length; i++) {
+                    var tgid = parseInt(traffic[i].TGID);
+
+                    // skip excluded TG
+                    if (tgfilter.has(''+tgid))
+                        continue;
+
+                    // add dynamic allowed tgid
+                    if (!tgorder.has(''+tgid)) {
+                        if (dynamic_tg == true)
+                            tgorder.add(tgid);
+                        else
+                            continue;
+                    }
+
+                    var tgName = "tgId"+tgid;
+
+                    if (tabActive == "0")
+                        tabActive = tgid;
+
+                    if (tghilite.has(traffic[i].TGID))
+                        bgClass = 'tgWhite';
+                    else
+                        bgClass = 'tgGreen';
+
+                    /* check if table already exists */
+                    if (document.getElementById(tgName) == null) {
+                        /* insert new table into tg tables area regarding tgorder */
+                        if (document.getElementById("div"+tgid) == null) {
+                            bxSlider.append('<div class="sliderItem" tgid="'+tgid+'" id="div'+tgid+'">TG' + tgid + '</div>');
+                        }
+
+                        /* build the missing table */
+                        var emptyTable = '<table id=tb'+ tgName + ' class="tables lastheard tablefixed">'
+                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'" tbodyid=hblink' + tgid + '">' 
+                                +'<tr class="headerRow">'
+                                    +'<th class="thledate">Date</th>'
+                                    +'<th class="thletime">Heure</th>'
+                                    +'<th class="thleslot">Slot</th>'
+                                    +'<th class="thletx" colspan=2>TX Connectés</th>'
+                                    +'<th class="thlename">Name</th>'
+                                    +'<th class="thletg">TG' + tgid + '</th>'
+                                    +'<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>'
+                                    +'<th class="thledelay">TX (s)</th>'
+                                    +'<th class="thlenetid">NetID</th>'
+                                    +'<th class="thlemaster">Master Infra</th>'
+                                +'</tr>'
+                            +'</thead>'
+                            +'<tbody id="hblink' + tgid + '"></tbody></table>';
+
+                        if (document.getElementById("tg"+tgid+"marker") != null)
+                            $(emptyTable).insertBefore("#tg"+tgid+"marker");
+                        else
+                            $('#insertPoint').append(emptyTable);
+
+                        var tbs = getTgTableState("hblink" + tgid);
+                    }
+
+                    var callsign = traffic[i].CALLSIGN;
+                    var dmrid = traffic[i].DMRID;
+                    var delay = traffic[i].DELAY;
+
+                    if (delay > 1000)
+                        delay = "xx";
+                    else if (delay < 2)
+                        delay = "PTT";
+
+                    hide_dmrid.forEach(dh => {
+                        if (dmrid.startsWith(dh)) {
+                            callsign = "XXXXX";
+                            dmrid = "0000000";
+                        }
+                    });
+
+                    if (callsign == "")
+                        callsign = dmrid;
+
+                    if ($('#hblink'+traffic[i].TGID+' >tr td[dmrid='+ traffic[i].DMRID +']').length == 0) {
+						/* deal with content if < displaylines */
+						if ($('#tb' + tgName +' >tbody >tr').length < displayLines) {
+
+							var flagUrl = getFlag(traffic[i].CALLSIGN, traffic[i].DMRID);
+							if (flagUrl == "")
+                                flagUrl = flag64["shield"]; // "shield.png";
+
+							content = '<tr class=' + bgClass + '>';
+							content += "<td class='tdDate'>" + traffic[i].DATE + "</td>";
+							content += "<td class='tdTime'>" + traffic[i].TIME + "</td>";
+							content += "<td class='slot'>" + traffic[i].TS + "</td>";
+							content += "<td class='callsign ellipsis'>";
+							content += "<img class='tgflag' src='" + flagUrl + "'/>"
+							content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+							content += "<td dmrid=" + traffic[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+							if (traffic[i].NAME.toUpperCase() == callsign)
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + callsign + "</td>";
+							else
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + enhanceNames(traffic[i].NAME) + "</td>";
+							content += "<td class='talkgroup'>" + tgid + "</td>";
+							content += "<td class='alias ellipsis'>" + traffic[i].ALIAS + "</td>";
+							if (traffic[i].PACKET == "START")
+								content += "<td class='online'>ONLINE</td>";
+							else
+								content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
+							content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
+							content += "<td class='infra'>" + traffic[i].SYS + "</td>";
+							content += "</tr>";
+
+                            $("#hblink" + tgid).append(content);
+                        }
+                    }
+                }
+
+                hideInactiveTables();
+            }
+        }
+    }
+    
+    function log(msg) {
+        console.log(msg);
+    };
+
+    window.onload = () => {
+        listeners = 0;
+
+        var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
+
+        if (isNaN(displayLines))
+            displayLines = 10;
+
+        function WSConnection() {
+            'use strict';
+            this.socket = {};
+        }
+
+        WSConnection.prototype.connect = (url) => {
+            'use strict';
+
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url);
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url);
+                else {
+                    log("Browser does not support WebSocket!");
+                    resolve();
+                }
+
+                this.socket.onopen = () => {
+                    log("Connected to " + url)
+                    resolve();
+                };
+
+                this.socket.onmessage = (e) => {
+                    var data = null;
+
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
+
+                        data = JSON.parse(e.data);
+
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.BIGEARS)
+                                $("#btnlisteners").text(data.BIGEARS);
+
+                            if (data.LISTENERS)
+                                listenerList = data.LISTENERS;
+
+                            if (data.TRAFFIC)
+                                doTraffic(data.TRAFFIC);
+                            else
+                            if (data.CONFIG) {
+                                if (data.CONFIG.BIGEARS) {
+                                    $("#btnlisteners").text(data.CONFIG.BIGEARS);
+                                }
+
+                                if (data.CONFIG.PACKETS)
+                                    doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+
+                                if (data.CONFIG.LISTENERS)
+                                    listenerList = data.CONFIG.LISTENERS;
+                            } 
+                            else
+                            if (data.BTABLE)
+                                log(JSON.stringify(data.BTABLE));
+                            else
+                            if (data.STATUS)
+                                log(data.STATUS);
+                        }
+                    } catch(error) {
+                        log(error);
+                    }
+                };
+
+                socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error);
+                    reject(error);
+                };
+
+                socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                    this.sock = null;
+                };
+            });
+        };
+
+        WSConnection.prototype.disconnect = () => {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        };
+        
+        setTimeout(() => {
+            socket = new WSConnection().connect(wsuri);
+        }, 250);
+
+        $("#menubar").show();
+        $("#siteHeader").show();
+    };
+
+    window.onunload = () => {
+        socket = null;
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/jquery.bxslider.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/vendor/jquery.easing.1.3.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/vendor/jquery.fitvids.js"></script>
+</html>

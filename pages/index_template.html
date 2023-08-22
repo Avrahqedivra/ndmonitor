@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+
+<head>
+		<link rel="icon" type="image/x-icon" href="favicon.ico" />
+		<meta charset="UTF-8">
+		<meta http-equiv="refresh" content="20000"/>
+		<title>NDMonitor</title>
+
+    <link rel="stylesheet" href="theme_template.css">
+    <link rel="stylesheet" href="mysite_template.css">
+    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+
+		<style>
+			/* #hbtables {
+				margin-top: 0rem;
+				height: calc(100vh - 16rem);
+				overflow-y: scroll;
+				width: fit-content;
+				scrollbar-width: thin;
+			} */
+	
+			#hbtables::-webkit-scrollbar {
+				display: block;
+				width: 6px;
+				background-color: #404040;
+			}
+	
+			#hbtables::-webkit-scrollbar-thumb {
+				background-color: #569cd6;
+			}
+	
+			.talkgroup canvas {
+				position: absolute;
+				top: 0.3rem;
+				left: -0.15rem;
+			}
+
+			@supports (-moz-appearance:none) {
+				div[name="hbtables"] { 
+						overflow-y: scroll;
+						width: fit-content;
+						margin-top: 0.5rem;
+						scrollbar-color: #569cd6 #404040;
+				}
+			}
+		</style>
+	</head>
+	
+<body>
+	<center>
+		<noscript>You must enable JavaScript</noscript>
+
+		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+		__BUTTON_BAR__
+		
+		<div id="modals">
+			<!-- The Followup -->
+			<div id="followUpModal" class="modal">
+				<!-- Modal content -->
+				<div class="modal-content-followup">
+					<span class="close close-followup">&times;</span>
+					<table class="tablefixed">
+						<thead id="theadFollowUp" tbodyid="followup">
+							<tr class="headerRow">
+								<th class="thlename">Name</th>
+								<th class="thledate">Date</th>
+								<th class="thletime">Time</th>
+								<th class="thletg">TG</th>
+								<th class="thlelog">LOG</th>
+								<th class="thledelay">TX</th>
+							</tr>
+						</thead>
+						<tbody id="followup">
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- The Statistics -->
+			<div id="statisticsModal" class="modal">
+				<!-- Modal content -->
+				<div class="modal-content-statistics">
+					<span class="close close-statistics">&times;</span>
+					<table class="tablefixed">
+						<thead id="theadStatistics" tbodyid="statistics">
+							<tr class="headerRow">
+								<th class="thlstg">TG</th>
+								<th class="thlsCnx">Nb Cnx</th>
+								<th class="thlsDelay">Total Time</th>
+							</tr>
+						</thead>
+						<tbody id="statistics">
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- The Listeners -->
+			<div id="listenersModal" class="modal">
+				<!-- Modal content -->
+				<div class="modal-content-listeners">
+					<span class="close close-listeners">&times;</span>
+					<table class="tablefixed">
+						<thead id="theadListeners" tbodyid="listeners">
+							<tr class="headerRow">
+								<th class="thlscallsign">Callsign</th>
+								<th class="thlsip">IP</th>
+								<th class="thlsport">Port</th>
+								<th class="thlsnetid">NetID</th>
+							</tr>
+						</thead>
+						<tbody id="listeners">
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- The Status -->
+			<div id="statusdiv" style="display: none;">
+				<!-- Modal content -->
+				<div class="modal-content-status">
+					<span class="close close-status">&times;</span>
+					<table class="tablefixed">
+						<thead id="statusdivheader" tbodyid="status">
+							<tr class="headerRow">
+								<th class="thlename">Server<div id="statusCountdown" style="padding-right:0.5rem;float: right;">10</div></th>
+								<th class="thledate">Status</th>
+							</tr>
+						</thead>
+						<tbody id="status">
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+		</div>
+
+		<div id="siteHeader" style="display:none">
+
+			<div name="hbtables" id="hbtables">
+				<table id="lastActive" class="tables lastActive tablefixed" style="display: none;">
+					<thead>
+						<tr class="headerRow">
+							<th class="thledate">Date</th>
+							<th class="thletime" id="heure">Heure</th>
+							<th class="thleslot">Slot</th>
+							<th class="thletx" colspan=2>TX Connectés</th>
+							<th class="thlename">Name</th>
+							<th class="thletg">TGs</th>
+							<th class="thlepc">%</th>
+							<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI)</a></th>
+							<th class="thledelay">TX (s)</th>
+							<th class="thlenetid">NetID</th>
+							<th class="thlemaster">Master Infra</th>
+						</tr>
+					</thead>
+					<tbody id="lastActiveBody"></tbody>
+				</table>
+
+				<div class="chartstype">
+					<div id="freqstatsdiv" class="freqstatsdiv" style="display:none;">
+						<canvas id="freqstatscanvas"></canvas>
+					</div>
+					<div class="chartbuttons">
+						<div class="chartbutton duration" style="background-color:  var(--color-bg-duration);">DURATION</div>
+						<div class="chartbutton calls chartSelected" style="background-color: var(--color-bg-calls);">CALLS</div>
+						<div class="chartbutton individual chartSelected" style="background-color: var(--color-bg-individual);">OMs</div>
+						<div class="chartbutton ratio" style="background-color: var(--color-bg-ratio);">RATIO</div>
+						<div class="chartbutton all" style="background-color: var(--color-bg-all);">ALL</div>
+					</div>
+					<div class="chartinputcontainer"><div id="tgstatspanel"></div><div class="chartinput"><input type="search" id="tgstats" name="tgstats" maxlength="7" placeholder="&nbsp;Enter TG"></div></div>
+				</div>
+
+				<div id="insertPoint"></div>
+				<br>
+				<div id="sysoptables">
+					<table class="tables tablefixed network">
+						<thead id="theadOpenbridges" tbodyid="openbridges">
+							<tr class="headerRow">
+								<th class="thopmaster">OpenBridge</th>
+								<th class="thopnetid">ID Réseau(x)</th>
+								<th class="thopcalls">Appel(s) Actif(s)</th>
+							</tr>
+						</thead>
+						<tbody id="openbridges">
+						</tbody>
+					</table>
+					<br>
+					<table class="tables tablefixed network">
+						<thead id="theadMasters" tbodyid="masters">
+							<tr class="headerRow">
+								<th class="thmsmaster">Master</th>
+								<th class="thmsnetid">NetID</th>
+								<th class="thmstime">Connecté(s)</th>
+								<th class="thmsslot">Slot</th>
+								<th class="thmstx">Poste(s) Connecté(s) TX</th>
+								<th class="thmsdest">Conf. Destination</th>
+							</tr>
+						</thead>
+						<tbody id="masters">
+						</tbody>
+					</table>
+					<br>
+					<table class="tables tablefixed network">
+						<thead id="theadPeers" tbodyid="peers">
+							<tr class="headerRow">
+								<th class="thpemaster">Peer</th>
+								<th class="thpenetid">NetID</th>
+								<th class="thpetime">Connecté(s)</th>
+								<th class="thpeslot">Slot</th>
+								<th class="thpetx">Poste(s) Connecté(s) TX</th>
+								<th class="thpedest">Conf. Destination</th>
+							</tr>
+						</thead>
+						<tbody id="peers">
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div id="footer">
+				__FOOTER__
+			</div> 
+			<!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+		</div>
+	</center>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+function updateTime() {
+  var now = new Date();
+  var hours = now.getHours();
+  var minutes = now.getMinutes();
+  var seconds = now.getSeconds();
+  
+  // Pad single digits with leading zeros
+  hours = (hours < 10 ? "0" : "") + hours;
+  minutes = (minutes < 10 ? "0" : "") + minutes;
+  seconds = (seconds < 10 ? "0" : "") + seconds;
+  
+  var timeString = hours + ":" + minutes + ":" + seconds;
+  
+  document.getElementById("heure").textContent = timeString;
+}
+
+/**
+	https://stackoverflow.com/questions/65022204/make-a-popup-modal-dialog-movable-draggable-once-it-has-appeared
+*/
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    /* if present, the header is where you move the DIV from:*/
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+  } else {
+    /* otherwise, move the DIV from anywhere inside the DIV:*/
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    // set the element's new position:
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    /* stop moving when mouse button is released:*/
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+</script>
+
+<script type="text/javascript">
+	var traffic = [];
+	var sock = null;
+	var displayLines = parseInt("__DISPLAY_LINES__");
+
+	hideAllTG = false;
+	listenerList = [];
+	tgfilter = new Set("__TGID_FILTER__".split(','));
+	tgorder = new Set("__TGID_ORDER__".split(','));
+	tghilite = new Set("__TGID_HILITE__".split(','));
+	dynamic_tg = "__DYNAMIC_TG__" == "true";
+	hide_dmrid = new Set("__HIDE_DMRID__".split(','));
+	displayPercent = "__DISPLAY_PERCENT__" != "false"
+	last_active_tg = "__LAST_ACTIVE_TG__" == "true";
+	percentGauge = 1;
+
+	try {
+		tgbeacons = JSON.parse('__TGID_BEACONS__');
+	} catch(e) {
+		tgbeacons = {};
+	}
+
+	try {
+		tgsettings = JSON.parse('__TGID_SETTINGS__');
+		hide_dmrid = null;
+	} catch(e) {
+		tgsettings = {};
+	}
+
+	last_active_size = parseInt("__LAST_ACTIVE_SIZE__");
+	if (last_active_size == 0)
+		last_active_size = tgorder.size;
+
+	//   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+	function uniqByKeepFirst(a, key) {
+		let seen = new Set();
+		return a.filter(item => {
+			let k = key(item);
+			return seen.has(k) ? false : seen.add(k);
+		});
+	}
+
+	function uniqByKeepLast(a, key) {
+		return [
+			...new Map(
+				a.map(x => [key(x), x])
+			).values()
+		]
+	}
+
+	function getQRZImage (callsign, callback) {
+    const no_image_link = "https://s3.amazonaws.com/files.qrz.com/static/qrz/qrz_com200x150.jpg"
+    let cacheItem = urlCache[callsign]
+
+    if (cacheItem != null) {
+      callback(cacheItem)
+    } else {
+			const proxyurl = "http://" + document.location.hostname + ":" + document.location.port + "/";
+      const url = "https://www.qrz.com/lookup/"
+
+      fetch(proxyurl + url + callsign).then((response) => {
+        return response.text()
+      }).then((contents) => {
+        let link = no_image_link
+        let start = contents.indexOf("<td id=\"ppic\"")
+        if (start > 0) {
+          let linkStart = contents.indexOf("src=", start) + 5
+          let linkEnd = contents.indexOf("\"", linkStart)
+          let alink = contents.slice(linkStart, linkEnd)
+          if (alink.startsWith("http") == true) {
+            link = alink
+          } else {
+            console.log("image link not found in response")
+          }
+        };
+
+        urlCache[callsign] = link
+        callback(link)
+
+      }).catch(() => {
+        console.log("Can’t access " + url + " response. Blocked by browser?")
+        urlCache[callsign] = no_image_link
+        callback(no_image_link)
+      })
+    }
+  }
+
+	function updateBridges(bridges) {
+		if (bridges != null) {
+			var content = "";
+
+			// console.log(JSON.stringify(bridges));
+		}
+	}
+
+	function updateOpenBridges(openBridges) {
+		if (openBridges != null && $('#openbridges').is(':visible')) {
+			$("#openbridges tr").remove();
+
+			// console.log("");
+			// console.log(JSON.stringify(openBridges));
+			// console.log("");
+
+			var content = "";
+
+			for (let openBridge in openBridges) {
+				record = openBridges[openBridge];
+				content += "<tr><td class='obName'>" + openBridge + "</td><td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
+
+				var entry = "";
+				var data = null;
+				var streams = record["STREAMS"];
+
+				if (Object.keys(streams)) {
+					for (let streamId in streams) {
+						if ((data = streams[streamId]) != null) {
+							if (entry != "") entry += " ";
+							entry += "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
+						}
+					}
+				}
+
+				var cnx = ((data == null || data[0] == "") ? "msTS" : ((data[0] == "TX") ? "msTSRX" : "msTSTX"));
+
+				content += "<td class='" + cnx + " ellipsis'>" + entry + "</td></tr>";
+			}
+
+			$("#openbridges").append(content);
+		}
+	}
+
+	function updatePeers(peers) {
+		if (peers != null && $('#peers').is(':visible')) {
+			$("#peers tr").remove();
+
+			//    console.log("");
+			//    console.log(JSON.stringify(peers));
+			//    console.log("");
+
+			var content = "";
+
+			for (let peer in peers) {
+				var record = peers[peer];
+				var r1trx = record["1"]["TXRX"];
+				var r2trx = record["2"]["TXRX"];
+				
+				ts1 = (r1trx == "") ? "msTS1" : ((r1trx == "TX") ? "msTSTX" : "msTSRX");
+				cnx1 = (r1trx == "") ? "msTS" : ((r1trx == "TX") ? "msTSTX" : "msTSRX");
+
+				ts2 = (r2trx == "") ? "msTS2" : ((r2trx == "TX") ? "msTSTX" : "msTSRX");
+				cnx2 = (r2trx == "") ? "msTS" : ((r2trx == "TX") ? "msTSTX" : "msTSRX");
+
+				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
+
+				content += "<tr><td class='msMasters' rowspan='3'>" + peer
+					+ "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td></tr>"
+
+					+ '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">' + record["CALLSIGN"] + '</div>'
+					+ '<span class="msNetID">&nbsp;(Id: ' + record["RADIO_ID"] + ')</span>'
+					+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
+					+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>' + record["SLOTS"]
+					+ '</span></span></div><br><div class="msLocation">' + record["LOCATION"] + '</div></td>'
+
+					+ '<td class="' + peState + '" rowspan="2">'
+					+ record["STATS"]["CONNECTED"] 
+					+ '<br><div style="font: 8pt arial, sans-serif">'
+					+ record["STATS"]["PINGS_SENT"] 
+					+ " / " + record["STATS"]["PINGS_ACKD"] 
+					+ " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) 
+					+ "</div></td>"
+
+					+ '<td class="' + ts1 + '">TS1</td>'
+					+ '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>'
+					+ '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>'
+					+ '</tr>'
+
+					+ '<tr><td class="' + ts2 + '">TS2</td>'
+					+ '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>'
+					+ '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td></tr>';
+			}
+
+			$("#peers").append(content);
+		}
+	}
+
+	// https://gist.github.com/umidjons/9614157
+	function sortMastersPeersByOnlineTime(peers) {
+		var peersArray = [];
+
+		// convert to array
+		for (var key in peers) {
+			peersArray.push([key, peers[key]]);
+		}
+
+		// convert online time to seconds
+		let len = peersArray.length;
+		for (let i = 0; i < len; i++) {
+			var t = peersArray[i]["1"]["CONNECTED"].split(" ");
+
+			switch (t.length) {
+				case 3:
+					peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
+					break;
+
+				case 2:
+					chr = t[0].slice(-1);
+					if (chr == 'd')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600);
+					else
+					if (chr == 'h')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60);
+					else
+					if (chr == 'm')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]));
+					break;
+
+				case 1:
+					peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0]);
+					break;
+
+				default:
+					peersArray[i]["1"]["ONLINE"] = "0";
+					break;
+			}
+		}
+
+		// sort peers array
+		peersArray.sort((a, b) => {
+			y = parseInt(a[1]["ONLINE"]);
+			x = parseInt(b[1]["ONLINE"]);
+
+			return x < y ? -1 : x > y ? 1 : 0;
+		});
+
+		return peersArray;
+	}
+
+	function getMasterFlag(src, str) {
+		if (str == null || str == "")
+			return "";
+
+		var index = 0;
+
+		switch(src) {
+			case 0:
+				if ((index = str.lastIndexOf("(")) != -1)
+					str = ""+parseInt(str.substr(index+1));
+				break;
+
+			case 1:
+				if ((index = str.indexOf("(")) != -1)
+					str = str.substr(index+1, 3)
+				break;
+			
+			case 2:
+				if ((index = str.indexOf("(Id: ")) != -1)
+						str = str.substr(index+5, 3)
+					break;
+		}
+
+		return getTgFlag(str);
+	}
+
+	function getMasterComboFlags(format, value) {
+		if (value != "") {
+			var mf = getMasterFlag(format, value);
+
+			if (typeof mf === 'string' || mf instanceof String)
+				return '<img class="tgflag mstgflag" src="' + mf + '"/>';
+			else
+				return '<img class="tgflag mstgflag" src="' + mf[0] + '"/><img class="tgflag mstgflag" src="' + mf[1] + '"/>';
+		}
+
+		return "";
+	}
+
+	function updateMasters(masters, emaster) {
+		if (masters != null && $('#masters').is(':visible')) {
+				var content = "";
+				$("#masters").empty();
+
+				for (let entry in masters) {
+						done = false;
+
+						if (!done) {
+								// skip empty peers
+								var length = Object.keys(masters[entry]["PEERS"]).length;
+								if (length == 0 && !emaster)
+										continue;
+
+								rowspan = Math.max(1, length) * 2 + 1;
+								content += "<tr><td class='msMasters' rowspan='" + rowspan + "'>" + entry + "<br><div class='msRepeat'>" + masters[entry]["REPEAT"] + "</div></td></tr>";
+								done = true;
+						}
+
+						var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"]);
+						var peersLength = peers.length;
+
+						try {
+							if (peersLength == 0) {
+									content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">N/A</div><span class="msNetID">&nbsp;(Id: n/a)</span>'
+									+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">&nbsp;&nbsp;&nbsp;<b><font color="yellow">N/A</font></b><br>'
+									+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: N/A</span></span></div><br>'
+									+ '<div class="msLocation">N/A</div></td><td class="tdGradient" rowspan="2">N/A</td><td class="msTS1">TS1</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
+									+ '<tr><td class="msTS2">TS2</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
+							} else {
+									for (let i = 0; i < peersLength; i++) {
+										netID = peers[i][0];
+										record = peers[i][1];
+
+										ts1rx = record["1"]["TXRX"];
+										ts2rx = record["2"]["TXRX"];
+
+										ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"));
+										ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"));
+
+										cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX");
+										cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX");
+
+										hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+
+										content += '<tr>'
+											+ '<td rowspan="2">'
+											+ '<div class="tooltip">'
+											+ '<img class="msflag" src="' + getMasterFlag(2, netID) + '"/>'
+											+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
+											+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
+											+ '<span class="tooltiptext">'
+											+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
+											+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
+											+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
+											+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
+											+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
+											+ '</span></span></div><br>'
+											+ '<div class="msLocation">' + record["LOCATION"] + '</div></td>'
+											+ '<td class="tdGradient" rowspan="2">' + record["CONNECTED"] + '</td>'
+											+ '<td class="' + ts1 + '">TS1</td><td class="' + cnx1 + '">';
+
+										// --------------------------------------------------------------------------------------------
+										if (record["1"]["SUB"] != "")
+											content += getMasterComboFlags(1, record["1"]["SUB"]);
+
+										content += record["1"]["SUB"] + '</td><td class="' + cnx1 + '"></div>'
+
+										// --------------------------------------------------------------------------------------------
+										if (record["1"]["DEST"] != "")
+												content += getMasterComboFlags(0, record["1"]["DEST"]);
+
+										content += record["1"]["DEST"] + '</td></tr><tr><td class="' + ts2 + '">TS2</td><td class="' + cnx2 + '">';
+
+										// --------------------------------------------------------------------------------------------
+										if (record["2"]["SUB"] != "")
+											content += getMasterComboFlags(1, record["2"]["SUB"]);
+
+										content += record["2"]["SUB"] + '</td><td class="' + cnx2 + '">';
+
+										// --------------------------------------------------------------------------------------------
+										if (record["2"]["DEST"] != "")
+												content += getMasterComboFlags(0, record["2"]["DEST"]);
+
+										content += record["2"]["DEST"] + '</td></tr>';
+								}
+							}
+						} catch (error) {
+						}
+				}
+
+				$(content).appendTo("#masters");
+				content = "";
+		}
+	}
+
+	function scrollIntoViewFromId(id) {
+		if (hideAllTG) {
+			hideAllTG = false;
+			$("#insertPoint").show();
+		};
+
+		const el = document.getElementById(id);
+		if (el != null) {
+
+			const yOffset = -50;
+			const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+			window.scrollTo({top: y, behavior: 'smooth'});
+
+			// el.scrollIntoView(true);
+			el.focus();
+		}
+	}
+
+	function updateStatus(willBeShown) {
+		var content = ""
+		var alarm = false
+		var statusDivVisible = $("#statusdiv").is(":visible")
+
+		for(let i=0; i < diagStatus.length; i++) {
+			var server = diagStatus[i]
+
+			if (server["ACTION"] != "ping" && server["STATUS"] != 1)
+				alarm = true
+
+			if (statusDivVisible || willBeShown) {
+				content += "<tr class='trlisteners'><td>" + server['NAME'] + "</td>"
+
+				if (server["ACTION"] == "ping") {
+					var ping = server['TIME'];
+					if (ping == null || parseFloat(ping) < 0)
+						bgClass = "red";
+					else if (parseFloat(ping) < 30)
+						bgClass = "green";
+					else if (parseFloat(ping) < 60)
+						bgClass = "orange";
+					else
+						bgClass = "red";
+
+					content += "<td><div class='msrounded " + bgClass + "'>" + server['TIME'] + " ms</div></td>";
+				}
+				else {
+					var label = server['ACTION'] == "connect" ? "Port ":"Status "
+
+					// 🟠 (emoji orange circle)
+					// ⚪ (emoji white circle)
+					if (server['STATUS'] == 1)
+						content += "<td><div class='statusLabel'>" + label + "🟢</div></td>"
+					else if (server['STATUS'] == -1)
+						content += "<td><div class='statusLabel'>" + label + "🟠</div></td>"
+					else if (server['STATUS'] == -2)
+						content += "<td><div class='statusLabel'>" + label + "⚪</div></td>"
+					else
+						content += "<td><div class='statusLabel'>" + label + "🔴</div></td>"
+				}
+
+				content += "</tr>"
+				$("#status tr").remove()
+				$("#status").append(content);
+			}
+		}
+
+		if (alarm)
+			$("#serverstatus").addClass("alarm");
+		else
+			$("#serverstatus").removeClass("alarm");
+	}
+
+	function serverStatus() {
+		updateStatus(true);
+
+		$("#statusdiv").show();
+
+		// Make the DIV element draggable:
+		dragElement(document.getElementById("statusdiv"));
+	}
+
+	function followUpdUser(dmrid) {
+		$("#followup tr").remove()
+
+		var content = ""
+		var bgClass = ""
+		var callsign = ""
+
+		traffic.forEach(om => {
+			if (om.PACKET == "END" && (om.DMRID == dmrid || om.CALLSIGN == dmrid)) {
+				// save callsign for later
+				if (callsign.length == 0)
+					callsign = om.CALLSIGN
+
+				if (tghilite.has(om.TGID))
+					bgClass = 'tgWhite';
+				else
+					bgClass = 'tgGreen';
+
+				var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+				if (om.DELAY == 0)
+					bgClass += " darker ";
+
+				var alias = om.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+				content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
+					+ "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
+					+ om.TGID + "</td><td class='alias ellipsis'>" + alias + "</td><td class='delay'>" + delay + "</td></tr>";
+			}
+		})
+
+		getQRZImage(callsign, (link) => {
+			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href=https://qrz.com/db/" + callsign + "><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+			$("#followup").append(content);
+			$("#followUpModal").show();
+		})
+	}
+
+	function followupdmrid() {
+		var val = $('#search').val();
+		$("#inputModal").hide();
+		if (val != "")
+			followUpdUser(val.toUpperCase());
+	}
+
+	function stats() {
+		statistics = [];
+
+		for(let i=0; i<traffic.length; i++) {
+			var record = traffic[i];
+
+			if (record.PACKET == "END") {
+				var tgid = ""+record.TGID;
+
+				record.DELAY = parseInt(record.DELAY);
+
+				if (record.DELAY > 9999)
+						record.DELAY = record.DELAY / 1000;
+
+				// skip hidden tgs
+				if (tgfilter.has('' + tgid))
+						continue;
+
+				if (statistics[tgid] == null) {
+					statistics[tgid] = { "tgid": record.TGID, "cnxCount": 1, "cnxTime": record.DELAY };
+				}
+				else {
+					statistics[tgid]["cnxCount"] = statistics[tgid]["cnxCount"] + 1;
+					statistics[tgid]["cnxTime"] = statistics[tgid]["cnxTime"] + record.DELAY;
+				}
+			}
+		}
+
+		for (const tgid of tgorder) {
+			// skip hidden tgs
+			if (tgfilter.has('' + tgid))
+					continue;
+
+			if (statistics[tgid] == null)
+				statistics[tgid] = { "tgid": tgid, "cnxCount": 0, "cnxTime": 0 };
+		}
+
+		$("#statistics tr").remove();
+			var content = "";
+
+			statistics.forEach(stat => {
+				cnxTime = parseInt(stat.cnxTime);
+
+				if (cnxTime < 60 )
+					delay = cnxTime + " sec";
+				else if (cnxTime < 3600)
+					delay = parseInt(cnxTime / 60) + " min";
+				else
+					delay = parseInt(cnxTime / 3600) + " hrs";
+
+				content += "<tr class='"+ (stat.cnxCount == 0 ? "trstatisticsred":"trstatisticsgreen") + "'><td class='tdstattg'>" 
+					+ stat.tgid + "</td><td class='tdstatcnt'>" + stat.cnxCount + "</td><td class='tdstatdelay'>" + delay + "</td></tr>";
+			});
+
+			$("#statistics").append(content);
+			$("#statisticsModal").show();
+	}
+
+	function tgshas(record, tgs) {
+		var tgslength = tgs.length;
+		for (let i = 0; i < tgslength; i++) {
+			if (tgs[i].id == record.TGID)
+				return i;
+		}
+
+		return -1;
+	}
+
+	function updateRowCount(record, tgs) {
+		var count = 0;
+		var tgslength = tgs.length;
+		
+		for (var i = 0; i < tgslength; i++) {
+			if (tgs[i].id == record.TGID) {
+				if (!tgs[i].dmrids.has(record.DMRID)) {
+					tgs[i].dmrids.add(record.DMRID);
+					tgs[i].count = tgs[i].dmrids.size;
+					return tgs[i].count;
+				}
+			}
+		}
+
+		return count;
+	}
+
+	function getPercentage(tgs, totalrecord, id) {
+		var tgslength = tgs.length;
+		for (let i = 0; i < tgslength; i++) {
+			if (tgs[i].id == id)
+				return parseInt(((tgs[i].count / totalrecord) * 100) + 0.5);
+		}
+
+		return 0;
+	}
+
+	function showEmptyTables() {
+			var tgsetting;
+
+			if (mobileDevice) {
+					$(".thledate, .thleslot, .thlelog, .thlenetid, .thlemaster").css("display", "none");
+					showColumnsDefault = "-+-+++-+--";
+			}
+
+			if (last_active_tg) {
+				if (mobileDevice || !displayPercent)
+					$(".thlepc").css("display", "none");
+
+				$("#lastActive").css("display", "table");
+			}
+
+			if ((tgsetting = tgsettings["*"]) != null) {
+					showColumnsDefault = mobileDevice ? showColumnsDefault : (tgsetting["show-columns"] == null ? "++++++++++":tgsetting["show-columns"]);
+					showEmptyDefault = tgsetting["show-empty"] ? tgsetting["show-empty"]: false;
+					hideDmridDefault = tgsetting["hide-dmrid"] ? tgsetting["hide-dmrid"]: "#";
+					showStyleDefault = tgsetting["title-style"] ? tgsetting["title-style"]: "";
+					showTitleDefault = tgsetting["title-before"] ? "auto" : ""; // any value ends with ""
+					
+					showHeaderDefault = tgsetting["header-before"] ? "auto" : ""; // any value ends with ""
+					showHeaderStyleDefault = tgsetting["header-style"] ? tgsetting["header-style"]: "";
+			}
+
+			Object.keys(tgsettings).forEach((tgid) => {
+				var tgName = "tgId" + tgid;
+				var hdName = "hdId" + tgid;
+
+				if (tgid != "*") {
+					tgsetting = tgsettings[tgid];
+
+					// treat headers
+					if (tgsetting["header-before"] && document.getElementById(hdName) == null) {
+						var emptyTable = "";
+						var showHeaderStyle = tgsetting["header-style"] ? tgsetting["header-style"] : showHeaderStyleDefault;
+						var showHeader = tgsetting["header-before"] ? tgsetting["header-before"] : showHeaderDefault;
+
+						if (showHeader != "auto" && showHeader != "") {
+								emptyTable = '<div id=' + hdName + ' class="titleHeaderRow"><div class="titleHeaderCell" style="' + showHeaderStyle + '">' + showHeader + '</div></div>';
+						}
+
+						/* insert new table into tg tables area regarding tgorder */
+						if (document.getElementById("tg" + tgid + "marker") != null)
+							$(emptyTable).insertBefore("#tg" + tgid + "marker");
+						else
+							$('#insertPoint').append(emptyTable);
+
+							console.log(emptyTable);
+					} 
+					
+					// treat title
+					if (document.getElementById(tgName) == null) {
+						var emptyTable = "";
+						var showEmpty = tgsetting["show-empty"] ? tgsetting["show-empty"] : showEmptyDefault;
+
+						if (showEmpty == true) {
+							var showColumns = (mobileDevice ? showColumnsDefault:tgsetting["show-columns"] ? tgsetting["show-columns"] : showColumnsDefault);
+							var showStyle = tgsetting["title-style"] ? tgsetting["title-style"] : showStyleDefault;
+							var showTitle = tgsetting["title-before"] ? tgsetting["title-before"] : showTitleDefault;
+
+							if (showTitle != "auto" && showTitle != "") {
+								emptyTable = '<div class="titleRow"><div class="titleCell" style="' + showStyle + '">' + showTitle 
+									+ '<div class="homearrow" onclick="scrollIntoViewFromId(`siteHeader`)">◌</div></div><div class="titlePadding">&nbsp;</div><div class="titleFiller">&nbsp;</div></div>' 
+									+ '<table id=tb' + tgName + ' class="entitledTables lastheard tablefixed">';
+							}
+							else
+								emptyTable = '<table id=tb' + tgName + ' class="tgtable tables lastheard tablefixed">';
+							
+							emptyTable += '<thead id="' + tgName + '" tgid="' + tgid + '" tbodyid=hblink' + tgid + '">' 
+							+ '<tr class="headerRow">' 
+							+ '<th class="thledate'+ ((showColumns.charAt(0) == "-") ? ' visible"':'"') + '>Date</th>'
+							+	'<th class="thletime'+ ((showColumns.charAt(1) == "-") ? ' visible"':'"') + '>Heure</th>'
+							+ '<th class="thleslot'+ ((showColumns.charAt(2) == "-") ? ' visible"':'"') + '>Slot</th>' 
+							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + ' colspan=2>TX Connectés</th>'
+							+ '<th class="thlename'+ ((showColumns.charAt(4) == "-") ? ' visible"':'"') + '>Name</th>'
+							+ '<th class="thletg'+ ((showColumns.charAt(5) == "-") ? ' visible"':'"') + '>TG' + tgid + '</th>' 
+							+ '<th class="thlelog'+ ((showColumns.charAt(6) == "-") ? ' visible"':'"') + '><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' 
+							+ '<th class="thledelay'+ ((showColumns.charAt(7) == "-") ? ' visible"':'"') + '>TX (s)</th>' 
+							+ '<th class="thlenetid'+ ((showColumns.charAt(8) == "-") ? ' visible"':'"') + '>NetID</th>' 
+							+ '<th class="thlemaster'+ ((showColumns.charAt(9) == "-") ? ' visible"':'"') + '>Master Infra</th>' 
+							+ '</tr>' 
+							+ '</thead>' 
+							+ '<tbody id="hblink' + tgid + '"></tbody></table>';
+
+						}
+
+						/* insert new table into tg tables area regarding tgorder */
+						if (document.getElementById("tg" + tgid + "marker") != null)
+							$(emptyTable).insertBefore("#tg" + tgid + "marker");
+						else
+							$('#insertPoint').append(emptyTable);
+					}
+				}
+		});
+	}
+
+	function doLastActiveNew() {
+		if (last_active_tg == true) {
+			let trafficLength = traffic.length;
+			let tgs = [];
+			let count = 0;
+
+			for (let i = 0, count = 0; i < trafficLength; i++) {
+				var record = traffic[i];
+				if (tgshas(record, tgs) == -1)
+					tgs.push({ "id": record.TGID, "dmrids": new Set([record.DMRID]), "count": 1 });
+				else {
+					updateRowCount(record, tgs);
+				}
+			}
+
+			var totalrecord = 0;
+
+			for(let i=0; i<tgs.length; i++)
+					totalrecord += tgs[i].count;
+
+			$("#lastActive tbody tr").remove();
+
+			bgClass = 'tgPurple';
+
+			var globalPercentage = 0;
+
+			// keeps the n first unique items
+			lastActive = uniqByKeepFirst(traffic, it => it.TGID);
+
+			let lastActiveLength = Math.min(lastActive.length, last_active_size);
+
+			if (lastActiveLength > 0) {
+				var showColumns = showColumnsDefault;
+
+				// added max length last_active_size
+				for (let i = 0; i < lastActiveLength; i++) {
+					var record = lastActive[i];
+					var link = '"tgId' + parseInt(record.TGID) + '"';
+					var delay = record.DELAY;
+					var callsign = record.CALLSIGN;
+					var dmrid = record.DMRID;
+					var netid = record.SRC_ID;
+
+					// check dead
+					if (record.PACKET === "START") {
+						var tt = new Date(record.DATE + " " + record.TIME);
+						// if START gone past TOT change to end
+						if ((Date.now() - tt.getTime()) / 1000 > startTot) {
+								record.PACKET = "END";
+								record.DELAY = startTot;
+						}
+					}
+
+					if (delay > 9999)
+						delay = parseInt(delay / 1000);
+					else 
+					if (delay < 2)
+						delay = "PTT";
+
+					if (callsign == "")
+						callsign = dmrid;
+
+					if (hide_dmrid) {
+						for(const dh in hide_dmrid) {
+							dhl = dh.trim();
+							if (dhl.length > 0 && dmrid.startsWith(dhl)) {
+								callsign = "XXXXX";
+								dmrid = "0000000";
+								netid = "XXXXX";
+								break;
+							}
+						};
+					}
+
+					for(let tg in tgsettings) {
+						if (tg == record.TGID) {
+							var tgsetting = tgsettings[tg];
+
+							if (!mobileDevice && tgsetting["show-columns"] != null)
+								showColumns = tgsetting["show-columns"];
+
+							var hideDmrid = tgsetting["hide-dmrid"] != null ? tgsetting["hide-dmrid"]:hideDmridDefault;
+
+							if (hideDmrid != null && hideDmrid != "") {
+								var hide_those = hideDmrid.split(",");
+
+								for (const dh of hide_those) {
+									var dht = dh.trim();
+									if (dht.length > 0 && dmrid.startsWith(dht) && !(parseInt(dmrid) in tgbeacons)) {
+										callsign = "XXXXX";
+										dmrid = "0000000";
+										netid = "XXXXX";
+										break;
+									}
+								};
+							}
+							break;
+						}
+					};
+
+					var percentage = parseInt(getPercentage(tgs, totalrecord, record.TGID));
+					globalPercentage += percentage;
+
+					var flagUrl = getFlag(record.CALLSIGN, dmrid);
+					var flagFirst = "";
+					var flagSecond = "";
+
+					if (flagUrl == "")
+						flagUrl = flag64["shield"]; // "shield.png";
+
+					var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+					if (alias.indexOf("<img") == -1) {
+					
+						var tgf = getTgFlag(record.TGID);
+						if (typeof tgf === 'string' || tgf instanceof String) {
+							alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
+						}
+						else {
+							flagFirst = tgf[0];
+							flagSecond = tgf[1];
+
+							alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
+						}
+					} 
+
+					content = '<tr class=' + bgClass + '>'
+						+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
+						+ "<td class='tdTime"+ ((showColumns.charAt(1) == '-') ? " visible'":"'") + ">" +record.TIME + "</td>"
+						+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
+
+					// they both depend on TX connected
+						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>"
+						+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
+
+					if (record.NAME.toUpperCase() == callsign)
+						content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + dmrid + ")'>" + callsign + "</td>";
+					else
+						content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + dmrid + ")'>" + enhanceNames(record.NAME) + "</td>";
+
+					content += "<td class='talkgroup alink"+ ((showColumns.charAt(5) == '-') ? " visible'":"'") + " onclick='scrollIntoViewFromId(" + link + ")'>" + record.TGID + "</td>";
+
+					if (!mobileDevice && displayPercent) {
+						if (percentGauge == 0)
+							content += "<td class='percentage'><div id='p"+record.TGID+"'></div></td>";
+						else
+							content += "<td class='percentage'><div id='p"+record.TGID +"' class='progressBar'><div class='redBar'>&nbsp;</div><div class='greenBar'>&nbsp;</div><div class='percentageText'>"+percentage+"%</div></div></div></td>";
+					}
+
+					content += "<td class='alias ellipsis clickable" + ((showColumns.charAt(6) == '-') ? " visible'":"'") + " onclick='scrollIntoViewFromId(" + link + ")'>" + alias + "</td>";
+
+					if (record.PACKET == "START") {
+						addTicker(record);
+						content += "<td class='online"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + "><div class='ticker" + record.TGID + "'>00:00</div></td>";
+					} else {
+						deleteTicker(record.TGID);
+						content += "<td class='delay"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + ">" + ((delay != undefined) ? delay : "") + "</td>";
+					}
+
+					content += "<td class='netid"+ ((showColumns.charAt(8) == '-') ? " visible'":"'") + ">" + netid + "</td>"
+						+ "<td class='infra ellipsis"+ ((showColumns.charAt(9) == '-') ? " visible'":"'") + ">" + record.SYS + "</td>"
+						+ "</tr>";
+
+					$("#lastActiveBody").append(content);
+
+					$("#p"+record.TGID+ " div.greenBar").css({ "left": ""+percentage+"%", "width": ""+(100-percentage)+"%" });
+				}
+			}
+		}
+	}
+
+  function doChart() {
+    const canvas = document.getElementById("freqstatscanvas");
+		canvas.height = freqstatsdiv.offsetHeight
+		canvas.width = freqstatsdiv.offsetWidth;
+    const computedStyle = getComputedStyle(canvas);
+		const pointRadius = 3
+		const pointHoverRadius = 6
+
+		oldFreqStats = [...curFreqStats]
+
+    // setup block
+    const data = {
+      'labels': Array.from({ length: curFreqStats.length }, (_, i) => i + 'h'),
+      'datasets': [
+        {
+          'label': `QSO duration: ${Math.floor(curCumulatedDuration/curFreqRecords)}s`,
+          'data': Array.from({ length: curFreqStats.length }, (_, i) => (curFreqStats[i].count) ? Math.floor(parseInt(curFreqStats[i].duration) / curFreqStats[i].count):0),
+          'borderColor': computedStyle.getPropertyValue('--canvas-bg-ratio'),
+          'fill': false,
+          'tension': 0.4,
+          'hidden': false,
+					'pointRadius': pointRadius,
+					'pointHoverRadius': pointHoverRadius,
+					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-ratio'),
+          'yAxisID': 'yRatio',
+        },
+        {
+          'label': `Cumulated duration: ${new Date(curCumulatedDuration * 1000).toISOString().substr(11, 8)}`,
+          'data': Array.from({ length: curFreqStats.length }, (_, i) => Math.floor(parseInt(curFreqStats[i].duration) / 60)),
+          'borderColor': computedStyle.getPropertyValue('--canvas-bg-duration'),
+          'fill': false,
+          'tension': 0.4,
+          'hidden': false,
+					'pointRadius': pointRadius,
+					'pointHoverRadius': pointHoverRadius,
+					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-duration'),
+          'yAxisID': 'yDuration'
+        },
+        {
+          'label': `Calls: ${curFreqRecords}`,
+          'data': Array.from({ length: curFreqStats.length }, (_, i) => curFreqStats[i].count),
+          'borderColor': computedStyle.getPropertyValue('--canvas-bg-calls'),
+          'fill': false,
+          'tension': 0.4,
+          'hidden': false,
+					'pointRadius': pointRadius,
+					'pointHoverRadius': pointHoverRadius,
+					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-calls'),
+          'yAxisID': 'yCount'
+        },
+        {
+          'label': `OMs ${curIndividualRecords.size}`,
+          'data': Array.from({ length: curFreqStats.length }, (_, i) => curFreqStats[i].individual.size),
+          'borderColor': computedStyle.getPropertyValue('--canvas-bg-individual'),
+          'fill': false,
+          'tension': 0.4,
+          'hidden': false,
+					'pointRadius': pointRadius,
+					'pointHoverRadius': pointHoverRadius,
+					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-individual'),
+          'yAxisID': 'yIndividual'
+        }
+      ]
+    }
+
+    if (mainChart) {
+      switch(statsType) {
+        case 'count':
+          mainChart.options.scales.yCount.ticks.callback = (value, index, values) => { return value + ' ptt' }
+          data.datasets.splice(0, 2)
+					data.datasets.splice(1, 1)
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = true
+					mainChart.options.scales.yIndividual.display = false
+					mainChart.options.scales.yDuration.display = false
+					mainChart.options.scales.yRatio.display = false
+
+          mainChart.options.scales.yCount.ticks.display = true
+					mainChart.options.scales.yIndividual.ticks.display = false
+					mainChart.options.scales.yDuration.ticks.display = false
+					mainChart.options.scales.yRatio.ticks.display = false
+          break
+
+				case 'individual':
+          mainChart.options.scales.yIndividual.ticks.callback = (value, index, values) => { return value + ' OM' }
+          data.datasets.splice(0, 3)
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = false
+					mainChart.options.scales.yIndividual.display = true
+					mainChart.options.scales.yDuration.display = false
+					mainChart.options.scales.yRatio.display = false
+
+					mainChart.options.scales.yCount.ticks.display = false
+          mainChart.options.scales.yIndividual.ticks.display = true
+					mainChart.options.scales.yDuration.ticks.display = false
+					mainChart.options.scales.yRatio.ticks.display = false
+          break
+
+        case 'duration':
+          mainChart.options.scales.yDuration.ticks.callback = (value, index, values) => { return value + ' min' }
+          data.datasets.splice(0, 1)
+          data.datasets.splice(1, 2)
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = false
+					mainChart.options.scales.yIndividual.display = false
+					mainChart.options.scales.yDuration.display = true
+					mainChart.options.scales.yRatio.display = false
+
+          mainChart.options.scales.yCount.ticks.display = false
+					mainChart.options.scales.yIndividual.ticks.display = false
+					mainChart.options.scales.yDuration.ticks.display = true
+					mainChart.options.scales.yRatio.ticks.display = false
+          break
+
+        case 'ratio':
+          mainChart.options.scales.yRatio.ticks.callback = (value, index, values) => { return value + ' sec' }
+          data.datasets.splice(1, 3)
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = false
+					mainChart.options.scales.yIndividual.display = false
+					mainChart.options.scales.yDuration.display = false
+					mainChart.options.scales.yRatio.display = true
+
+          mainChart.options.scales.yCount.ticks.display = false
+					mainChart.options.scales.yIndividual.ticks.display = false
+					mainChart.options.scales.yDuration.ticks.display = false
+					mainChart.options.scales.yRatio.ticks.display = true
+          break
+
+        case 'all':
+        default:
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = false
+					mainChart.options.scales.yIndividual.display = false
+					mainChart.options.scales.yDuration.display = false
+					mainChart.options.scales.yRatio.display = false
+
+          mainChart.options.scales.yCount.ticks.display = false
+					mainChart.options.scales.yIndividual.ticks.display = false
+					mainChart.options.scales.yDuration.ticks.display = false
+					mainChart.options.scales.yRatio.ticks.display = false
+          break
+      }
+    }
+
+    // plugin block
+		
+    const canvasBackgroundColor = {
+			id: 'canvasBackgroundColor',
+			beforeDraw(chart, args, pluginOptions) {
+        let hours = new Date().getHours()
+        let minutes = new Date().getMinutes()
+				const { ctx, chartArea: { top, bottom, left, right, width}, scales: { x } } = chart
+
+				if (false) {
+					ctx.fillStyle = 'rgba(255, 26, 104, 0.5)'
+					ctx.fillRect(left+(width/TIME_INTERVALS) * (hours + minutes / 60), top, 3, bottom-25)
+				}
+				else {
+					ctx.fillStyle = 'rgba(255, 26, 104, 0.1)'
+					ctx.fillRect(left+(width/TIME_INTERVALS) * (hours + minutes / 60), top, (width/TIME_INTERVALS), bottom-25)
+					
+					// new day coming up
+					if (hours == TIME_INTERVALS-1 && minutes > 0) {
+						ctx.fillRect(left, top, (width/TIME_INTERVALS) * minutes / 60, bottom-25)
+					}
+				}
+			}
+		}
+
+    if (mainChart == null) {
+      // config block
+
+      const config = {
+        'type': 'line',
+        'data': data,
+        'options': {
+          'layout': {
+            'padding': 0
+          },
+          'scales': {
+            'x': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--canvas-labels-color'), 
+                'beginAtZero': true 
+              }
+            },
+            'yCount': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--canvas-bg-calls'),
+                'beginAtZero': true,
+                'display': false
+              },
+              'grid': {
+                'display': false
+              },
+              'display': false
+            },
+            'yIndividual': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--canvas-bg-individual'),
+                'beginAtZero': true,
+                'display': false
+              },
+              'grid': {
+                'display': false
+              },
+              'display': false
+            },
+            'yDuration': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--color-bg-duration'),
+                'beginAtZero': true,
+                'display': false
+              },
+              'grid': {
+                'display': false
+              },
+              'display': false
+            },
+            'yRatio': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--color-bg-ratio'),
+                'beginAtZero': true,
+                'display': false
+              },
+              'grid': {
+                'display': false
+              },
+              'display': false
+            }
+          },
+          'plugins': {
+            'legend': {
+              labels: {
+                color: computedStyle.getPropertyValue('--canvas-labels-color'),
+                font: { size: 14 }
+              }
+            }
+					}
+        },
+        plugins: [canvasBackgroundColor]
+      }
+
+      // render block
+      mainChart = new Chart(
+        canvas,
+        config,
+      )
+    }
+
+    mainChart.update()
+
+		document.getElementById('tgstatspanel').innerText = (parseInt(specialtg) > 0) ? `TG${specialtg} specific stats`:''
+  }
+
+	function frequentationStats(record) {
+		if (record.DONTCOUNT == null) {
+
+			if (parseInt(specialtg) > 0 && record.TGID != specialtg)
+				return
+
+			let index = parseInt(record.TIME.substring(0, 2))
+			curFreqRecords++
+			curCumulatedDuration += parseInt(record.DELAY)
+
+			curFreqStats[index].count++
+			curFreqStats[index].duration += parseInt(record.DELAY)
+
+			if (!curIndividualRecords.has(record.DMRID))
+				curIndividualRecords.add(record.DMRID)
+
+			if (!curFreqStats[index].individual.has(record.DMRID))
+				curFreqStats[index].individual.add(record.DMRID)
+
+			// if more than one day history then loop stats
+			if (traffic_last_N_days != 1 && index == 0) {
+				curFreqStats[TIME_INTERVALS].count = curFreqStats[index].count
+				curFreqStats[TIME_INTERVALS].duration = curFreqStats[index].duration
+				curFreqStats[TIME_INTERVALS].individual = curFreqStats[index].individual
+			}
+		}
+	}
+
+	function doTraffic(t) {
+		if (t != null) {
+			startPackets = new Set()
+
+			if (Array.isArray(t))
+				traffic = t;
+			else
+				traffic.unshift(t);
+
+			let trafficLength = traffic.length;
+
+			if (trafficLength > 0) {
+				checkDeadTicker();
+
+				var content = "";
+
+				cleaned = true;
+				$(".lastheard tbody tr").remove();
+
+				// reset freqstats array
+				curFreqRecords = 0
+				curIndividualRecords = new Set()
+				curCumulatedDuration = 0
+
+				for(let i=0; i<=TIME_INTERVALS; i++)
+					curFreqStats[i] = {'count': 0, 'duration': 0, 'ratio': 0, 'individual': new Set() };
+
+				for (var i = 0; i < trafficLength; i++) {
+					var record = traffic[i];
+
+					var tgid = parseInt(record.TGID);
+
+					// check dead
+					if (record.PACKET === "START") {
+						record.DONTCOUNT = true
+
+						if (startPackets.has(tgid)) {
+							startPackets.delete(tgid)
+
+							for(let j=i; j < trafficLength; j++) {
+								if (traffic[j].TGID == tgid) {
+									record.PACKET = "END";
+									record.DELAY = startTot;
+								}
+							}
+						}
+
+						var tt = new Date(record.DATE + " " + record.TIME);
+						// if START gone past TOT change to end
+						if ((Date.now() - tt.getTime()) / 1000 > startTot) {
+								record.DONTCOUNT = true
+								record.PACKET = "END";
+								record.DELAY = startTot;
+						} 
+						else
+							startPackets.add(tgid)
+					}
+
+					// skip excluded TG
+					if (tgfilter.has('' + tgid)) {
+						record.DONTCOUNT = true
+						continue
+					}
+
+					// add dynamic allowed tgid
+					if (!tgorder.has('' + tgid)) {
+						if (dynamic_tg == true)
+							tgorder.add(tgid)
+						else {
+							record.DONTCOUNT = true
+							continue
+						}
+					}
+
+					frequentationStats(record)
+
+					var tgName = "tgId" + tgid;
+
+					if (tghilite.has(record.TGID))
+						bgClass = 'tgWhite';
+					else
+						bgClass = 'tgGreen';
+
+					var showColumns = showColumnsDefault;
+					var hideDmrid = hideDmridDefault;
+
+					var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+					/* check if table already exists */
+					if (document.getElementById(tgName) == null) {
+
+						var showStyle = showStyleDefault;
+						var showTitle = "";
+
+						/* build the missing table */
+						var emptyTable = '<table id=tb' + tgName + ' class="tgtable tables lastheard tablefixed">';
+
+						/* look for tg table settings */
+						for(const tg in tgsettings) {
+							if (tg == "*" || record.TGID == tg) {
+
+								var tgsetting = tgsettings[tg];
+
+								if (!mobileDevice && tgsetting["show-columns"])
+									showColumns = tgsetting["show-columns"];
+
+								/* current tg not found, do default */
+								if ((tg != "*") && tgsetting["title-before"])
+										showTitle = tgsetting["title-before"] ? tgsetting["title-before"] : (showTitleDefault == "auto") ? alias : "";
+								else
+										showTitle = (showTitleDefault == "auto") ? alias : "";
+
+								if (showTitle != "") {
+									showStyle = tgsetting["title-style"] ? tgsetting["title-style"]:showStyleDefault;
+									
+									emptyTable = '<div class="titleRow"><div class="titleCell" style="' + showStyle + '">' + showTitle 
+											+ '<div class="homearrow" onclick="scrollIntoViewFromId(`siteHeader`)">◌</div></div><div class="titlePadding">&nbsp;</div><div class="titleFiller">&nbsp;</div></div>' 
+											+ '<table id=tb' + tgName + ' class="entitledTables lastheard tablefixed">';
+								}
+
+								break;
+							}
+						};
+
+						emptyTable += '<thead id="' + tgName + '" tgid="' + tgid + '" tbodyid=hblink' + tgid + '">' 
+							+ '<tr class="headerRow">' 
+							+ '<th class="thledate'+ ((showColumns.charAt(0) == "-") ? ' visible"':'"') + '>Date</th>' 
+							+ '<th class="thletime'+ ((showColumns.charAt(1) == "-") ? ' visible"':'"') + '>Heure</th>' 
+							+ '<th class="thleslot'+ ((showColumns.charAt(2) == "-") ? ' visible"':'"') + '>Slot</th>' 
+							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + ' colspan=2>TX Connectés</th>' 
+							+ '<th class="thlename'+ ((showColumns.charAt(4) == "-") ? ' visible"':'"') + '>Name</th>' 
+							+ '<th class="thletg'+ ((showColumns.charAt(5) == "-") ? ' visible"':'"') + '>TG' + tgid + '</th>' 
+							+ '<th class="thlelog'+ ((showColumns.charAt(6) == "-") ? ' visible"':'"') + '><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' 
+							+ '<th class="thledelay'+ ((showColumns.charAt(7) == "-") ? ' visible"':'"') + '>TX (s)</th>' 
+							+ '<th class="thlenetid'+ ((showColumns.charAt(8) == "-") ? ' visible"':'"') + '>NetID</th>' 
+							+ '<th class="thlemaster'+ ((showColumns.charAt(9) == "-") ? ' visible"':'"') + '>Master Infra</th>' 
+							+ '</tr>' 
+							+ '</thead>' 
+							+ '<tbody id="hblink' + tgid + '"></tbody></table>';
+
+						/* insert new table into tg tables area regarding tgorder */
+						if (document.getElementById("tg" + tgid + "marker") != null)
+							$(emptyTable).insertBefore("#tg" + tgid + "marker");
+						else
+							$('#insertPoint').append(emptyTable);
+					}
+
+					if (last_active_tg == true && i == 0 && lastActiveTG != tgid) {
+						lastActiveTG = tgid;
+						$('.headerRow').removeClass("lastActiveTG");
+						$("#" + tgName).children(".headerRow").addClass("lastActiveTG")
+					}
+
+					var callsign = record.CALLSIGN;
+					var dmrid = record.DMRID;
+					var delay = record.DELAY;
+					var netid = record.SRC_ID;
+
+					if (delay > 9999)
+						delay = parseInt(delay / 1000);
+					else if (delay < 2)
+						delay = "PTT";
+
+					if (hide_dmrid) {
+						for(const dh in hide_dmrid) {
+							dhl = dh.trim();
+							if (dhl.length > 0 && dmrid.startsWith(dhl)) {
+								callsign = "XXXXX";
+								dmrid = "0000000";
+								netid = "XXXXX";
+								break;
+							}
+						};
+					}
+
+					for(let tg in tgsettings) {
+						if (tg == record.TGID) {
+							var tgsetting = tgsettings[tg];
+
+							if (!mobileDevice && tgsetting["show-columns"] != null)
+								showColumns = tgsetting["show-columns"];
+
+							var hideDmrid = tgsetting["hide-dmrid"] ? tgsetting["hide-dmrid"]:hideDmridDefault;
+							if (hideDmrid != null && hideDmrid != "") {
+								var hide_those = hideDmrid.split(",");
+
+								for (const dh of hide_those) {
+									var dht = dh.trim();
+									if (dht.length > 0 && dmrid.startsWith(dht) && !(parseInt(dmrid) in tgbeacons)) {
+										callsign = "XXXXX";
+										dmrid = "0000000";
+										netid = "XXXXX";
+										break;
+									}
+								};
+							}
+
+							break;
+						}
+					};
+
+					if (callsign == "")
+						callsign = dmrid;
+
+					if ($('#hblink' + record.TGID + ' >tr td[dmrid=' + record.DMRID + ']').length == 0) {
+						/* deal with content if < displaylines */
+						if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
+							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
+							if (flagUrl == "")
+								flagUrl = flag64["shield"]; // "shield.png";
+
+								content = '<tr class=' + bgClass + '>'
+									+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
+									+ "<td class='tdTime"+ ((showColumns.charAt(1) == '-') ? " visible'":"'") + ">" +record.TIME + "</td>"
+									+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
+
+								// they both depend on TX connected
+									+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>"
+									+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
+
+								if (record.NAME.toUpperCase() == callsign)
+									content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
+								else
+									content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
+
+								content += "<td class='talkgroup"+ ((showColumns.charAt(5) == '-') ? " visible'":"'") + ">" + tgid + "</td>"
+									+ "<td class='alias ellipsis"+ ((showColumns.charAt(6) == '-') ? " visible'":"'") + ">" + alias + "</td>";
+
+								if (record.PACKET === "START")
+									content += "<td class='online"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + "><div class='ticker" + record.TGID + "'>00:00</div></td>";
+								else
+									content += "<td class='delay"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + ">" + ((delay != undefined) ? delay : "") + "</td>";
+
+								content += "<td class='netid"+ ((showColumns.charAt(8) == '-') ? " visible'":"'") + ">" + netid + "</td>"
+									+ "<td class='infra ellipsis"+ ((showColumns.charAt(9) == '-') ? " visible'":"'") + ">" + record.SYS + "</td>"
+									+ "</tr>";
+
+							$("#hblink" + tgid).append(content);
+						}
+					}
+				}
+			}
+
+			doLastActiveNew();
+
+			// https://codesandbox.io/s/canvas-fill-style-from-css-variables-ljnhf?file=/src/index.js:72-247
+			// https://www.calculatorsoup.com/calculators/algebra/percent-change-calculator.php
+
+			let redraw = false
+
+			if (oldFreqStats != null) {
+				// will redraw if changes are more than 0.19
+				for(let i=0; i<curFreqStats.length; i++) {
+					if (oldFreqStats[i].count < 1)
+						continue
+
+					let change = 100 * Math.abs( (curFreqStats[i].count - oldFreqStats[i].count) / oldFreqStats[i].count )
+
+					if (change > 0.01) {
+							redraw = true
+							break
+					}
+				}
+			}
+			else
+				redraw = true
+
+			if (redraw)
+				doChart()
+		}
+	}
+
+	function log(msg) {
+		console.log(msg);
+	};
+
+	function treatTables(CTable, emaster) {
+		if (CTable != null) {
+			updateOpenBridges(CTable["OPENBRIDGES"]);
+			updateMasters(CTable["MASTERS"], emaster);
+			updatePeers(CTable["PEERS"]);
+		}
+	}
+	
+	function checkDeadTicker() {
+		if (ticker != null) {
+			for(let i=tickerTG.length-1; i >= 0; i--) {
+				if (tickerTG[i].delay > startTot) {
+					// console.log("deleting dead ticker for tg " + tickerTG[i].tg);
+					tickerTG.splice(i, 1);
+				}
+			}
+		}
+	}
+
+	function deleteTicker(tg) {
+		if (ticker != null) {
+			for(let i=0; i<tickerTG.length; i++) {
+				if (tickerTG[i].tg == tg) {
+					// console.log("deleting ticker for tg " + tg);
+					tickerTG.splice(i, 1);
+					break;
+				}
+			}
+		}
+	}
+
+	function addTicker(record) {
+		if (ticker != null) {
+			// console.log("adding ticker for tg " + record.TGID);
+			var found = false;
+
+			for(let i=0; i<tickerTG.length; i++) {
+				if (found = (tickerTG[i].tg == record.TGID))
+					break;
+			}
+
+			if (!found) {
+				try {
+					var time1 = record.TIME.split(":");
+					var time2 = new Date();
+					var delay = Math.max(0, (time2.getMinutes() * 60 + time2.getSeconds()) - (parseInt(time1[1]) * 60 + parseInt(time1[2])));
+					// console.log("elapsed delay : " + delay)
+					tickerTG.push({ "tg": record.TGID, "delay": delay });
+				}
+				catch(e) {
+					console.log("xxxx " + record.TIME);
+				}
+			}
+		}
+	}
+
+	$(document).ready(function () {
+		TIME_INTERVALS = 24
+
+		// document ready occurs before windows.onLoad
+		if (getConfigFromLocalStorage != null) {
+			getConfigFromLocalStorage();
+
+			if (document.documentElement.className != settings[0].config.theme)
+					document.documentElement.className = settings[0].config.theme;
+		}
+
+		document.cookie = "SameSite=None; Secure"
+
+		initMenubar();
+
+		$(window).click(function (event) {
+			if (event.target == document.getElementById("statusdiv"))
+				$("#statusdiv").hide();
+		});
+
+		$(window).click(function (event) {
+			if (event.target == document.getElementById("listenersModal"))
+				$("#listenersModal").hide();
+		});
+
+		$(window).click(function (event) {
+			if (event.target == document.getElementById("statisticsModal"))
+				$("#statisticsModal").hide();
+		});
+
+		$(document).on("click", "#lastActive thead", function () {
+			if (hideAllTG = !hideAllTG)
+				$("#insertPoint").hide();
+			else
+				$("#insertPoint").show();
+
+			saveSettings();
+		});
+
+		$(document).on("click", ".lastheard thead", function () {
+			var hblink = "#hblink" + $(this).attr('tgid');
+			$(hblink).toggle(100);
+
+			setTimeout(() => {
+				var display = $(hblink).css('display');
+				if (display == "none")
+					$("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(1px)");
+				else
+					$("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(0)");
+
+				saveSettings();
+			}, 125);
+		});
+
+		$(document).on("click", ".network thead", function () {
+			$("#" + $(this).attr('tbodyid')).toggle(100, () => {
+    		saveSettings();
+  		});
+		});
+
+		$(document).on("click", ".close", function () {
+			$("#statisticsModal").hide();
+			$("#listenersModal").hide();
+			$("#followUpModal").hide();
+			$("#statusdiv").hide();
+		});
+
+		$(document).on("dblclick", "#listenersmenu", function (e) {
+			if (e.ctrlKey) {
+				$("#listeners tr").remove()
+				var content = ""
+
+				// listenerList = uniqByKeepLast(listenerList, swl => swl.NETID)
+
+				listenerList.forEach(swl => {
+					content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+				})
+
+				$("#listeners").append(content)
+				$("#listenersModal").show()
+			}
+		});
+
+		document.getElementById("search").addEventListener('keyup', (event) => {
+  		const keyName = event.key;
+			// As the user releases the Ctrl key, the key is no longer active,
+			// so event.ctrlKey is false.
+			if (keyName === 'Escape')
+				document.getElementById("inputModal").style.display = 'none';
+		}, false);
+
+		// freqstats
+		$(document).on("click", "div.chartbutton", (event) => {
+			if ($(event.target).hasClass('duration'))
+				statsType = 'duration'
+			else
+			if ($(event.target).hasClass('calls'))
+				statsType = 'count'
+			else
+			if ($(event.target).hasClass('individual'))
+				statsType = 'individual'
+			else
+			if ($(event.target).hasClass('ratio'))
+				statsType = 'ratio'
+			else
+			if ($(event.target).hasClass('all'))
+				statsType = 'all'
+
+			doChart()
+		})
+
+		$(document).on("search", "#tgstats", (event)=> {
+			specialtg = event.currentTarget.value
+			doTraffic(traffic)
+		})
+	})
+
+	window.onload = () => {
+		urlCache = {}
+		doApplyConfig = true;
+		lastActive = [];
+		listeners = 0;
+		lastActiveTG = 0;
+		startTot = parseInt("__START_TOT__"); if (startTot == 0) startTot = 240;
+		bannerDelay = parseInt("__BANNER_DELAY__");
+		mobileDevice = "__MOBILE__" == "true";
+
+		traffic_last_N_days = parseInt("__TRAFFIC_LAST_N_DAYS__");
+
+		showColumnsDefault = "";
+		hideDmridDefault = "";
+		showTitleDefault = "";
+		showStyleDefault = "";
+		showEmptyDefault = false;
+		diagStatus = [];
+
+		ticker = null;
+		tickerTG = [];
+		statusCountdown = 0
+
+		curFreqRecords = 0
+		curIndividualRecords = new Set()
+		curCumulatedDuration = 0
+		curFreqStats = []
+		oldFreqStats = null
+		specialtg = ""
+		mainChart = null
+		statsType = "all"
+
+		if (mobileDevice)	{
+			var r = document.querySelector(':root');
+			r.style.setProperty('--table-width', '100%');
+			r.style.setProperty('--color-fz-html', '20pt');
+
+			$("#sysoptables").css("display", "none");
+			$("#footer, #infoLine").css("font-size", "0.4rem");
+		}
+
+		var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
+
+		if (isNaN(displayLines))
+			displayLines = 10;
+
+		tgorder.forEach(tgid => {
+			if (!tgfilter.has('' + tgid))
+				$("#insertPoint").append($("<div id='tg" + tgid + "marker'></div>"));
+		});
+
+		document.getElementById("menuSearch").style.display = "inline-block";		
+
+		// don't show banner if already done within 3600s
+		if (bannerDelay == 0 || (Math.floor(Date.now() - settings[0].config.last) / 1000) < 3600) {
+			$("#menubar").show();
+			$("#siteHeader").show();
+			$("#freqstatsdiv").show()
+		}
+		else {
+			$("#sitelogo").show();
+
+			setTimeout(() => {
+				$("#sitelogo").hide()
+				$("#menubar").show()
+				$("#siteHeader").show()
+				$("#freqstatsdiv").show()
+
+				// reset settings timer 
+				saveSettings();
+			}, bannerDelay);
+		}
+
+		function WSConnection() {
+			'use strict';
+			this.socket = {};
+		}
+
+		WSConnection.prototype.connect = (url) => {
+			'use strict';
+
+			return new Promise((resolve, reject) => {
+				if ("WebSocket" in window)
+					this.socket = new WebSocket(url);
+				else if ("MozWebSocket" in window)
+					this.socket = new MozWebSocket(url);
+				else {
+					log("Browser does not support WebSocket!");
+					resolve();
+				}
+
+				this.socket.onopen = () => {
+					log("Connected to " + url)
+
+					ticker = setInterval(() => {
+						// Update the time every second
+						updateTime();
+
+						if (statusCountdown > 0)
+							statusCountdown--
+
+						let cd = ''
+/*
+						if (statusCountdown < 3)
+							cd = '.'
+						else
+						if (statusCountdown < 7)
+							cd = '\u00B7'
+						else
+							cd = '\u02D9'
+*/
+						document.getElementById("statusCountdown").innerHTML = cd + statusCountdown
+
+						for(let i=0; i<tickerTG.length; i++) {
+							tickerTG[i].delay++
+
+							var elements = document.getElementsByClassName("ticker" + tickerTG[i].tg)
+							if (elements != null && elements.length > 1) {
+								var value = new Date(tickerTG[i].delay * 1000).toISOString().slice(14, 19)
+
+								for(let j=0; j<elements.length; j++) {
+									elements[j].innerHTML = value
+								}
+							}
+						}
+					}, 1000)
+		
+					resolve()
+				}
+
+				this.socket.onmessage = (e) => {
+					var data = null;
+
+					try {
+						data = JSON.parse(e.data);
+
+						// console.log("");
+						// console.log(data);
+						// console.log("");
+
+						if (data != null) {
+							// FIRST PACKET IS CONFIG
+							if (data.CONFIG) {
+								if (data.CONFIG.PACKETS) {
+									// will be done only once
+									showEmptyTables();
+
+									doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+								}
+
+								if (data.CONFIG.CTABLE)
+									treatTables(data.CONFIG.CTABLE, data.CONFIG.EMPTY_MASTERS);
+
+								if (data.CONFIG.DIAGNOSTICS) {
+									statusCountdown = 10
+									diagStatus = data.CONFIG.DIAGNOSTICS;
+									updateStatus(false);
+								}
+
+								if (data.CONFIG.BIGEARS)
+									$("#btnlisteners").text(data.BIGEARS);
+
+								if (data.CONFIG.LISTENERS)
+									listenerList = data.CONFIG.LISTENERS;
+							} else {
+								if (data.TRAFFIC)
+									doTraffic(data.TRAFFIC);
+
+								if (!mobileDevice) {
+									if (data.CTABLE)
+										treatTables(data.CTABLE, data.EMPTY_MASTERS);
+
+									if (data.BRIDGES)
+										updateBridges(data.BRIDGES);
+								}
+
+								if (data.BIGEARS)
+									$("#btnlisteners").text(data.BIGEARS);
+
+								if (data.LISTENERS)
+									listenerList = data.LISTENERS;
+
+								if (data.DIAGNOSTICS) {
+									statusCountdown = 10
+									diagStatus = data.DIAGNOSTICS;
+									updateStatus(false);
+								}
+
+								// if (data.BTABLE)
+								// 	log(JSON.stringify(data.BTABLE));
+
+								// if (data.STATUS)
+								// 	log(data.STATUS);
+							}
+
+							if (themeSettings == "auto")
+								adjustTheme();
+
+							if (doApplyConfig) {
+								doApplyConfig = false;
+								applyConfig();
+							}
+					}
+					} catch (error) {
+						log(error);
+					}
+				};
+
+				socket.onerror = function (error) {
+					console.log('WebSocket error: ' + error);
+					reject(error);
+				};
+
+				socket.onclose = function (e) {
+					log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+					if (ticker != null) {
+						clearInterval(ticker);
+						ticker = null;
+					}
+					this.sock = null;
+				}
+			})
+		}
+
+		WSConnection.prototype.disconnect = () => {
+			'use strict';
+			console.log("Disconnect request from local app layer");
+			this.socket.close();
+		}
+
+		setTimeout(() => {
+			socket = new WSConnection().connect(wsuri);
+		}, 250);
+	}
+
+	window.onunload = () => {
+		socket = null;
+		if (ticker != null) {
+			clearInterval(ticker);
+			ticker = null;
+		}
+	}
+</script>
+
+</html>

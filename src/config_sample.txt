@@ -1,0 +1,121 @@
+export let testMode: boolean = false
+
+export const __system_name__: string            = "NDMonitor for HBLink/FreeDMR"              // Name of the monitored HBlink system
+export const __config_inc__: boolean            = true                                        // Include HBlink stats
+export const __homebrew_inc__: boolean          = true                                        // Display Homebrew Peers status
+export const __lastheard_inc__: boolean         = true                                        // Maintain connection log file
+export const __bridges_inc__: boolean           = true                                        // Display Bridge status and button
+export const __empty_masters__: boolean         = false                                       // Display (True) or not (False) empty master in status
+
+export const hblink_server_host: string         = '127.0.0.1'                                 // HBlink or FreeDMR address
+export const hblink_server_port: number         = 4321                                        // HBlink/FreeDMR TCP reporting socket
+export const __frequency__: number              = 10                                          // Frequency to push ctable updates to web clients
+export const __socketServerPort__: number       = 9020                                        // Websocket server for realtime monitoring
+export const __monitor_webserver_port__: number = 9990                                        // Has to be above 1024 if you're not running as root
+export const __displayLines__: number           = 20                                          // number of lines displayed in index_template
+export const __client_timeout__: number         = 0                                           // Clients are timed out after this many seconds, 0 to disable
+export const __start_tot__: number              = 240                                         // TOT
+
+export const __loginfo__: boolean               = false                                       // verbose log
+
+// how long the sitelogo should appear for the dashboard page
+export const __bannerDelay__: number            = 0                                           // banner display time, 0 = no banner
+
+// list of NETWORK_ID from OPB links not to show in local "lastheard" traffic, for example: "260210,260211,260212"
+export const __opb_filter__ = []
+// allowed Backend OBP, if specified, precise all allowed SRC_ID, for example { "OBP-GLOBAL": { "20881", "20883" } }
+export const __opb_backend__: any       = {}
+// tg1, tg2 etc to be excluded, for example "800,801,802,3339"
+export const __tgFilter__: string       = ""
+// tg order on html monitor page, for example "38,7,39,777"
+export const __tgidOrder__: string      = ""
+// tg optional settings
+export const __tgid_settings__: string  = '{ \
+                                              "33": { "title-before": "F4KNH Radio-Club", "show-columns": "+++++++---", "title-style": "color: orange;", "header-before": "Licensed HAM" }, \
+                                              "38": { "title-before": "SHIELD", "hide-dmrid": "208, 206", "header-before": "VOIP and Unlicensed" }, \
+                                              "39": { "title-before": "SHIELD Test", "hide-dmrid": "208, 206" }, \
+                                              "75": { "title-before": "DMR75 National", "hide-dmrid": "208, 206" }, \
+                                              "*": { "title-before": "auto", "show-empty": false, "show-columns": "++++++++++", "title-style": "color: gold;", "header-before": "auto", "header-style": "color: white;" } \
+                                            }'
+
+// all tgid not in this list will be excluded. if empty all will be allowed. 3 kind of format : interval = 'tgidstart..tgidend' / statingwith 'tgidstart*' / 'tgid'
+export const tgid_allowed: string[]    = ['2080000..2080099','206*','265']
+// TG to hilite  as 208,265,206
+export const __tgHilite__: string       = ""
+
+// TG colors is a json array string of tgid and hex rgb
+export const __tgid_colors__: string    = '{ "tx":"#c70039", "ind":"#fefefe", "208":"#FFAD84", "206":"#D78EFF", "265*":"#569cd6" }'
+
+// dynamic tg, if not filtred by TGID_FILTER, tg will be added dynamicaly to dashboard beside those in TG_ORDER
+export const __dynamicTg__: boolean     = true
+// hide OMs with DMRID starting with, for example with "208,206" (superseded by TGID_SETTINGS)
+export const __hideDmrId__: string     = "#"
+
+// beacons/icons pairs, for example '{ "2080000":"unlicenced.png", "2060000":"unlicenced.png" }'
+export const __tgid_beacons__: string   = '{ "7176118": "shield.png", "2080000":"nabilla.png", "2000008":"nabilla.png", "974173":"nabilla.png", "2080199":"nabilla.png", "5962840":"nabilla.png", "971":"dom.png", "974":"dom.png" }'
+
+// diagnostics
+export const __to_be_monitored__: any[] = [
+  {"name": "HB1", "type": "tcp", "ip": "localhost", "port": 1234, "action": "connect"},
+  {"name": "HB2", "type": "tcp", "ip": "127.0.0.1", "port": 4567, "action": "connect"},
+  {"name": "IDF", "type": "tcp", "ip": "orange.fr", "action": "ping"},
+  {"name": "SITE", "type": "tcp", "ip": "monsite.url", "action": "ping"},
+  {"name": "TP1", "type": "srv", "service": "analog_bridged1", "action": "check"},
+  {"name": "TP2", "type": "srv", "service": "analog_bridged2", "action": "check"}
+]
+
+// allowed socket direct accesses (by default here, only from local machine, any page id, infinite lease, all tg)
+export const __allowed__socket_clients__: any[] = [
+  { ipaddress: "127.0.0.1", id:"*", lease: "*", tglist: [] }
+]
+
+// sets default theme (dark or light)
+export const __theme__: string          = "light_theme"
+
+// Authorization of access to dashboard as admin
+// use http://mysite:port?admin to log as admin
+export const admin_user__: string       = 'admin'
+
+// Authorization of access to dashboard# as user
+export const __web_auth__: boolean      =  true
+
+// secret salt key for passcode generator
+export const __web_secret_key__: string = "SECRETKEY"
+
+// do not log listeners ip maps (useless ?)
+export const __do_ipmap__: boolean      = true
+
+// Display lastactive TG table
+export const __lastActiveTg__: boolean  = true
+// Max lines in lastactive table (0 means all TGs defined in TG_ORDER list)
+export const __last_active_size__: number = 0
+// Lastheard file size
+export const __lastheard_size__: number = 8000
+// Nb lines in first packet sent to dashboard
+export const __traffic_size__: number   = 7000
+// Display percent
+export const __displayPercent__: boolean = true
+
+export  let __siteLogo__: string              = 'sitelogo.html'
+export  let __buttonBar__: string             = 'buttonbar.html'
+
+// Files and stuff for loading alias files for mapping numbers to names
+export const __peer_url__: string               = 'https://database.radioid.net/static/rptrs.json'
+export const __peer_file__: string              = 'peer_ids.json'                 // Will auto-download from DMR-MARC
+export const __local_peer_file__: string        = 'local_peer_ids.json'           // User provided (optional, leave '' if you don't use it), follow the format of DMR-MARC
+
+export const __subscriber_url__: string         = 'https://database.radioid.net/static/users.json'
+export const __subscriber_file__: string        = 'subscriber_ids.json'           // Will auto-download from DMR-MARC
+export const __local_subscriber_url__: string   = ''                              // User provided (optional, leave '' if you don't use it), follow the format of DMR-MARC
+export const __local_subscriber_file__: string  = ''                              // User provided (optional, leave '' if you don't use it), follow the format of DMR-MARC
+
+export const __tgid_file__: string              = 'talkgroup_ids.json'            // User provided, should be in "integer TGID, TGID name" format
+export const __local_tgid_file__: string        = 'local_talkgroup_ids.json'      // User provided (optional, leave '' if you don't use it)
+
+export const __lastheard_file__: string         = "lastheard.json"
+export const __lastheard_log__: string          = "lastheard.log"
+
+export const __file_reload__: number            = 7                               // Number of days before we reload DMR-MARC database files
+
+export const __path__: string                   = './'                            // MUST END WITH '/'
+export const __log_path__: string               = './log/'                        // MUST END WITH '/'

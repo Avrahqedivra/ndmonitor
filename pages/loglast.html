@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="20000"/>
+    <title>NDMonitor</title>
+
+    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="theme_template.css">
+    <link rel="stylesheet" href="mysite_template.css">
+
+    <style>
+        .tables, #tblogLast {
+            margin-top: 0;
+        }
+    
+        #insertPoint {
+            margin-top: 2rem;
+            width: var(--table-width);
+            scrollbar-width: thin;
+            height: calc(100vh - 31.5rem);
+            overflow-y: scroll;
+        }
+    
+        #insertPoint::-webkit-scrollbar {
+            display: block;
+            width: 6px;
+            background-color: #404040;
+        }
+    
+        #insertPoint::-webkit-scrollbar-thumb {
+            background-color: #569cd6;
+        }
+
+        @supports (-moz-appearance:none) {
+            div[name="hbtables"] { 
+                overflow-y: scroll;
+                width: fit-content;
+                margin-top: 0.5rem;
+                scrollbar-color: #569cd6 #404040;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <noscript>You must enable JavaScript</noscript>
+
+		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+        __BUTTON_BAR__
+
+        <div id="siteHeader" style="display:none">    
+            <!-- The Modal -->
+            <div id="listenersModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-listeners">
+                    <span class="close close-listeners">&times;</span>
+                    <table class="tables tablefixed">
+                        <thead id="theadListeners" tbodyid="listeners">
+                            <tr class="headerRow">
+                                <th class="thlscallsign">Callsign</th>
+                                <th class="thlsip">IP</th>
+                                <th class="thlsport">Port</th>
+                                <th class="thlsnetid">NetID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listeners">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- The Modal -->
+            <div id="followUpModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-followup">
+                    <span class="close close-followup">&times;</span>
+                    <table class="tablefixed">
+                        <thead id="theadFollowUp" tbodyid="followup">
+                            <tr class="headerRow">
+                                <th class="thlename">Name</th>
+                                <th class="thledate">Date</th>
+                                <th class="thletime">Time</th>
+                                <th class="thletg">TG</th>
+                                <th class="thlelog">LOG</th>
+                                <th class="thledelay">TX</th>
+                            </tr>
+                        </thead>
+                        <tbody id="followup">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div name="hbtables" id="hbtables">
+                <div id="insertPoint">
+                    <div style="font-size:2rem; color:var(--color-fg-infoline); padding-top: 5rem;">Téléchargement de la liste en cours...</div>
+                </div>
+            </div>
+
+			<div id="footer">
+				__FOOTER__
+			</div> 
+			<!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+        </div>
+    </center>
+</body>
+
+<script type="text/javascript">
+    $(document).on("click", ".close", function () {
+        $("#listenersModal").hide();
+        $("#followUpModal").hide();
+    });
+
+    function followUpdUser(dmrid) {
+        $("#followup tr").remove();
+        var content = "";
+        var bgClass = "";
+
+        logLast.forEach(om => {
+            if (om.DMRID == dmrid) {
+                if (tghilite.has(om.TGID))
+                    bgClass = 'tgWhite';
+                else
+                    bgClass = 'tgGreen';
+
+                var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+                if (om.DELAY == 0)
+                    bgClass += " darker ";
+
+                content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om
+                        .NAME) + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME +
+                    "</td><td class=''>" + om.TGID + "</td><td class='alias ellipsis'>" + om.ALIAS +
+                    "</td><td class='delay'>" + delay + "</td></tr>";
+            }
+        });
+
+        $("#followup").append(content);
+        $("#followUpModal").show();
+    }
+
+    function treatLogLast(t) {
+        // ALIAS: "CONF/DMR-FRANCOPHONE"
+        // CALLSIGN: "FXXXX"
+        // DATE: "2021-07-22"
+        // DELAY: "10"
+        // DMRID: "2000000"
+        // NAME: "John Doe"
+        // SRC_ID: "OBP-DMRF"
+        // SYS: "DMRF"
+        // TGID: "7"
+        // TIME: "11:11"
+        // TS: "1"
+
+        if (t != null) {
+            if (Array.isArray(t))
+                logLast = t;
+            else
+                logLast.unshift(t);
+
+            var content = "";
+            var logLastLength = logLast.length;
+
+            $(".lastheard tbody tr").remove();
+
+            for (let i = 0; i < logLastLength; i++) {
+                var record = logLast[i];
+                var tgid = parseInt(record.TGID);
+                var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+                if (!tgfilter.has('' + tgid) && record.PACKET == "END") {
+                    var tgName = "logLast";
+
+                    /* check if table already exists */
+                    if (document.getElementById(tgName) == null) {
+                        /* build the missing table */
+                        var emptyTable = '<table id=tb' + tgName + ' class="tables lastheard tablefixed" style="width:fit-content;">' +
+                            '<thead id="' + tgName + '">' +
+                            '<tr class="headerRow">' +
+                            '<th class="thledate">Date</th>' +
+                            '<th class="thletime">Heure</th>' +
+                            '<th class="thleslot">Slot</th>' +
+                            '<th class="thletx" colspan=2>TX Connectés</th>' +
+                            '<th class="thlename">Name</th>' +
+                            '<th class="thletg">TG#</th>' +
+                            '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' +
+                            '<th class="thledelay"TX(s)</th>' +
+                            '<th class="thlenetid">NetID</th>' +
+                            '<th class="thlemaster">Master Infra</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody id="hblink"></tbody></table>';
+
+                        /* insert new table into tg tables area */
+                        $('#insertPoint').append(emptyTable);
+                    }
+
+                    var callsign = record.CALLSIGN;
+                    var dmrid = record.DMRID;
+                    var delay = record.DELAY;
+
+                    if (delay > 1000)
+                        delay = "xx";
+                    else if (delay < 2)
+                        delay = "PTT";
+
+                    hide_dmrid.forEach(dh => {
+                        if (dmrid.startsWith(dh)) {
+                            callsign = "XXXXX";
+                            dmrid = "0000000";
+                        }
+                    });
+
+                    if (callsign == "")
+                        callsign = dmrid;
+
+                    if (tghilite.has(''+tgid))
+                        bgClass = 'tgWhite';
+                    else
+                        bgClass = 'tgGreen';
+
+                    var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
+                    if (flagUrl == "")
+                        flagUrl = flag64["shield"];
+
+                    /* deal with content if < displaylines */
+                    content = '<tr class=' + bgClass + '>';
+                    content += "<td class='tdDate'>" + record.DATE + "</td>";
+                    content += "<td class='tdTime'>" + record.TIME + "</td>";
+                    content += "<td class='slot'>" + record.TS + "</td>";
+                    content += "<td class='callsign ellipsis'>";
+                    content += "<img class='tgflag' src='" + flagUrl + "'/>"
+                    content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+                    content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+                    if (record.NAME.toUpperCase() == callsign)
+                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
+                    else
+                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
+                    content += "<td class='talkgroup'>" + tgid + "</td>";
+                    content += "<td class='alias ellipsis'>" + alias + "</td>";
+                    if (record.PACKET === "START")
+                        content += "<td class='online'>ONLINE</td>";
+                    else
+                        content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
+                    content += "<td class='netid'>" + record.SRC_ID + "</td>";
+                    content += "<td class='infra'>" + record.SYS + "</td>";
+                    content += "</tr>";
+
+                    $("#hblink").append(content);
+                }
+            }
+        }
+    }
+
+    function log(msg) {
+        console.log(msg);
+    };
+
+    $(document).ready(function() {
+        // document ready occurs before windows.onLoad
+        if (getConfigFromLocalStorage != null) {
+            getConfigFromLocalStorage();
+
+            if (document.documentElement.className != settings[0].config.theme)
+                document.documentElement.className = settings[0].config.theme;
+        }
+
+        initMenubar();
+    })
+
+    window.onload = () => {
+        logLast = [];
+        hideAllTG = false;
+
+        hide_dmrid = new Set("__HIDE_DMRID__".split(','));
+        tghilite = new Set("__TGID_HILITE__".split(','));
+        tgfilter = new Set("__TGID_FILTER__".split(','));
+
+        try {
+		    tgbeacons = JSON.parse('__TGID_BEACONS__');
+	    } catch(e) {
+		    tgbeacons = {};
+	    }
+
+        var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=loglast";
+
+        // https://stackoverflow.com/questions/34088381/websocket-and-javascript-promises
+        function WSConnection() {
+            'use strict';
+            this.socket = {};
+        }
+
+        WSConnection.prototype.connect = function (url) {
+            'use strict';
+
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url);
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url);
+                else {
+                    log("Browser does not support WebSocket!");
+                    resolve();
+                }
+
+                this.socket.onopen = function () {
+                    log("Connected to " + url)
+                    this.send(JSON.stringify({
+                        "request": "loglast"
+                    }));
+                    resolve();
+                };
+
+                this.socket.onmessage = function (e) {
+                    var data = null;
+
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
+
+                        data = JSON.parse(e.data);
+
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.LOGLAST != null) {
+                                this.close();
+                                $("#insertPoint div").remove();
+                                treatLogLast(data.LOGLAST);
+                            }
+                        }
+                    } catch (error) {
+                        log(error);
+                    }
+                };
+
+                this.socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error);
+                    reject(error);
+                };
+
+                this.socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code +
+                        ", reason = '" + e.reason + "')");
+                    this.socket = null;
+                };
+            });
+        };
+
+        WSConnection.prototype.disconnect = function () {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        };
+
+        socket = new WSConnection().connect(wsuri);
+
+        $("#menubar").show();
+        $("#siteHeader").show();
+    };
+
+    window.onunload = () => {
+        socket = null
+    }
+</script>
+
+</html>

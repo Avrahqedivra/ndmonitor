@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
+        <title>NDMonitor</title>
+        
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+        <link rel="stylesheet" href="logplus_template.css">
+
+	    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629), HBJSON (c) JMC 2021-2023" />
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+
+            __BUTTON_BAR__
+
+            <div id="siteHeader" style="display: none">
+                <div name="hbtables" style="width: fit-content;">
+                    <div id="insertPoint">
+                        <div id="waitmessage" style="font-size:2rem; color:var(--color-fg-infoline); padding-top: 5rem;width:var(--table-width);">Téléchargement de la liste en cours...</div>
+                        <table id="tableLog" class="tables logplus tablefixed">
+                            <tbody id="hblinkLog"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="footer">
+                    __FOOTER__
+                </div> 
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>                
+        </center>
+    </body>
+
+<script type="text/javascript">
+    var lastheardOpen = true;
+    var traffic = [];
+    var sock = null;
+    var displayLines = parseInt("__DISPLAY_LINES__");
+    var tgfilter = new Set("__TGID_FILTER__".split(','));
+
+    hide_dmrid = new Set("__HIDE_DMRID__".split(','));
+        
+    function enhanceNames(name) {
+        if (names[name] != null)
+            return names[name];
+
+        return name;            
+    }
+
+    function gotoBottom(id){
+        var element = document.getElementById(id);
+        element.scrollTop = element.scrollHeight - element.clientHeight;
+    }
+
+    function doTraffic(t) {
+        if (t != null)  {
+            if (!Array.isArray(t)) {
+                traffic.push( t );
+            }
+            else
+                traffic = t;
+
+            if (traffic.length > 0) {
+/*                
+                // sort in reverse order
+                traffic.sort((a,b) => {
+                    if (a.DATE > b.DATE) return 1;
+                    if (a.DATE < b.DATE) return -1;
+
+                    if (a.TIME > b.TIME) return 1;
+                    if (a.TIME < b.TIME) return -1;
+                });
+*/
+                var content = "";
+
+                cleaned = true;                        
+                $(".logplus tbody tr").remove(); 
+
+                for(var i=0; i < traffic.length; i++) {
+                    if (!tgfilter.has(''+traffic[i].TGID)) {
+                        var tgid = "log";
+                        var tgName = "tgId"+tgid;
+                        bgClass = 'tgOrange';
+
+                        var callsign = traffic[i].CALLSIGN;
+                        var dmrid = traffic[i].DMRID;
+
+                        hide_dmrid.forEach(dh => {
+                            if (dmrid.startsWith(dh)) {
+                                callsign = "XXXXX";
+                                dmrid = "0000000";
+                            }
+                        });
+
+                        /* deal with content */
+                        content = '<tr class="logClass">';
+                        content += "<td style='width:6rem'>" + traffic[i].DATE + "</td>";
+                        content += "<td style='width:5rem'>" + traffic[i].TIME + "</td>";
+                        content += "<td style='width:3rem'>" + traffic[i].PACKET + "</td>";
+                        content += "<td style='width:8rem'>SYS: " + traffic[i].SYS + "</td>";
+                        content += "<td style='width:8rem'>SRC: " + traffic[i].SRC_ID + "</td>";
+                        content += "<td style='width:3rem'>TS: " + traffic[i].TS + "</td>";
+                        content += "<td style='width:7rem'>TGID: " + traffic[i].TGID + "</td>";
+                        content += "<td style='width:12rem'>" + traffic[i].ALIAS + "</td>";
+                        content += "<td style='width:7rem'>SUB: " + traffic[i].DMRID + "</td>";
+                        content += "<td style='width:5rem'>" + traffic[i].CALLSIGN + "</td>";
+                        content += "<td style='width:11rem'>" + enhanceNames(traffic[i].NAME) + "</td>";
+                        if ((traffic[i].DELAY != undefined) && (traffic[i].DELAY != 0))
+                            content += "<td style='width:7rem'>Time: " + ((traffic[i].DELAY != undefined) ? traffic[i].DELAY + "s" : "") + "</td>";
+                        else
+                            content += "<td style='width:7rem'></td>";
+                        content += "</tr>";
+
+                        $("#hblinkLog").append(content);
+                    }
+                }
+
+                var rowpos = $('#tableLog tr:last').position();
+                $('#insertPoint').scrollTop(rowpos.top);
+            }
+        }
+    }
+    
+    function log(msg) {
+        console.log(msg);
+    };
+
+    $(document).ready(function() {
+        // document ready occurs before windows.onLoad
+        if (getConfigFromLocalStorage != null) {
+            getConfigFromLocalStorage();
+
+            if (document.documentElement.className != settings[0].config.theme)
+                document.documentElement.className = settings[0].config.theme;
+        }
+
+        initMenubar();
+    })
+
+    window.onload = function() {
+        hideAllTG = false;
+        var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=log";
+
+        if (isNaN(displayLines))
+            displayLines = 10;
+
+        function WSConnection() {
+            'use strict';
+            this.socket = {};
+        }
+
+        WSConnection.prototype.connect = (url) => {
+            'use strict';
+
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url);
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url);
+                else {
+                    log("Browser does not support WebSocket!");
+                    resolve();
+                }
+
+                this.socket.onopen = () => {
+                    log("Connected to " + url)
+                    resolve();
+                };
+
+                this.socket.onmessage = (e) => {
+                    var data = null;
+
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
+
+                        data = JSON.parse(e.data);
+
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.TRAFFIC)                                
+                                doTraffic(data.TRAFFIC);
+                            else 
+                            if (data.CONFIG && data.CONFIG.PACKETS) {
+                                $("#waitmessage").remove()
+                                doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+                            }
+                        }
+                        else 
+                        if (data.STATUS)
+                            log(data.STATUS);
+                    } catch(error) {
+                        log(error);
+                    }
+                };
+
+                socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error);
+                    reject(error);
+                };
+
+                socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                    this.sock = null;
+                };
+            });
+        };
+
+        WSConnection.prototype.disconnect = () => {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        };
+        
+
+        socket = new WSConnection().connect(wsuri);
+
+        $("#menubar").show();
+        $("#siteHeader").show();
+    };
+
+    window.onunload = () => {
+        tgfilter = new Set("__TGID_FILTER__".split(','));
+
+        if (socket != null && socket != {})
+            socket.disconnect();
+    }
+ </script>
+</html>

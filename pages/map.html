@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html class="__THEME__" id="htmlmap">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
+	    <meta name="description" content="Copyright (c) 2021, 2023 jmc - F4JDN. All rights reserved."/>
+        <title>NDMonitor</title>
+
+        <link rel="stylesheet" href="theme_template.css"/>
+        <link rel="stylesheet" href="mysite_template.css"/>        
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="crossorigin=""/>
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+
+            __BUTTON_BAR__
+
+            <div id="siteHeader" style="display:none">
+                <!-- The Modal -->
+                <div id="listenersModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <table class="tables tablefixed">
+                            <thead id="theadListeners" tbodyid="listeners">
+                                <tr class="headerRow">
+                                    <th class="thlscallsign">Callsign</th>
+                                    <th class="thlsip">IP</th>
+                                    <th class="thlsport">Port</th>
+                                    <th class="thlsnetid">NetID</th>
+                                    </tr>
+                            </thead>
+                            <tbody id="listeners">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div name="hbtables" id="hbtables">
+                    <div id="insertPoint">
+                        <div id="lastcallercontainer"style="text-align: left;">
+                            <div id="callerinfo">
+                            </div>
+                        </div>
+                        <div id="legendcontainer"style="text-align: left;">
+                            <div id="legendinfo">
+                            </div>
+                        </div>
+                        <div id="mapfrance">
+                            <div id="map" class="tabContent" style="display: block;"><div id="mapid" style="height: 1000px;"></div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div id="footer">
+                    <span>NDMonitor v__VERSION__ NodeJS by <a href=https://github.com/avrahqedivra/NDMonitor>jmc - F4JDN </a>2021-2023.</span>
+                </div>
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>                
+        </center>
+    </body>
+
+    <style>
+        #insertPoint {
+            background-color: #202020;
+        }
+
+        .map {
+            margin-top: 1rem;
+        }
+        
+        .department {
+            fill:   #2e2e2e;
+            stroke: #505050;
+            stroke-width: .5px;
+        }
+
+        #lastcallercontainer {
+            display: none;
+        }
+
+        .callerbox {
+            padding: 1rem 0.5rem 1rem 0.5rem;
+            margin: 0.5rem 0 0 0;
+            border-radius: 8px;
+            border: 1px solid #ffffffa6;
+            background-color: rgba(78, 78, 78, 0.6);
+        }        
+
+        #callerinfo {
+            display: hidden;
+            margin: 6rem 0 0 0.5rem;
+            position: absolute;
+            color: white;
+            text-align: left;
+            padding: 0.5rem;
+            z-index: 650;
+        }
+
+        #legendinfo {
+            width: 8rem;
+            margin: 4rem 0rem 4rem 75rem;
+            position: absolute;
+            color: white;
+            text-align: left;
+            padding: 0.5rem;
+            /* background-color: rgba(78, 78, 78, 0.6);
+            border-radius: 8px; */
+            z-index: 650;
+        }
+
+        .legendbox {
+            padding: 1rem 0.5rem 1rem 0.5rem;
+            margin: 0.5rem 0 0 0;
+            border-radius: 8px;
+            border: 1px solid #ffffffa6;
+            background-color: rgba(78, 78, 78, 0.6);
+        }        
+
+        .legendIndicator {
+            float: right;
+            width: 1.0rem;
+            height: 1.0rem;
+            color: var(--color-fg-marquee);
+            background-color: var(--color-page);
+            display: inline-block;
+            margin-left: 1rem;
+            text-align: center;
+            cursor: default;
+        }
+
+        .leaflet-tooltip-left:before {
+            right: 0;
+            margin-right: -12px;
+            border-left-color: #4e4e4e;
+        }
+        
+        .leaflet-tooltip-right:before {
+            left: 0;
+            margin-left: -12px;
+            border-right-color: #4e4e4e;
+        }        
+
+        .leaflet-tooltip-own {
+            position: absolute;
+            padding: 4px;
+            text-align: left;
+            background-color: #4e4e4e;
+            border: 0;
+            color: #ffffff;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+        .svgicon {
+            height: 1.4rem;
+            filter: brightness(118%) contrast(119%);
+            stroke: white;
+        }
+    </style>
+
+    <script type="application/javascript">
+        // see names list in localstorage
+        function enhanceNames(name) {
+            if (names != null && names[name] != null)
+                return names[name];
+
+            return name;            
+        }
+
+        function displayLastCaller(callers) {
+            $("#callerinfo").empty();
+
+            if (callers != null) {
+                var content = "Dernier(s) appels de : <br/>";
+
+                callers.forEach(lastCaller => {
+                    var callsign = lastCaller.packet.CALLSIGN == "" ? "-----" : lastCaller.packet.CALLSIGN;
+                    content +=  "<div class='callerbox'>"
+                                + "Indicatif : " + callsign + " - TG" + lastCaller.packet.TGID + "<br/>"
+                                + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
+                                + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
+                                + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
+
+                    content += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + (((lastCaller.user.country != null && lastCaller.user.country.toLowerCase() == "france") ? (" (" + lastCaller.dept) + ")" : ""))) : "");
+                    content += "</div>";
+                });
+
+                $("#callerinfo").append(content);
+                $("#lastcallercontainer").show();
+            }
+            else
+                $('#lastcallercontainer').hide();
+        }
+
+        function dealWithMap(packets) {
+            var promises = [];
+
+            // promises.push(departementsjson);
+            promises.push(packets);
+                
+            Promise.all(promises).then((values) => {
+                const transmissions = values[0];
+
+                // var callers = [];
+
+                transmissions.forEach((packet) => {
+                    var dept = "0";
+                    var country = "France";
+                    var foundStartPacket = false;
+
+                    var user = getUser(packet.DMRID.substr(0, 7));
+
+                    if (packet.CALLSIGN.startsWith("FRS")) { // case FRSxxxx
+                        if (user != null) {
+                            if ((dept = parseInt(user.STATE)) < 10)
+                                dept = "0"+dept;
+                        }
+                    } else {
+                        if (packet.CALLSIGN.startsWith("FS") || (packet.CALLSIGN.startsWith("FR") && !packet.DMRID.startsWith("647")) || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
+                            dept = packet.CALLSIGN.substring(2, 4);
+                            if (dept == "97") { // treat 971 to 97x
+                                if ((user != null) && user.STATE.toString().startsWith("97")) {
+                                    if ((dept = parseInt(user.STATE)) < 10)
+                                        dept = "0"+dept;
+                                    
+                                    country = user.COUNTRY;
+                                }
+                            } else {
+                                if (dept == "99") {
+                                    if ((user != null) && user.STATE.trim() != "") {
+                                        country = user.COUNTRY;
+                                        dept = user.STATE;
+                                    }
+                                }
+                            }
+                        } 
+                        else {
+                            if (packet.DMRID.substr(0, 3) == "206") {
+                                country = "belgium";
+                                dept = "301";
+                                state = "Bruxelles";
+
+                                for(let i=0; i < contacts.length; i++) {
+                                    if (packet.DMRID == contacts[i].dmrid) {
+                                        user = contacts[i];
+                                        switch(user.dmrid.substr(0, 4)) {
+                                            // case "2060": dept = "301"; state="Bruxelles"; break;
+                                            case "2060": dept = "305"; state="West-Vlaanderen"; break;
+                                            case "2061": dept = "306"; state="Oost-Vlaanderen"; break;
+                                            case "2062": dept = "302"; state="Antwerp"; break;
+                                            case "2063": dept = "303"; state="Vlaams-Brabant"; break;
+                                            case "2064": dept = "309"; state="Limburg"; break;
+                                            case "2065": dept = "304"; state="Brabant-Wallon"; break;
+                                            case "2066": dept = "307"; state="Hainaut"; break;
+                                            case "2067": dept = "311"; state="Namur"; break;
+                                            case "2068": dept = "308"; state="Liège"; break;
+                                            case "2069": dept = "310"; state="Luxemburg"; break;
+                                            default: break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (new Set(["208", "647", "971", "972", "973", "974"]).has(packet.DMRID.substr(0, 3)))
+                                    country = "france";
+                                
+                                for(let i=0; i < contacts.length; i++) {
+                                    if (packet.DMRID == contacts[i].dmrid) {
+                                        user = contacts[i];
+                                        dept = user.dept.substr(0, 2);
+                                        
+                                        if (dept.startsWith("97"))
+                                            dept = user.dept.substr(0, 3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (packet.PACKET == "START") {
+                        // set START backbground color
+                        bgcolor = tgcolors["tx"];
+
+                        if (callers.length > 0) {
+                            for(let i=0; i < callers.length; i++) {
+                                if (callers[i].packet.DMRID == packet.DMRID) {
+                                    callers.splice(i, 1);
+                                    break;
+                                } 
+                            }
+
+                            if (callers.length > 4)
+                                callers = callers.slice(-5);
+                                
+                            callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
+                        }
+                        else
+                            callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
+
+                        foundStartPacket = true;
+                    }
+                    else {
+                        if ((bgcolor = tgcolors[packet.TGID]) == null) {
+                            Object.keys(tgcolors).forEach(function(tg) {
+                                if (tg.endsWith("*")) {
+                                    if (packet.TGID.startsWith(""+parseInt(tg)))
+                                        if (bgcolor = tgcolors[tg])
+                                            return;
+                                }
+                            });
+
+                            if (bgcolor == null)
+                                bgcolor = tgcolors["ind"];
+                        }
+                    }
+
+                    hiliteMap(dept, country, packet, user, bgcolor);
+                    
+                    if (foundStartPacket)
+                        displayLastCaller(callers);
+                });
+            });
+
+        }
+
+        var geojson = null;
+        var map = null;
+        var lastcallerPanel = null;
+
+        function log(msg) {
+            console.log(msg);
+        };
+
+        function getUser(id) {
+            if (subscribers != null) {
+                for(let i=0; i < subscribers.length; i++) {
+                    subscriber = subscribers[i];
+                    if (subscriber.ID == id)
+                        return subscriber;
+                }
+            }
+            return null;
+        }
+
+        function uniqByKeepLast(a, key) {
+            return [
+                ...new Map(
+                    a.map(x => [key(x), x])
+                ).values()
+            ]
+        }
+
+        function doUser(user) {
+        }
+
+        function keepLastStartPackets() {
+            for(let i=0; i < traffic.length; i++) {
+                var record = traffic[i];
+
+                if (record.PACKET == "START") {
+                    var t = new Date(record.DATE + " " + record.TIME);
+                    if ((Date.now() - t.getTime()) > 120000) {
+                        record.PACKET = "END";
+                    }
+                }
+            }
+        }
+
+        function doTraffic(t) {
+            if (t != null)  {
+                if (Array.isArray(t)) {
+                    traffic = t;
+
+                    keepLastStartPackets();
+                }
+                else {
+                    // remove any previous "START" packet
+                    keepLastStartPackets();
+
+                    traffic.push(t);
+                }
+
+                // sort in reverse order
+                traffic.sort((a, b) => {
+                    if (a.DATE > b.DATE) return 1;
+                    if (a.DATE < b.DATE) return -1;
+
+                    if (a.TIME > b.TIME) return 1;
+                    if (a.TIME < b.TIME) return -1;
+                });
+
+                // keep the last N packets from traffic
+                // traffic = uniqByKeepLast(traffic, it => it.DMRID);
+
+                // deal with END packets
+                dealWithMap(traffic);
+
+                // treat START one
+                if (!Array.isArray(t) && t.PACKET == "START") {
+                    dealWithMap([t]);
+                }
+            }
+        }
+/*
+        function sendMessage(sock, callsign) {
+            return new Promise((resolve, reject) => {
+                sock.send( JSON.stringify({"request": "user", "callsign": callsign }));
+
+                sock.onmessage = (e) => {
+                    resolve(JSON.parse(e.data));
+                };
+                sock.onerror = (err) => {
+                    reject(err);
+                };
+
+            });
+        }
+*/
+        // https://mdbootstrap.com/snippets/jquery/ascensus/531046#js-tab-view
+        // https://www.datavis.fr/index.php?page=map-population
+        // https://colorbrewer2.org/#
+        // https://www.wrld3d.com/wrld.js/latest/docs/leaflet/L.Path/#path-option
+        // https://github.com/mathiasleroy/Belgium-Geographic-Data
+        // https://gist.github.com/BrendonKoz/b1df234fe3ee388b402cd8e98f7eedbd
+        // https://github.com/yigityuce/Leaflet.Control.Custom
+        // https://www.2c2r.fr/wp-content/plugins/edservices_common/france-geojson/
+        // https://github.com/joergdietrich/Leaflet.Terminator
+
+        function highlightFeature(e) {
+            // var layer = e.target;
+            // layer.setStyle( { "fillColor": "#569cd6" } );
+        }        
+
+        function resetHighlight(e) {
+            // var layer = e.target;
+            // layer.setStyle( { "fillColor": "black", "fillOpacity":  0.3 } );
+
+            var tooltips = document.getElementsByClassName('leaflet-tooltip-own');
+            for (var i = 0; i < tooltips.length; i++) {
+                tooltips[i].style.visibility = 'hidden';
+            }
+        }
+
+        function hiliteMap(dept, country, packet, user, bgcolor) {
+            Object.keys(geojson._layers).forEach(function(key) {
+                layer = geojson._layers[key];
+                feature = layer.feature;
+
+                if (country.toLowerCase() == "espagne")
+                    dept = "ES"+dept;
+
+                if (feature.properties.code == dept) {
+                    var code = ""+feature.properties.code;
+                    
+                    if (code.startsWith("ES"))
+                        code = code.substr(2);
+
+                    opacity = (country == "France") ? 0.6 : 0.8;
+
+                    layer.setStyle({ 'fillColor': bgcolor, "fillOpacity":  opacity, "color": "#002000" });
+
+                    html = "<div style='padding:1px 3px 1px 3px'>Callsign : " + packet.CALLSIGN + " - " + packet.DMRID + "<br/>"
+                        + "TgID : " + packet.TGID + "<br/>"
+                        + "Prénom : " + enhanceNames(packet.NAME) + "<br/>"
+                        + "En ligne à : " + packet.TIME + " le " + packet.DATE + "<br/>";
+
+                    html += ((user != null && user.city != null) ? ("Ville : " + user.city.capitalize(true) + "<br/>") : "")
+                        + "Département : " + feature.properties.nom + " (" + code + ")<br/>";
+
+                    layer.bindTooltip(html, {
+                            direction: 'right',
+                            permanent: false,
+                            sticky: true,
+                            offset: [20, 0],
+                            opacity: 0.75,
+                            className: 'leaflet-tooltip-own' 
+                    });
+                }
+            });
+        }
+
+        function initMap() {
+            var centerFrance = [47.0781336, 0.340375];      // France
+            var centerBelgium = [50.65794, 4.52714];        // Belgium
+
+            map = L.map('map', 
+                {   
+                    zoomDelta: 0.25,
+                    zoomSnap: 0,
+                    minZoom: 3,
+                    maxZoom: 10 }).setView(centerFrance, currentZoom);
+
+            L.control.scale().addTo(map);
+
+            // var osm = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	        //     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            //     className: 'map-tiles'
+            // }).addTo(map);
+
+            // var osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+	        //     attribution: '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            //     className: 'map-tiles'
+            // }).addTo(map);
+
+            // night and day layer
+            var terminator = L.terminator();
+            terminator.setStyle({ "fillOpacity":  0.2 });
+            terminator.addTo(map);
+
+            var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                className: 'map-tiles'
+            }).addTo(map);
+
+            // night layer refresh timer
+            setInterval(() => {
+                terminator.setTime();
+            }, 5000);
+
+            geojson = L.geoJson(frbesw, {
+                style : function(feature) {
+                    return {    
+                        "stroke":               true,
+                        "color":                "#004000",
+                        "weight":               1,
+                        "opacity":              0.20,
+                        "fill":                 true,       // to display tooltips
+                        "fillOpacity":          "var(--normal-fillopacity)",
+                        "fillColor":            "var(--normal-fillcolor)"
+                    }
+                },
+                onEachFeature : function (feature, layer) {
+                    layer._leaflet_id = feature.properties.nom;
+
+                    layer.on({
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight
+                    });
+
+                    var code = ""+feature.properties.code;
+                    
+                    if (code.startsWith("ES"))
+                        code = code.substr(2);
+
+                    layer.bindTooltip("<div style='padding:1px 3px 1px 3px'>" + "Département : " + code + "<br/>Région : " + feature.properties.nom + "</div>", 
+                    {
+                        direction: 'right',
+                        permanent: false,
+                        sticky: true,
+                        offset: [20, 0],
+                        opacity: 0.75,
+                        className: 'leaflet-tooltip-own'
+                    });
+                }
+            });
+
+            map.on('zoomend', function () {
+                currentZoom = map.getZoom();
+
+                // console.log("weight : " + Math.round(currentZoom / 2.5));
+                
+                if (currentZoom > 8)
+                    geojson.setStyle({ weight: Math.round(currentZoom / 2.5) });
+                else
+                    geojson.setStyle({ weight: 1 });
+            });
+
+            map.addLayer(geojson);
+        }
+
+        $(document).ready(function() {
+            // document ready occurs before windows.onLoad
+            if (getConfigFromLocalStorage != null) {
+                getConfigFromLocalStorage();
+
+                if (document.documentElement.className != settings[0].config.theme)
+                    document.documentElement.className = settings[0].config.theme;
+            }
+
+            initMenubar();
+
+            $(window).click(function(e) {
+                if (event.target == document.getElementById("listenersModal"))
+                    $("#listenersModal").hide();
+            });        
+
+            $(document).on("click", ".close", function() {
+                $("#listenersModal").hide();
+            });
+
+            $(document).on("dblclick", "#btnlisteners", function(e) {
+                if (e.ctrlKey) {
+                    $("#listeners tr").remove();
+                    var content = "";
+
+                    listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
+
+                    listenerList.forEach(swl => {
+                        content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+                    });
+
+                    $("#listeners").append(content);
+                    $("#listenersModal").show();
+                }
+            });
+        });
+
+        window.onload = () => {
+            listeners = 0;
+            traffic = [];
+            contacts = [];
+            callers = [];
+            listenerList = [];
+            currentZoom = settings[1].map.zoom;
+            subscribers = null;
+            departments = [];
+            tgfilter = new Set("__TGID_FILTER__".split(','));
+
+            try {
+                tgcolors = JSON.parse('__TGID_COLORS__');
+            } catch(e) {
+                tgcolors = { "tx":"#fbd379", "ind":"#fefefe" };
+            }
+
+            var content = "<div class='legendbox'>";
+
+            Object.keys(tgcolors).forEach(function(tg) {
+                var color = tgcolors[tg];
+
+                switch(tg) {
+                    case "ind":
+                    case "tx":
+                        content += "<div>" + tg.toUpperCase() + "<div style='background-color:" + color + "' class='legendIndicator'></div></div>";
+                        break;
+
+                    default:
+                        content += "<div>TG" + tg + "<div style='background-color:" + color + "' class='legendIndicator'></div></div>";
+                        break;
+                }
+            });
+            
+            content += "<div>SWL<div id='btnlisteners' class='legendIndicator'>0</div></div></div>";
+            $('#legendinfo').append(content);
+
+            var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=map";
+
+            $("#menubar").show();
+            $("#siteHeader").show();
+            initMap();
+
+            function WSConnection() {
+                'use strict';
+                this.socket = {};
+            }
+
+            WSConnection.prototype.connect = (url) => {
+                'use strict';
+
+                return new Promise((resolve, reject) => {
+                    if ("WebSocket" in window)
+                        this.socket = new WebSocket(url);
+                    else if ("MozWebSocket" in window)
+                        this.socket = new MozWebSocket(url);
+                    else {
+                        log("Browser does not support WebSocket!");
+                        resolve();
+                    }
+
+                    this.socket.onopen = () => {
+                        log("Connected to " + url)
+                        resolve();
+                    };
+
+                    this.socket.onmessage = (e) => {
+                        var data = null;
+
+                        var updated = false;
+                        for(let i=callers.length; i > 0; i--) {
+                            if ((Date.now() - callers[i-1].timeout) > 3 * 60 * 1000) {   // 3 min
+                                callers.splice(i-1, 1);
+                                updated = true;
+                            } 
+                        }
+
+                        if (updated)
+                            displayLastCaller(callers);
+
+                        try {
+                            if (themeSettings == "auto")
+                                adjustTheme();
+
+                            if ((data = JSON.parse(e.data)) != null) {
+                                // console.log("");
+                                // console.log(data);
+                                // console.log("");
+                                if (data.BIGEARS)
+                                    $("#btnlisteners").text(data.BIGEARS);
+
+                                if (data.LISTENERS)
+                                    listenerList = data.LISTENERS;
+
+                                if (data.TRAFFIC)
+                                    doTraffic(data.TRAFFIC);
+                                else
+                                if (data.CONFIG) {
+                                    if (data.CONFIG.BIGEARS)
+                                        $("#btnlisteners").text(data.CONFIG.BIGEARS);
+
+                                    if (data.CONFIG.CONTACTS)
+                                        contacts = data.CONFIG.CONTACTS.results;
+
+                                    if (data.CONFIG.USERS)
+                                        subscribers = data.CONFIG.USERS;
+
+                                    if (data.CONFIG.PACKETS)
+                                        doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+
+                                    if (data.CONFIG.LISTENERS)
+                                        listenerList = data.CONFIG.LISTENERS;
+                                } 
+                                else
+                                if (data.USER)
+                                    doUser();
+                            }
+                        } catch(error) {
+                            log(error);
+                        }
+                    };
+
+                    socket.onerror = function (error) {
+                        console.log('WebSocket error: ' + error);
+                        reject(error);
+                    };
+
+                    socket.onclose = function (e) {
+                        log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                        this.sock = null;
+                    };
+                });
+            };
+
+            WSConnection.prototype.disconnect = () => {
+                'use strict';
+                console.log("Disconnect request from local app layer");
+                this.socket.close();
+            };
+
+            socket = new WSConnection().connect(wsuri);
+        };
+
+        window.onunload = () => {
+            socket = null;
+        }
+</script>
+
+<!-- 
+    france, dom, belgique, suisse geojson 
+-->
+<script type="application/javascript" src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="crossorigin=""></script>
+<script type="application/javascript" src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
+<script type="application/javascript" src="mapssvg.js"></script>
+
+</html>

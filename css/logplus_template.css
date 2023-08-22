@@ -1,0 +1,48 @@
+
+table, td, th {
+  font-weight: normal;
+  padding: 2px, 2px, 2px, 2px;
+}
+
+#insertPoint {
+  scrollbar-width: thin;
+  max-height: 52rem;
+  overflow-y: scroll;
+}
+
+#insertPoint::-webkit-scrollbar
+{
+  display: block;
+  width: 6px;
+  background-color: #404040;
+}
+
+#insertPoint::-webkit-scrollbar-thumb
+{
+  background-color: #569cd6;
+}
+
+.logClass {
+  color: var(--color-fg-log)
+}
+
+.logClass td {
+  text-align: left;
+  border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: var(--color-fw-lastheard);
+}
+
+#tableLog {
+  width: fit-content;
+}
+
+#tableLog tr:nth-child(even) {
+  background: var(--color-bg-even)
+}
+
+#tableLog tr:nth-child(odd) {
+  background: var(--color-bg-odd)
+}

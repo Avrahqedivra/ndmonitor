@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+
+<head>
+		<link rel="icon" type="image/x-icon" href="favicon.ico" />
+		<meta charset="UTF-8">
+		<meta http-equiv="refresh" content="20000"/>
+		<title>NDMonitor</title>
+
+    <link rel="stylesheet" href="theme_template.css">
+    <link rel="stylesheet" href="mysite_template.css">
+    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+
+    <style>
+      .tgflag {
+        margin-right: 1rem;
+        width: 18px;
+        height: 13px;
+        border: 1px solid #606060;
+      }
+
+      .tginfo {
+        text-align: left;
+        padding-left: 2rem;
+      }
+
+      .tgtsrx {
+        text-align: center;
+        color: var(--color-tgRed);
+        text-transform:uppercase;
+      }
+
+      .tgtstx {
+        text-align: center;
+        color: var(--color-tgWhite);
+        text-transform:uppercase;
+      }
+  </style>    
+</head>
+
+	<body>
+      <center>
+        <noscript>You must enable JavaScript</noscript>
+
+        <div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+        __BUTTON_BAR__
+
+        <div id="siteHeader" style="display:none">  
+          <br>
+
+          <div name="hbtables">
+            <table id="tginfo" class="tables tablefixed">
+              <thead>
+                  <tr class="headerRow">
+                      <th style="width: 150px;">TG#</th>
+                      <th style="width: 80px;">TS 1</th>
+                      <th style="width: 80px;">TS 2</th>
+                      <th style="width: 790px;">Description</th>
+                  </tr>
+              </thead>
+              <tbody id="tgInfoBody"></tbody>
+            </table>
+            <br>
+            <div class="infoline">Hotspot: D - duplex | S - simplex</div>
+          </div>
+          <br>
+          
+          <div id="footer">
+            __FOOTER__
+          </div> 
+          <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+        </div>
+      </center>
+  </body>    
+
+<script type="text/javascript">
+  String.prototype.capitalize = function (lower) {
+      return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
+          return a.toUpperCase();
+      });
+  };
+
+  function log(msg) {
+      console.log(msg);
+  };
+
+  $(document).ready(function() {
+		// document ready occurs before windows.onLoad
+		if (getConfigFromLocalStorage != null) {
+			getConfigFromLocalStorage();
+
+			if (document.documentElement.className != settings[0].config.theme)
+					document.documentElement.className = settings[0].config.theme;
+		}
+
+    initMenubar();
+  })
+
+  window.onload = () => {    
+    var tginfo = [
+        { id: 7, ts1: "", ts2: "(rx only)", description:"DMR FRANCOPHONE (TS2) [DMR]", transmit:0, country: "fr" },
+        { id: 71, ts1: "", ts2: "(rx only)", description:"HB9HRD XLX939A SUISSE [D-STAR]", transmit:0, country: "ch" },
+        { id: 73, ts1: "", ts2: "(rx only)", description:"VE2YYQ XLX418A  REFLECTOR CANADA FR [D-STAR]", transmit:0, country: "ca" },
+        { id: 74, ts1: "", ts2: "(rx only)", description:"F8KGK XLX976C REFLECTOR PEANUT [D-STAR]", transmit:0, country: "fr" },
+        { id: 75, ts1: "", ts2: "(rx only)", description:"F1ZLK XLX425T REFLECTOR FRANCE [D-STAR]", transmit:0, country: "fr" },
+        { id: 77, ts1: "", ts2: "(rx only)", description:"XLX210D BELGIQUE MULTIPROTOCOLES [ALL]", transmit:0, country: "be" },
+        { id: 78, ts1: "", ts2: "(rx only)", description:"VA2WE XLX774A REFLECTOR CANADA [D-STAR]", transmit:0, country: "ca" },
+        { id: 79, ts1: "", ts2: "(rx only)", description:"HB9VD XLX115A REFLECTOR SUISSE [D-STAR]", transmit:0, country: "ch" },
+        { id: 2281, ts1: "(rx only)", ts2: "", description:"SUISSE ROMANDE [DMR]", transmit:0, country: "ch" },
+        { id: 2062, ts1: "(rx only)", ts2: "", description:"BELGIQUE FR, M17-BEL [DMR]", transmit:0, country: "be" },
+        { id: 20698, ts1: "(rx only)", ts2: "", description:"BELGIQUE FRANCOPHONE [DMR]", transmit:0, country: "be" },
+        { id: 22080, ts1: "", ts2: "(rx only)", description:"TG2080 [DMR+]", transmit:0, country: "fr" },
+        { id: 22085, ts1: "", ts2: "(rx only)", description:"TG2085 [DMR+]", transmit:0, country: "fr" },
+        { id: 22089, ts1: "", ts2: "(rx only)", description:"TG2089 [DMR+]", transmit:0, country: "fr" },
+        { id: 220817, ts1: "", ts2: "(rx only)", description:"TG20817 [DMR+]", transmit:0, country: "fr" },
+        { id: 220833, ts1: "", ts2: "(rx only)", description:"TG20833 [DMR+]", transmit:0, country: "fr" },
+        { id: 220840, ts1: "", ts2: "(rx only)", description:"TG20840 [DMR+]", transmit:0, country: "fr" },
+        { id: 220871, ts1: "", ts2: "(rx only)", description:"TG20871 [DMR+]", transmit:0, country: "fr" },
+        { id: 6041, ts1: "", ts2: "(rx only)", description:"MAROC CROSS MODE [DMR<=>ANALOGIQUE]", transmit:0, country: "ma" },
+        { id: 60401, ts1: "", ts2: "(rx only)", description:"MAROC FreeDMR [DMR]", transmit:0, country: "ma" },
+        { id: 647, ts1: "(rx only)", ts2: "", description:"ILE DE LA REUNION [DMR]", transmit:0, country: "re" },
+        { id: 937, ts1: "", ts2: "(rx only)", description:"FreeDMR FRANCOPHONIE [DMR]", transmit:0, country: "fr" },
+        { id: 64701, ts1: "(rx only)", ts2: "", description:"ILE DE LA REUNION [DMR]", transmit:0, country: "re" },
+        { id: 208, ts1: "(rx only)", ts2: "", description:"NATIONAL FRANCE [DMR]", transmit:0, country: "fr" },
+        { id: 2208, ts1: "(rx only)", ts2: "", description:"TG208 [DMR+]", transmit:0, country: "fr" },
+        { id: 2080, ts1: "", ts2: "(rx only)", description:"URGENCE FRANCE [DMR]", transmit:0, country: "fr" },
+        { id: 2085, ts1: "", ts2: "(rx only)", description:"REGION SUD-OUEST [DMR]", transmit:0, country: "fr" },
+        { id: 2087, ts1: "", ts2: "(rx only)", description:"DISCUSSION TECHNIQUE [DMR]", transmit:0, country: "fr" },
+        { id: 2089, ts1: "", ts2: "(rx only)", description:"FRANCE DOM-TOM [DMR]", transmit:0, country: "fr" },
+        { id: 969, ts1: "(rx only)", ts2: "", description:"LES CARAIBES [DMR]", transmit:0, country: "fr" },
+        { id: 20800, ts1: "(rx only)", ts2: "", description:"FR-YSF-FRANCE INTERCON [DMR+<=>C4FM]", transmit:0, country: "fr" },
+        { id: 20801, ts1: "(rx only)", ts2: "", description:"WIRES-X FRANCE INTERCON via BM [DMR<=>C4FM]", transmit:0, country: "fr" },
+        { id: 20803, ts1: "", ts2: "(rx only)", description:"ALLIER (03) [DMR]", transmit:0, country: "fr" },
+        { id: 20817, ts1: "", ts2: "(rx only)", description:"CHARENTE-MARITIME (17) [DMR]", transmit:0, country: "fr" },
+        { id: 20820, ts1: "", ts2: "(rx only)", description:"CORSE (2A-2B) & INTERCON XLX TKNET [DMR<=>D-STAR]", transmit:0, country: "fr" },
+        { id: 20833, ts1: "", ts2: "(rx only)", description:"GIRONDE (33) [DMR]", transmit:0, country: "fr" },
+        { id: 20840, ts1: "", ts2: "(rx only)", description:"LANDES (40) [DMR]", transmit:0, country: "fr" },
+        { id: 20849, ts1: "", ts2: "(rx only)", description:"INTERCO RI49 (Attente authorisation BM) [DMR]", transmit:0, country: "fr" },
+        { id: 20859, ts1: "", ts2: "(rx only)", description:"YSF-LINUX.FR - TG THEMATIQUE DISCUSSION AUTOUR DE LINUX [DMR]", transmit:0, country: "fr" },
+        { id: 20862, ts1: "", ts2: "(rx only)", description:"SALON NORD (62) [DMR<=>ANALOGIQUE]", transmit:0, country: "fr" },
+        { id: 20871, ts1: "", ts2: "(rx only)", description:"SAONE & LOIRE (71) [DMR]", transmit:0, country: "fr" },
+        { id: 20899, ts1: "", ts2: "(rx only)", description:"FRANCE MULTI-PROTOCOLES [FreeDMR,IPSC2+,YSF FRANCE (99),ECHOLINK (F1ZQT-L ou F5ZRH-L),PEANUT (YSF-FRA),ALLSTAR (561050),RI-49", transmit:0, country: "fr" },
+        { id: 208101, ts1: "", ts2: "(rx only)", description:"WIRES-X FR & ROOM 47625 French Riviera (Côte d'Azur) INTERCON via BM [DMR<=>C4FM]", transmit:0, country: "fr" },
+        { id: 208977, ts1: "", ts2: "(rx only)", description:"SOCIETE HAVRAISE DE TELEGRAPHIE SANS FIL (SHTSF) [DMR]", transmit:0, country: "fr" },
+        { id: 3022, ts1: "(rx only)", ts2: "", description:"QUEBEC  [DMR]", transmit:0, country: "ca" },
+        { id: 30222, ts1: "(rx only)", ts2: "", description:"FUSION CANADA FR [DMR<=>D-STAR]", transmit:0, country: "ca" },
+        { id: 13, ts1: "", ts2: "(rx/tx)", description:"TG ADMINISTRATEURS RADIO-CLUB F4KNH [DMR,ALLSTAR,ECHOLINK,REPEATER]", transmit:2, country: "fr" },
+        { id: 33, ts1: "", ts2: "(rx/tx)", description:"F4KNH (TG ADHERENTS RADIO-CLUB) [DMR]", transmit:2, country: "fr" },
+        { id: 38, ts1: "", ts2: "(rx only)", description:"# LE 38 (AMATEUR RADIO - NON LICENCIE) [DMR]", transmit:0, country: "fr" },
+        { id: 39, ts1: "", ts2: "(rx only)", description:"# LE 39 (AMATEUR RADIO - NON LICENCIE) [DMR]", transmit:0, country: "fr" },
+        { id: 777, ts1: "", ts2: "(rx/tx)", description:"ECHO - PARROT", transmit:2, country: "fr" }
+      ]
+
+      listeners = 0;
+
+      var bgClass = "white";
+
+      if (getConfigFromLocalStorage != null)
+          getConfigFromLocalStorage()
+          
+      $("#tgInfoBody tr").remove()
+
+      for(let i=0; i<tginfo.length; i++) {
+        tg = tginfo[i]
+
+        if (tg.transmit != 0)
+          bgClass = "tgGreen"
+        else
+          bgClass = "tgRed"
+
+        var flagurl = getCountryFlag(tg.country)
+
+        var content = '<tr class=' + bgClass + '>'
+        content += "<td class='tginfo'><img class='tgflag' src='" + flagurl +"'/>TG" + tg.id + "</td>"
+        content += "<td class='tgts"+ (tg.transmit ? "tx":"rx") +"'>"+tg.ts1+"</td>"
+        content += "<td class='tgts"+ (tg.transmit ? "tx":"rx") +"'>"+tg.ts2+"</td>"
+        content += "<td class='tgdesc'>"+tg.description+"</td>"
+        content += "</tr>";        
+
+        $("#tgInfoBody").append(content)
+      }
+
+      $("#menubar").show()
+	    $("#siteHeader").show()
+  }
+</script>
+</html>

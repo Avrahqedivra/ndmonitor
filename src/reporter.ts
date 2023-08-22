@@ -1,0 +1,1075 @@
+/*
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the'Software'), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ *
+ *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  
+*/
+
+import fs from "fs"
+import netsocket from "net"
+
+import { logger, __subscriber_ids__, __talkgroup_ids__, utils } from "./monitor.js"
+import { NetStringReceiver } from "./lib/netstrings.js"
+import { PickleParser } from "./lib/pickleparser.js"
+import { Monitor } from "./monitor.js"
+
+import * as globals from "./globals.js"
+import * as config from "./config.js"
+import * as diags from "./diagnostics.js"
+import { Extra } from "./extracommand.js"
+
+// Opcodes for reporting protocol to HBlink
+enum Opcodes {
+  CONFIG_REQ  = 0,
+  CONFIG_SND,
+  BRIDGE_REQ,
+  BRIDGE_SND,
+  CONFIG_UPD,
+  BRIDGE_UPD,
+  LINK_EVENT,
+  BRDG_EVENT
+}
+
+export let __ctable__: any
+export let __btable__: any = { 'BRIDGES':{} }
+export let __bridges__: any
+export let __listeners__: any[]
+export let __bridges_rx__: string = null
+
+let currentDiag: any = []
+
+const MAXTRIES: number = 5
+
+// https://cs.lmu.edu/~ray/notes/jsnetexamples/
+export class Reporter {
+  private monitor = null
+  private dashboardServer = null
+  private diagnostics = null
+  private extra:Extra = new Extra()
+  private client = null
+  private netstring = null
+  private pickleparser = null
+  private packetCount: number = 0
+  private now = Date.now()
+  private build_time = 0
+  private status_time = 0
+  private opbfilter = new Set(config.__opb_filter__)
+  private intervalCleanTE = 3
+  private reconnectTicker = null
+  private reconnectTries = MAXTRIES
+  private errorMode = false
+
+  /**
+   * Return friendly elapsed time from time in seconds 
+   */
+  since(_time: number) {
+    // elapsed time in seconds
+    let elapsed = (Date.now() / 1000) - _time
+
+    let hours: number   = Math.floor(elapsed/3600) % 24
+    let days: number    = Math.floor(elapsed/86400)
+    if (days)
+        return `${days}d ${hours}h`
+
+    let minutes: number = Math.floor(elapsed/60) % 60
+    if (hours)
+        return `${hours}h ${minutes}m`
+
+    let seconds: number = Math.trunc(elapsed % 60)
+    if (minutes)
+        return `${minutes}m ${seconds}s`
+
+    return `${seconds}s`
+  }
+
+  /**
+   * ReverseEndian
+   * 
+   * convert a string number "1234567" 
+   * to binary utf-8 "\u0000\u0000\u0000\u0000"
+   * 
+   * @param peer 
+   * @returns 
+   */
+  ReverseEndian(peer: string) {
+    let buf = Buffer.alloc(4, 'latin1')
+    buf.writeUInt32BE(parseInt(peer), 0)
+    return buf.toString('latin1')
+  }
+
+  /**
+   * Build diagnostic table
+   * scanns a table of ip, services etc to check their state
+   */
+  build_Diagnostic_table() {
+    this.now = Date.now()
+
+    // update status every 10s
+    if (this.now - this.status_time > 10000) {
+      this.status_time = this.now
+
+      if (this.diagnostics.pending)
+        return currentDiag
+
+      currentDiag = [...diags.__diag_table__].sort((a: any, b:any) => {
+        // note the minus before -cmp, for descending order
+        return a.ORDER > b.ORDER ? 1 : a.ORDER < b.ORDER ? -1 : 0
+      })
+
+      this.diagnostics.runCheck()
+    }
+
+    return currentDiag
+  }
+
+  /**
+   * mapIpAdresses()
+   * 
+   * create a list of ip addresses connected to the dashbaord
+   * and if possible name the ip using the masters data
+   */
+
+  mapIpAdresses() {
+    if (config.__do_ipmap__) {
+      try {        
+        let known_ip = []
+
+        for(let system in __ctable__['MASTERS']) {
+          let ctabdata = __ctable__['MASTERS'][system]['PEERS']
+          for (let peer in ctabdata) {
+            
+            let record = ctabdata[peer]
+            
+            if (record["CALLSIGN"] && record["IP"] && record["PORT"])
+              known_ip.push({ [record["IP"].trim()] : { 'CALLSIGN': record["CALLSIGN"].trim(), 'IP': record["IP"].trim(), 'PORT': record["PORT"], 'NETID': peer } })
+          }
+        }
+
+        __listeners__ = []
+
+        this.dashboardServer.clients.forEach((client: any) => {
+          // note the regex to remove the :fff:: header
+          let hostip = client._socket.remoteAddress == '::1' ? '127.0.0.1':client._socket.remoteAddress.replace(/^.*:/, '')
+
+          let found = false
+
+          for(let i=0; i<known_ip.length; i++) {
+            if (known_ip[i][hostip]) {
+              found = true
+              __listeners__.push(known_ip[i][hostip])
+            }
+          }
+
+          if (!found) {
+            __listeners__.push({ 'CALLSIGN': 'N\\A', 'IP': hostip, 'PORT': config.__monitor_webserver_port__, 'NETID': 'N\\A' })
+          }
+        })
+      }
+      catch(e) {
+        __listeners__ = []
+      }
+    }
+  }
+
+  /**
+   * 
+   * add new peer
+   * 
+   * _peer_conf uses indexes in utf-8 binary string format ie "\u0000\u0000\u0000\u0000"
+   * _ctable_loc uses indexes in utf8 string format ie "1234567"
+   * peer is a string representing a number
+   * 
+   * @param _peer_conf
+   * @param _ctable_loc 
+   * @param peer 
+   */
+  add_hb_peer(_peer_conf: any, _ctable_loc: any, peer: string) {
+    _ctable_loc[peer] = {}
+    
+    let _ctable_peer = _ctable_loc[peer]
+  
+    // if the Frequency is 000.xxx assume it's not an RF peer, otherwise format the text fields
+    // (9 char, but we are just software)  see https://wiki.brandmeister.network/index.php/Homebrew/example/php2
+  
+    if (_peer_conf['TX_FREQ'] == null || _peer_conf['RX_FREQ'] == null) {
+      _ctable_peer['TX_FREQ'] = 'N/A'
+      _ctable_peer['RX_FREQ'] = 'N/A'
+    }
+    else {
+      if (Number.isInteger(_peer_conf['TX_FREQ'].trim()) && Number.isInteger(_peer_conf['RX_FREQ'].trim())) {
+        if (_peer_conf['TX_FREQ'].substr(0,3) === '000' || _peer_conf['RX_FREQ'].substr(0,3) === '000') {
+            _ctable_peer['TX_FREQ'] = 'N/A'
+            _ctable_peer['RX_FREQ'] = 'N/A'
+        } else {
+            _ctable_peer['TX_FREQ'] = _peer_conf['TX_FREQ'].substr(0,3) + '.' + _peer_conf['TX_FREQ'].substr(3, 7) + ' MHz'
+            _ctable_peer['RX_FREQ'] = _peer_conf['RX_FREQ'].substr(0,3) + '.' + _peer_conf['RX_FREQ'].substr(3,7) + ' MHz'
+        }
+      }
+    }
+  
+    // timeslots are kinda complicated too. 0 = none, 1 or 2 mean that one slot, 3 is both, and anything else it considered DMO
+    // Slots (0, 1=1, 2=2, 1&2=3 Duplex, 4=Simplex) see https://wiki.brandmeister.network/index.php/Homebrew/example/php2
+  
+    switch(_peer_conf['SLOTS']) {
+      case '0': _ctable_peer['SLOTS'] = 'NONE'; break;
+      case '1': 
+      case '2': _ctable_peer['SLOTS'] = _peer_conf['SLOTS']; break;
+      case '3': _ctable_peer['SLOTS'] = 'Duplex'; break;
+      default:  _ctable_peer['SLOTS'] = 'Simplex'; break;
+    }
+  
+    // Simple translation items
+    _ctable_peer['PACKAGE_ID']  = _peer_conf['PACKAGE_ID']
+    _ctable_peer['SOFTWARE_ID'] = _peer_conf['SOFTWARE_ID']
+    _ctable_peer['LOCATION']    = _peer_conf['LOCATION'].trim()
+    _ctable_peer['CALLSIGN']    = _peer_conf['CALLSIGN'].trim()
+    _ctable_peer['COLORCODE']   = _peer_conf['COLORCODE']
+    _ctable_peer['CALLSIGN']    = _peer_conf['CALLSIGN'].trim()
+    _ctable_peer['CONNECTION']  = _peer_conf['CONNECTION']
+    _ctable_peer['CONNECTED']   = this.since(_peer_conf['CONNECTED'])
+    // _ctable_peer['ONLINE']   = str(_peer_conf['CONNECTED'])
+    _ctable_peer['IP']          = _peer_conf['IP']
+    _ctable_peer['PORT']        = _peer_conf['PORT']
+    // _ctable_peer['LAST_PING'] = _peer_conf['LAST_PING']
+  
+    // SLOT 1&2 - for real-time montior: make the structure for later use
+    for (let ts=1; ts < 3; ts++)
+      _ctable_peer[ts]= { 'TS': '', 'TYPE':'', 'SUB':'', 'SRC':'', 'DEST':'', 'TXRX':'' }
+  }
+
+  /**
+  * Cleaning entries in tables - Interval (this.intervalCleanTE, default is 3min) 
+  */
+  cleanTE() {
+    let timeout = Date.now() / 1000     // timeout in seconds
+    let ctabdata: any = null
+
+    for(let system in __ctable__['MASTERS']) {            
+      for(let peer in __ctable__['MASTERS'][system]['PEERS']) {
+        for(let timeS=1; timeS < 3; timeS++) {
+          
+          ctabdata = __ctable__['MASTERS'][system]['PEERS'][peer][timeS]
+
+          if (ctabdata['TS']) {
+            let ts = ctabdata['TIMEOUT']
+
+            let td = Math.floor(Math.abs((ts - timeout)) / 60)
+
+            if (td > this.intervalCleanTE) {
+              ctabdata['TS']    = false
+              ctabdata['TXRX']  = ''
+              ctabdata['TYPE']  = ''
+              ctabdata['SUB']   = ''
+              ctabdata['SRC']   = ''
+              ctabdata['DEST']  = ''
+            }
+          }
+        }
+      }
+    }
+
+    for(let system in __ctable__['PEERS']) {
+      for(let timeS=1; timeS < 3; timeS++) {
+
+        ctabdata = __ctable__['PEERS'][system][timeS]
+
+        if (ctabdata['TS']) {
+          let ts = ctabdata['TIMEOUT']
+
+          let td = Math.floor(Math.abs((ts - timeout)) / 60)
+
+          if (td > this.intervalCleanTE) {
+            ctabdata['TS']    = false
+            ctabdata['TXRX']  = ''
+            ctabdata['TYPE']  = ''
+            ctabdata['SUB']   = ''
+            ctabdata['SRC']   = ''
+            ctabdata['DEST']  = ''
+          }
+        }
+      }
+    }
+
+    for(let system in __ctable__['OPENBRIDGES']) {
+      for (let streamId in __ctable__['OPENBRIDGES'][system]['STREAMS']) {
+        let ts = __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId][3]
+
+        let td = Math.floor(Math.abs((ts - timeout)) / 60)
+
+        if (td > this.intervalCleanTE) {
+          delete __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId]
+        }
+      }
+    }
+  }
+  
+  /**
+   * build_hblink_table
+   * 
+   * _config indexes in utf-8 binary string format ie "\u0000\u0000\u0000\u0000"
+   * _stats_table uses indexes in utf8 string format ie "1234567"
+   * 
+   * @param _config 
+   * @param _stats_table 
+   */
+  build_hblink_table(_config: any[], _stats_table:any): void  {
+    if (config.__loginfo__)
+      logger.info(`creating masters`)
+
+    for(let _hbp in _config) {
+      var _hbp_data = _config[_hbp]
+
+      if (_hbp_data['ENABLED'] === true) {
+
+        // Process Master Systems
+        if (_hbp_data['MODE'] === 'MASTER') {
+            // if not initialized, create empty
+            if (_stats_table['MASTERS'] == null)
+              _stats_table['MASTERS'] = {}
+
+            // not empty, create empty entry if not present
+            if (_stats_table['MASTERS'][_hbp] == null)
+              _stats_table['MASTERS'][_hbp] = { 'REPEAT' : _hbp_data['REPEAT'] ? 'repeat':'isolate', 'PEERS' : {} }
+
+            var peer = null
+
+            // update with peers
+            for(let _peer in _hbp_data['PEERS']) {
+              // convert "\u0000\u0000\u0000\u0000" to "1234567" avoiding > 128 caveats
+              peer = Buffer.from(_peer, 'latin1').readUInt32BE().toString()
+              // add new peer
+              this.add_hb_peer(_hbp_data['PEERS'][_peer], _stats_table['MASTERS'][_hbp]['PEERS'], peer)
+            }
+        } // Proccess Peer Systems
+        else 
+        if ((_hbp_data['MODE'] === 'PEER' || _hbp_data['MODE'] === 'XLXPEER') && config.__homebrew_inc__) {
+          _stats_table['PEERS'][_hbp] = { 
+            'MODE':         _hbp_data['MODE'], 
+            'LOCATION':     _hbp_data['LOCATION'],
+            'CALLSIGN':     _hbp_data['CALLSIGN'],
+            'RADIO_ID':     Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString(),
+            'MASTER_IP':    _hbp_data['MASTER_IP'],
+            'MASTER_PORT':  _hbp_data['MASTER_PORT'],
+            'STATS':        {}
+          }
+
+          var element = _stats_table['PEERS'][_hbp]
+
+          if (element['MODE'] === 'XLXPEER') {
+              element['STATS']['CONNECTION'] = _hbp_data['XLXSTATS']['CONNECTION']
+
+              if (_hbp_data['XLXSTATS']['CONNECTION'] === 'YES') {
+                element['STATS']['CONNECTED'] = this.since(_hbp_data['XLXSTATS']['CONNECTED'])
+                element['STATS']['PINGS_SENT'] = _hbp_data['XLXSTATS']['PINGS_SENT']
+                element['STATS']['PINGS_ACKD'] = _hbp_data['XLXSTATS']['PINGS_ACKD']
+              } else {
+                element['STATS']['CONNECTED'] = '--   --'
+                element['STATS']['PINGS_SENT'] = 0
+                element['STATS']['PINGS_ACKD'] = 0
+              }
+          } else {
+              element['STATS'] = { 'CONNECTION' : _hbp_data['STATS']['CONNECTION'] }
+
+              if (_hbp_data['STATS']['CONNECTION'] === 'YES') {
+                element['STATS']['CONNECTED'] = this.since(_hbp_data['STATS']['CONNECTED'])
+                element['STATS']['PINGS_SENT'] = _hbp_data['STATS']['PINGS_SENT']
+                element['STATS']['PINGS_ACKD'] = _hbp_data['STATS']['PINGS_ACKD']
+              } else {
+                element['STATS']['CONNECTED'] = '--   --'
+                element['STATS']['PINGS_SENT'] = 0
+                element['STATS']['PINGS_ACKD'] = 0
+              }
+          }
+
+          switch(_hbp_data['SLOTS']) {
+            case '0': element['SLOTS'] = 'NONE'; break;
+            case '1': 
+            case '2': element['SLOTS'] = _hbp_data['SLOTS']; break;
+            case '3': element['SLOTS'] = '1&2'; break;
+            default:  element['SLOTS'] = 'DMO'; break;
+          }
+
+          // SLOT 1&2 - for real-time montior: make the structure for later use
+          for (let ts=1; ts < 3; ts++)
+              element[ts]= { 'TS': '', 'TYPE': '', 'SUB': '', 'SRC': '', 'DEST': '' }
+        } // Process OpenBridge systems
+        else 
+        if (_hbp_data['MODE'] === 'OPENBRIDGE') {
+          _stats_table['OPENBRIDGES'][_hbp] = { 'NETWORK_ID': Buffer.from(_hbp_data['NETWORK_ID'], 'latin1').readUInt32BE().toString(),
+                                                'TARGET_IP': _hbp_data['TARGET_IP'],
+                                                'TARGET_PORT': _hbp_data['TARGET_PORT'],
+                                                'STREAMS': {}
+                                              }
+        }
+      }
+    }
+  }
+
+  /**
+   * update_hblink_table
+   * 
+   * _config indexes in utf-8 binary string format ie "\u0000\u0000\u0000\u0000"
+   * _stats_table uses indexes in utf8 string format ie "1234567"
+   * 
+   * @param _config 
+   * @param _stats_table 
+   */
+  update_hblink_table(_config: any[], _stats_table:any): void  {
+    if (config.__loginfo__)
+      logger.info(`updating masters`)
+
+    for(let _hbp in _config) {
+      let _hbp_data: any = _config[_hbp]
+  
+      // Process Master Systems
+      if (_hbp_data['MODE'] === 'MASTER') {
+        let peer = null
+
+        for(let _peer in _hbp_data['PEERS']) {
+          peer = Buffer.from(_peer, 'latin1').readUInt32BE().toString()
+
+          if ((_stats_table['MASTERS'][_hbp]['PEERS'][peer] == null) && _hbp_data['PEERS'][_peer]['CONNECTION'] === 'YES') {
+            // logger.info(`Adding peer to CTABLE that has registered: ${_peer}`)
+            this.add_hb_peer(_hbp_data['PEERS'][_peer], _stats_table['MASTERS'][_hbp]['PEERS'], peer)
+          }
+        }
+      } 
+    }
+  
+    /**
+     * Is there a system in monitor that's been removed from HBlink's config? 
+     */
+    for(let _hbp in _stats_table['MASTERS']) {
+      let _hbp_data: any = _config[_hbp]
+  
+      if (_hbp_data['MODE'] === 'MASTER') {
+        let peer = null   // string format
+        let remove_list: string[] = []
+
+        for(let peer in _stats_table['MASTERS'][_hbp]['PEERS']) {
+          // convert python pickle binary format to string
+          let _peer = this.ReverseEndian(peer) 
+
+          if (_hbp_data['PEERS'][_peer] == null) {
+            if (config.__loginfo__)
+              logger.info(`peer id=${peer} marked for deletion`)
+            remove_list.push(peer)
+          }
+        }
+
+        for(let i=0; i<remove_list.length; i++) {
+          if (config.__loginfo__)
+            logger.info(`deleting peer id=${remove_list[i]}`)
+          delete _stats_table['MASTERS'][_hbp]['PEERS'][remove_list[i]]
+        }
+      }
+    }
+
+    // Update connection time
+    for(let _hbp in _stats_table['MASTERS']) {
+        for(let peer in _stats_table['MASTERS'][_hbp]['PEERS']) {
+            let _peer = this.ReverseEndian(peer)
+            if (_config[_hbp]['PEERS'][_peer] != null)
+              _stats_table['MASTERS'][_hbp]['PEERS'][peer]['CONNECTED'] = this.since(_config[_hbp]['PEERS'][_peer]['CONNECTED'])
+        }
+    }
+
+    for(let _hbp in _stats_table['PEERS']) {
+      
+      let stabdata = _stats_table['PEERS'][_hbp]['STATS']
+
+      if (_stats_table['PEERS'][_hbp]['MODE'] === 'XLXPEER') {
+          if (_config[_hbp]['XLXSTATS']['CONNECTION'] === "YES") {
+              stabdata['CONNECTED']   = this.since(_config[_hbp]['XLXSTATS']['CONNECTED'])
+              // stabdata['ONLINE']   = str(_config[_hbp]['XLXSTATS']['ONLINE'])
+              stabdata['CONNECTION']  = _config[_hbp]['XLXSTATS']['CONNECTION']
+              stabdata['PINGS_SENT']  = _config[_hbp]['XLXSTATS']['PINGS_SENT']
+              stabdata['PINGS_ACKD']  = _config[_hbp]['XLXSTATS']['PINGS_ACKD']
+          }
+          else {
+            stabdata['CONNECTED']     = "--   --"
+            // stabdata['ONLINE']     = "0"
+            stabdata['CONNECTION']    = _config[_hbp]['XLXSTATS']['CONNECTION']
+            stabdata['PINGS_SENT']    = 0
+            stabdata['PINGS_ACKD']    = 0
+          }
+      }
+      else {
+          if (_config[_hbp]['STATS']['CONNECTION'] === "YES") {
+              stabdata['CONNECTED']   = this.since(_config[_hbp]['STATS']['CONNECTED'])
+              // stabdata['ONLINE']   = str(_config[_hbp]['STATS']['ONLINE'])
+              stabdata['CONNECTION']  = _config[_hbp]['STATS']['CONNECTION']
+              stabdata['PINGS_SENT']  = _config[_hbp]['STATS']['PINGS_SENT']
+              stabdata['PINGS_ACKD']  = _config[_hbp]['STATS']['PINGS_ACKD']
+          }
+          else {
+            stabdata['CONNECTED']     = "--   --"
+            // stabdata['ONLINE']     = "0"
+            stabdata['CONNECTION']    = _config[_hbp]['STATS']['CONNECTION']
+            stabdata['PINGS_SENT']    = 0
+            stabdata['PINGS_ACKD']    = 0
+          }
+      }
+    }
+
+    this.cleanTE()
+    this.build_stats()
+  }
+
+  /**
+   * build_bridge_table
+   */
+  build_bridge_table(_bridges: any) {
+    let _stats_table: any = {}
+    let _now = Date.now() / 1000
+		let tgbridges: any = null
+
+    for(let bridge in _bridges) {
+      _stats_table[bridge] = {}
+      tgbridges = _bridges[bridge]
+
+      for(let currentTgName in tgbridges) {
+        let system: string = tgbridges[currentTgName]
+        let to_action: string = ''
+        let exptime: string = ''
+
+        if (system['TO_TYPE'] === 'ON' || system['TO_TYPE'] === 'OFF') {
+          exptime = (system['TIMER'] > _now) ? (system['TIMER'] - _now).toString() : 'Expired'
+          to_action = (system['TO_TYPE'] === 'ON') ? 'Disconnect' : 'Connect'
+        } 
+        else 
+        {
+          exptime = 'N/A'
+          to_action = 'None'
+        }
+
+        let active: string = (system['ACTIVE'] === true) ? 'Connected' : 'Disconnected'
+
+        let trigOn: string = ''
+        let trigOff: string = ''
+
+        for(let j=0; j<system['ON'].length; j++) {
+          if (j > 0)
+            trigOn += ',' 
+          trigOn += Buffer.from(system['ON'][j], 'latin1').readUIntBE(0, system['ON'][j].length)
+        }
+
+        for(let j=0; j<system['OFF'].length; j++) {
+          if (j > 0)
+            trigOff += ',' 
+          trigOff += Buffer.from(system['OFF'][j], 'latin1').readUIntBE(0, system['OFF'][j].length)
+        }
+
+        _stats_table[bridge][system['SYSTEM']] = { 'TGID': Buffer.from(system['TGID'], 'latin1').readIntBE(0, system['TGID'].length), 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff }
+      }
+    }
+
+    return _stats_table
+  }
+
+  /**
+   * build_stats
+   */
+  build_stats() {
+    this.now = Date.now()   // note here the time is in milliseconds
+
+    if (this.now > this.build_time + 500 && this.dashboardServer != null) {
+
+      this.dashboardServer.clients.forEach((ws: any) => {
+        if (ws.fromPage) {
+          if (ws.page === 'dashboard')
+            ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
+          else
+            ws.send(JSON.stringify({ 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
+        }
+      })
+          
+      this.mapIpAdresses()
+
+      this.build_time = this.now
+    }
+  }
+
+  /**
+   * rts_update
+   * 
+   * @param p 
+   */
+
+  rts_update(p: any): void  {
+    let callType: string        = p[0]
+    let action: string          = p[1]
+    let trx: string             = p[2]
+    let system: string          = p[3]
+    let streamId: string        = p[4]
+    let sourcePeer: number      = parseInt(p[5])
+    let sourceSub: string       = p[6]
+    let timeSlot: number        = parseInt(p[7])
+    let destination: string     = p[8]
+    let timeout                 = Date.now() / 1000       // timeout in seconds
+    
+    let ctabdata: any           = null    
+
+    if (__ctable__['MASTERS'] && __ctable__['MASTERS'][system] != null && __ctable__['MASTERS'][system]['PEERS'] != null) {
+      
+      for(let peer in __ctable__['MASTERS'][system]['PEERS']) {
+        
+        ctabdata = __ctable__['MASTERS'][system]['PEERS'][peer][timeSlot]
+
+        if (action === 'START') {
+          ctabdata['TIMEOUT']   = timeout
+          ctabdata['TS']        = true
+          
+          if (sourcePeer == null || p[5] === '' || peer == null || peer === '')
+              ctabdata['TXRX']  = ''
+          else
+              ctabdata['TXRX']  = (sourcePeer == parseInt(peer)) ? 'TX' : 'RX'
+
+          ctabdata['TYPE']      = callType
+          ctabdata['SRC']       = peer
+          ctabdata['SUB']       = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
+          ctabdata['DEST']      = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
+        }
+
+        if (action === 'END') {
+          ctabdata['TS']        = false
+          ctabdata['TXRX']      = ''
+          ctabdata['TYPE']      = ''
+          ctabdata['SUB']       = ''
+          ctabdata['SRC']       = ''
+          ctabdata['DEST']      = ''
+
+          // deal with Extracommands etc..
+          this.extra.rts_update(parseInt(destination))
+        }
+      }
+    }
+
+    if (__ctable__['OPENBRIDGES'][system]) {
+      if (action === 'START')
+        __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId] = [trx, utils.alias_call(sourceSub, __subscriber_ids__), `TG${destination}`, timeout]
+      else
+      if (action === 'END' && __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId])
+        delete __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId]
+    }
+
+    if (__ctable__['PEERS'][system]) {
+
+      ctabdata = __ctable__['PEERS'][system][timeSlot]
+
+      if (action === 'START') {
+          ctabdata['TIMEOUT']     = timeout
+          ctabdata['TS']          = true
+          ctabdata['SUB']         = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
+          ctabdata['SRC']         = sourcePeer
+          ctabdata['DEST']        = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
+
+          ctabdata['TXRX']        = (sourcePeer == null || sourceSub == null || destination == null) ? '': trx
+      }
+
+      if (action === 'END') {
+          ctabdata['TS']          = false
+          ctabdata['TYPE']        = ''
+          ctabdata['SUB']         = ''
+          ctabdata['SRC']         = ''
+          ctabdata['DEST']        = ''
+          ctabdata['TXRX']        = ''
+      }
+    }
+
+    this.build_stats()
+  }
+
+  // https://stackoverflow.com/questions/25791436/reconnect-net-socket-nodejs
+
+  constructor(monitor: Monitor, address: string, port: number) {
+    this.monitor = monitor
+    this.dashboardServer = this.monitor.dashboardServer
+    
+    this.diagnostics = new diags.Diagnostics()
+    this.diagnostics.runCheck()
+
+    __ctable__ = { 'PEERS': {}, 'OPENBRIDGES': {} }
+
+    try {
+      setInterval(() => {
+        this.build_stats()
+      }, config.__frequency__ * 1000)
+
+      logger.info(`reporter build stats activated at a ${config.__frequency__}s interval\n`)
+    }
+    catch(e) {
+      logger.info(`Error in build stats: ${e.toString()}`)
+    }
+
+    this.pickleparser = new PickleParser()
+    this.client = new netsocket.Socket()
+    this.client.setKeepAlive(true, 5000)
+
+    this.client.on('error', () => {
+      logger.info(`server socket error`)
+      launchIntervalConnect()
+    })
+
+    this.client.on('close', () => {
+      if (!config.testMode) {
+        logger.info(`server socket closed`)
+        launchIntervalConnect()
+      }
+    })
+
+    this.client.on('end', () => {
+      if (!config.testMode) {
+        logger.info(`server socket ended`)
+        launchIntervalConnect()
+      }
+    })
+
+    let connect = () => {
+      logger.info('connecting to HBLink/FreeDMR server')
+
+      this.client.removeAllListeners('data')
+
+      if (this.netstring !== null) {
+        this.netstring.kill()
+        this.netstring = null
+      }
+
+      this.client.connect({ 'port': port, 'host': address }, () => {
+        logger.info(`monitoring server ${address}:${port}`)
+      })
+    }
+
+    let clearIntervalConnect = () => {
+      if (null == this.reconnectTicker) 
+        return
+
+      clearInterval(this.reconnectTicker)
+      this.reconnectTicker = null
+    }
+
+    let launchIntervalConnect = () => {
+      if (null != this.reconnectTicker) 
+        return
+
+      this.reconnectTicker = setInterval(() => {
+        if (this.reconnectTries-- > 0) {
+          logger.info(`reconnection attempt ${MAXTRIES - this.reconnectTries}/${MAXTRIES}`)
+          connect()
+        } 
+        else {
+          clearInterval(this.reconnectTicker)
+          this.reconnectTicker = null
+
+          logger.info(`reconnection ${globals.__FAILED__}, check server`)
+        }
+      }, 5000)
+    }
+
+    this.client.on('connect', () => {
+      clearIntervalConnect()
+  
+      /**
+       * callback for netstring protocol
+       */
+      this.client.gotBox = (data: Buffer) => {
+        if (config.__loginfo__)
+          logger.info('gotBox')
+        
+        var opcode = data[0]
+        var message = data.subarray(1)
+        var now = this.strftimeNow();
+  
+        switch(opcode) {
+          case Opcodes.CONFIG_SND:
+            try {
+              let unpickeled:any = this.pickleparser.load(message)
+  
+              if (__ctable__['MASTERS'] == null) {
+                if (config.__loginfo__)
+                  logger.info(`build_hblink_table`)
+                this.build_hblink_table(unpickeled, __ctable__)
+              }
+              else {
+                if (config.__loginfo__)
+                  logger.info(`update_hblink_table`)
+                this.update_hblink_table(unpickeled, __ctable__)
+              }
+            }
+            catch(e) {
+              logger.info(`__ctable__ build/update error`)
+            }
+            break
+  
+          case Opcodes.BRIDGE_SND:
+            __bridges__ = this.pickleparser.load(message)   
+            __bridges_rx__ = this.strftime(new Date())
+            if (config.__bridges_inc__)
+              __btable__['BRIDGES'] = this.build_bridge_table(__bridges__)
+            break
+  
+          case Opcodes.LINK_EVENT:
+            logger.info(`LINK_EVENT Received: ${message}`)
+            break
+  
+          case Opcodes.BRDG_EVENT:
+            if (config.__loginfo__)
+              logger.info(`BRIDGE EVENT: ${message}`)
+  
+            var p = message.toString().split(',')
+            this.rts_update(p)
+  
+            const REPORT_TYPE: string     = p[0]
+            const REPORT_RXTX: string     = p[2]
+            const REPORT_SYS: string      = p[3]
+            const REPORT_SRC_ID: string   = p[5]
+            const REPORT_TGID: string     = p[8]
+  
+            // check for filtered BACKEND OBP
+            if (config.__opb_backend__[REPORT_SYS] != null) {
+              let found = false
+  
+              for(let k=0; k < config.__opb_backend__[REPORT_SYS].length; k++) {
+                if (config.__opb_backend__[REPORT_SYS][k] == REPORT_SRC_ID) {
+                  found = true
+                  break;
+                }
+              }
+  
+              if (!found) {
+                logger.info(`BACKEND OBP '${REPORT_SYS}' WITH ID='${REPORT_SRC_ID}' NOT ALLOWED`)
+                return
+              }
+            }
+  
+            if (monitor.IsTgidAllowed(REPORT_TGID) && REPORT_TYPE === 'GROUP VOICE' && REPORT_RXTX != 'TX' && !this.opbfilter.has(REPORT_SRC_ID)) {
+              var REPORT_DATE     = now.substring(0, 10)
+              var REPORT_TIME     = now.substring(11, 19)
+              var REPORT_PACKET   = p[1]
+              var REPORT_DMRID    = p[6]
+              var REPORT_TS       = p[7]
+  
+              var REPORT_ALIAS    = utils.alias_tgid(REPORT_TGID, __talkgroup_ids__)
+              var callfname       = utils.alias_only(REPORT_DMRID,  __subscriber_ids__)
+              var REPORT_CALLSIGN = callfname[0].trim()
+              var REPORT_FNAME    = callfname[1].trim()
+              var REPORT_BOTH     = utils.alias_short(REPORT_DMRID,  __subscriber_ids__)
+  
+              var jsonStr = {}
+  
+              if (REPORT_PACKET === 'END') {
+                let REPORT_DELAY = parseInt(p[9])
+                // append new entry
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': REPORT_DELAY }
+  
+                this.updateLastheard(jsonStr)
+  
+                // log only to file if system is NOT OpenBridge event (not logging open bridge system, name depends on your OB definitions) 
+                // and transmit time is LONGER as N sec (make sense for very short transmits)
+                if (config.__lastheard_inc__ && parseInt(p[9]) > 0) {
+                  // 2023-07-21 11:16:27 CEST,61,GROUP VOICE,END,RIS-PEER+,208081098,208081098,TS1,TG20859,YSF-Linux.fr (FD),2089246,F4MZI, Pierre-Philippe F4MZI
+                  let dt = new Date()
+                  let diffTZ = dt.getTimezoneOffset() / -60
+                  let buffer: string = `${this.strftime(new Date())} UTC${diffTZ < 0 ? diffTZ : '+' + diffTZ },${REPORT_DELAY},${REPORT_TYPE},${REPORT_PACKET},${REPORT_SYS},${REPORT_SRC_ID},${utils.alias_call(REPORT_SRC_ID, __subscriber_ids__)},TS${REPORT_TS},TG${REPORT_TGID},${REPORT_ALIAS},${REPORT_DMRID},${callfname}\n`
+  
+                  if (fs.existsSync(`${config.__log_path__}${config.__lastheard_log__}`))
+                    fs.appendFileSync(`${config.__log_path__}${config.__lastheard_log__}`, buffer, 'utf-8')
+                  else
+                    fs.writeFileSync(`${config.__log_path__}${config.__lastheard_log__}`, buffer, 'utf-8')
+                }
+              }
+              else 
+              if (REPORT_PACKET === 'START') {
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }              
+                
+                this.updateLastheard(jsonStr)
+              }
+              else
+              if (REPORT_PACKET === 'END WITHOUT MATCHING START')
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE':REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
+              else
+                jsonStr = { 'DATE': now.substring(0, 10), 'TIME': now.substring(10), 'PACKET': 'UNKNOWN GROUP VOICE LOG MESSAGE' }              
+  
+              this.broadcast({ 'TRAFFIC' : jsonStr, 'BIGEARS': this.dashboardServer.clients.size.toString() })
+            }
+  
+            break
+  
+          default:
+            this.netstring.reSync()
+  
+            if (opcode) {
+              // weird notification string packet at the end, skip it
+              if (new Set([98]).has(opcode))
+                break
+  
+              logger.info(`got unknown opcode: ${opcode.toString()}`)
+  /*
+              let filename = `${__log_path__}trace/hblink_opcode${opcode}.pick`
+              fs.writeFileSync(filename, data, { encoding: 'utf8' })
+              logger.info(`${filename} written`)      
+  */
+            }
+            else
+              logger.info(`got null opcode`)
+        }
+      }
+
+      /**
+       * reset the parser
+       */
+      this.pickleparser.reSync()
+
+      /**
+       * instanciation of netstring object
+       */
+      this.netstring = new NetStringReceiver(this.client.gotBox)
+
+      /**
+       * socket data listener
+       */
+      this.client.on('data', (data: string) => {
+        this.netstring.dataReceived(data)
+      })
+    })
+
+    connect()
+
+    if (config.testMode) {
+      this.simulateCtable()
+    }
+  }
+
+  simulateCtable() {
+    try {
+      setInterval(() => {
+        this.packetCount= 0
+
+        while(true) {
+          let filename = `${config.__log_path__}trace/hblink${this.packetCount++}.pick`
+    
+          if (!fs.existsSync(filename))
+            break
+    
+          this.netstring.dataReceived(fs.readFileSync(filename))
+        }
+      }, 10000)
+    }
+    catch(e) {
+    }
+  }
+
+  /**
+   * cleanup
+   */
+  cleanup() {    
+/*    
+    __ctable__['MASTERS']= {}
+    __ctable__['PEERS'] = {}
+    __ctable__['OPENBRIDGES'] = {}
+    __btable__['BRIDGES'] = {}
+    logger.info('initializing tables')
+*/    
+  }
+
+  /**
+   * 
+   * Update log file
+   * 
+   * @param jsonStr
+   */
+  updateLastheard(jsonStr: any) {
+    // update log file
+    this.monitor.__traffic__.unshift(jsonStr)
+    fs.writeFileSync(config.__log_path__ + 'lastheard.json', JSON.stringify({ 'TRAFFIC': this.monitor.__traffic__ }) , 'utf-8')
+  }
+
+  /**
+ * broadcast to socket clients
+ */
+  broadcast(data: any) {
+    this.dashboardServer.clients.forEach((ws: any) => {
+      // best case, request from regular page
+      if (ws.fromPage) {
+        ws.send(JSON.stringify(data))
+      } else {
+        // request from web service
+        let t = data['TRAFFIC']
+        let valid = false
+        let requestip = ws._socket.remoteAddress.replace(/^.*:/, '')
+
+        // cleanup before sending
+        if (t['BIGEARS'])
+          delete t['BIGEARS']
+
+        if (config.__allowed__socket_clients__ != null) {
+          for(let i=0; i<config.__allowed__socket_clients__.length; i++) {
+            let item = config.__allowed__socket_clients__[i]
+            if (item.ipaddress == requestip) {
+              if (item.tglist.length == 0) {
+                ws.send(JSON.stringify(data))
+                break
+              }
+
+              for(let j=0; j<item.tglist.length; j++) {
+                let pattern = item.tglist[j]
+                let index = -1
+                if (pattern == t.TGID) {
+                  valid = true
+                  break
+                }
+
+                if ((index = pattern.indexOf('*')) != -1 && t.TGID.startsWith(pattern.substring(0, index))) {
+                  valid = true
+                  break
+                }
+
+                if ((index = pattern.indexOf('..')) != -1) {
+                  if (parseInt(pattern.substring(0, index)) <= parseInt(t.TGID) && parseInt(t.TGID) <= parseInt(pattern.substring(index+2))) {
+                    valid = true
+                    break
+                  }
+                }
+              }
+
+              if (valid) {
+                ws.send(JSON.stringify(data))
+              }
+            }
+          }
+        }
+      }
+    })
+  }
+
+  strftime(currentDate: Date): string {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const hours = String(currentDate.getHours()).padStart(2, '0');
+    const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+    const seconds = String(Math.trunc(currentDate.getSeconds())).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  strftimeNow(): string {
+    return this.strftime(new Date())
+  }
+}
