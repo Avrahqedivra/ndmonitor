@@ -3,20 +3,43 @@
     
     - almost not templated, easily editable
     - map location of transmitting OMs
+    - graphic statistics etc...
 
+    Prerequisites:
+
+    - nodejs    (as recent as possible)
+    - npm       (as recent as possible)
+
+    must be installed 
+    
     cd /opt
-    git clone https://github.com/Avrahqedivra/NDMonitor.git
-    cd NDMonitor
+    git clone https://github.com/Avrahqedivra/ndmonitor.git
+    cd ndmonitor
 
-    to install needed packages : cd to project folder and npm install 
+    to install needed packages : 
     
-    to match your server requirements : edit ./src/config.ts      (use an UTF-8 capable editor, vscode or notepad++ for exemple)
+        npm install
     
-    build with: npm run build
+    then make a config.ts file
+        
+        cd src
+        cp config_sample.txt config.ts
 
-    test with : nodejs ./dist/monitor.js
+    edit an adjust the port, ip address to match your server requirements: 
+
+        edit config.ts      (use an UTF-8 capable editor, vscode or notepad++ for exemple)
     
-    connect with your browser on http://monitorip:port
+    build the transpiled files with: 
+    
+        npm run build
+
+    after build test with: 
+    
+        nodejs ./dist/monitor.js
+    
+    test with your browser on: 
+        
+        http://monitorip:port
 
 
 **NDMonitor is based on HBMon V1 a "web dashboard" for HBlink by N0MJS.**
