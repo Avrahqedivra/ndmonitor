@@ -58,6 +58,31 @@
 
             __BUTTON_BAR__
 
+            <!-- The Modal -->
+            <div id="modals">
+			<!-- The Followup -->
+                <div id="followUpModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content-followup">
+                        <span class="close close-followup">&times;</span>
+                        <table class="tablefixed">
+                            <thead id="theadFollowUp" tbodyid="followup">
+                                <tr class="headerRow">
+                                    <th class="thlename">Name</th>
+                                    <th class="thledate">Date</th>
+                                    <th class="thletime">Time</th>
+                                    <th class="thletg">TG</th>
+                                    <th class="thlelog">LOG</th>
+                                    <th class="thledelay">TX</th>
+                                </tr>
+                            </thead>
+                            <tbody id="followup">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>>
+
             <div id="siteHeader" style="display: none">
                 <!-- The Modal -->
                 <div id="listenersModal" class="modal">
@@ -79,33 +104,25 @@
                     </div>
                 </div>
 
-                <!-- The Modal -->
-                <div id="followUpModal" class="modal">
-                    <!-- Modal content -->
-                    <div class="modal-content-followup">
-                        <span class="close close-followup">&times;</span>
-                        <table class="tablefixed">
-                            <thead id="theadFollowUp" tbodyid="followup">
-                                <tr class="headerRow">
-                                    <th class="thlename">Name</th>
-                                    <th class="thledate">Date</th>
-                                    <th class="thletime">Time</th>
-                                    <th class="thletg">TG</th>
-                                    <th class="thlelog">LOG</th>
-                                    <th class="thledelay">TX</th>
-                                </tr>
-                            </thead>
-                            <tbody id="followup">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div name="hbtables">
                     <br><br>
                     <div class="bxslider"></div>
                     <br>
+
                     <div id="insertPoint"></div>
+
+                    <div class="chartstype">
+                        <div id="freqstatsdiv" class="freqstatsdiv" style="display:none;">
+                            <canvas id="freqstatscanvas"></canvas>
+                        </div>
+                        <div class="chartbuttons">
+                            <div class="chartbutton duration" style="background-color:  var(--color-bg-duration);">DURATION</div>
+                            <div class="chartbutton calls chartSelected" style="background-color: var(--color-bg-calls);">CALLS</div>
+                            <div class="chartbutton individual chartSelected" style="background-color: var(--color-bg-individual);">OMs</div>
+                            <div class="chartbutton ratio" style="background-color: var(--color-bg-ratio);">RATIO</div>
+                            <div class="chartbutton all" style="background-color: var(--color-bg-all);">ALL</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="footer">
@@ -117,7 +134,57 @@
     </body>
 
 <script type="text/javascript">
+	function checkDeadTicker() {
+		if (ticker != null) {
+			for(let i=tickerTG.length-1; i >= 0; i--) {
+				if (tickerTG[i].delay > startTot) {
+					// console.log("deleting dead ticker for tg " + tickerTG[i].tg);
+					tickerTG.splice(i, 1);
+				}
+			}
+		}
+	}
+
+	function deleteTicker(tg) {
+		if (ticker != null) {
+			for(let i=0; i<tickerTG.length; i++) {
+				if (tickerTG[i].tg == tg) {
+					// console.log("deleting ticker for tg " + tg);
+					tickerTG.splice(i, 1);
+					break;
+				}
+			}
+		}
+	}
+
+	function addTicker(record) {
+		if (ticker != null) {
+			// console.log("adding ticker for tg " + record.TGID);
+			var found = false;
+
+			for(let i=0; i<tickerTG.length; i++) {
+				if (found = (tickerTG[i].tg == record.TGID))
+					break;
+			}
+
+			if (!found) {
+				try {
+					var time1 = record.TIME.split(":");
+					var time2 = new Date();
+					var delay = Math.max(0, (time2.getMinutes() * 60 + time2.getSeconds()) - (parseInt(time1[1]) * 60 + parseInt(time1[2])));
+					// console.log("elapsed delay : " + delay)
+					tickerTG.push({ "tg": record.TGID, "delay": delay });
+				}
+				catch(e) {
+					console.log("xxxx " + record.TIME);
+				}
+			}
+		}
+	}
+
     $(document).ready(function() {
+        TIME_INTERVALS = 24
+
         // document ready occurs before windows.onLoad
         if (getConfigFromLocalStorage != null) {
             getConfigFromLocalStorage();
@@ -169,6 +236,8 @@
         $(document).on("click", ".sliderItem", function(e) {
             tabActive = $(this).attr("tgid");
             hideInactiveTables();
+
+            doTraffic(traffic)
         });
 
         $(document).on("dblclick", "#btnlisteners", function(e) {
@@ -186,6 +255,26 @@
                 $("#listenersModal").show();
             }
         });
+
+		// freqstats
+		$(document).on("click", "div.chartbutton", (event) => {
+			if ($(event.target).hasClass('duration'))
+				statsType = 'duration'
+			else
+			if ($(event.target).hasClass('calls'))
+				statsType = 'count'
+			else
+			if ($(event.target).hasClass('individual'))
+				statsType = 'individual'
+			else
+			if ($(event.target).hasClass('ratio'))
+				statsType = 'ratio'
+			else
+			if ($(event.target).hasClass('all'))
+				statsType = 'all'
+
+			doChart()
+		})
 
         $("#siteHeader").show();
     });
@@ -231,14 +320,6 @@
         });
 
         $("#div"+tabActive).addClass("active");
-
-        // $("#insertPoint").children('table.tables').each(t => {
-        //     t = $($(this)[0]);
-        //     if (t.attr("id") != "tbtgId"+tabActive)
-        //         t.hide();
-        //     else
-        //         t.show();
-        // });
     }
 
     //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
@@ -256,6 +337,43 @@
                 a.map(x => [key(x), x])
             ).values()
         ]
+    }
+
+	function getQRZImage (callsign, callback) {
+        const no_image_link = "https://s3.amazonaws.com/files.qrz.com/static/qrz/qrz_com200x150.jpg"
+        let cacheItem = urlCache[callsign]
+
+        if (cacheItem != null) {
+        callback(cacheItem)
+        } else {
+                const proxyurl = "http://" + document.location.hostname + ":" + document.location.port + "/";
+        const url = "https://www.qrz.com/lookup/"
+
+        fetch(proxyurl + url + callsign).then((response) => {
+            return response.text()
+        }).then((contents) => {
+            let link = no_image_link
+            let start = contents.indexOf("<td id=\"ppic\"")
+            if (start > 0) {
+            let linkStart = contents.indexOf("src=", start) + 5
+            let linkEnd = contents.indexOf("\"", linkStart)
+            let alink = contents.slice(linkStart, linkEnd)
+            if (alink.startsWith("http") == true) {
+                link = alink
+            } else {
+                console.log("image link not found in response")
+            }
+            };
+
+            urlCache[callsign] = link
+            callback(link)
+
+        }).catch(() => {
+            console.log("Can’t access " + url + " response. Blocked by browser?")
+            urlCache[callsign] = no_image_link
+            callback(no_image_link)
+        })
+        }
     }
 
     function checkDeadOnline() {
@@ -281,38 +399,350 @@
     }
 
     function followUpdUser(dmrid) {
-        $("#followup tr").remove();
-        var content = "";
-        var bgClass = "";
+		$("#followup tr").remove()
 
-        traffic.forEach(om => {
-            if (om.PACKET == "END" && om.DMRID == dmrid) {
-                if (tghilite.has(om.TGID))
-                        bgClass = 'tgWhite';
-                    else
-                        bgClass = 'tgGreen';
+		var content = ""
+		var bgClass = ""
+		var callsign = ""
 
-                var delay = (om.DELAY == 0) ? "PTT":om.DELAY;
-                if (om.DELAY == 0)
-                    bgClass += " darker ";
+		traffic.forEach(om => {
+			if (om.PACKET == "END" && (om.DMRID == dmrid || om.CALLSIGN == dmrid)) {
+				// save callsign for later
+				if (callsign.length == 0)
+					callsign = om.CALLSIGN
 
-                content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" + om.TGID + "</td><td class='alias ellipsis'>" + om.ALIAS + "</td><td class='delay'>" + delay + "</td></tr>";
-            }                
-        });
+				if (tghilite.has(om.TGID))
+					bgClass = 'tgWhite';
+				else
+					bgClass = 'tgGreen';
 
-        $("#followup").append(content);
-        $("#followUpModal").show();
+				var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+				if (om.DELAY == 0)
+					bgClass += " darker ";
+
+				var alias = om.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+				content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
+					+ "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
+					+ om.TGID + "</td><td class='alias ellipsis'>" + alias + "</td><td class='delay'>" + delay + "</td></tr>";
+			}
+		})
+
+		getQRZImage(callsign, (link) => {
+			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href=https://qrz.com/db/" + callsign + "><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+			$("#followup").append(content);
+			$("#followUpModal").show();
+		})
+	}
+
+	function followupdmrid() {
+		var val = $('#search').val();
+		$("#inputModal").hide();
+		if (val != "")
+			followUpdUser(val.toUpperCase());
+	}
+
+    function doChart() {
+        const canvas = document.getElementById("freqstatscanvas");
+        canvas.height = freqstatsdiv.offsetHeight
+        canvas.width = freqstatsdiv.offsetWidth;
+        const computedStyle = getComputedStyle(canvas);
+        const pointRadius = 3
+        const pointHoverRadius = 6
+
+        oldFreqStats = [...curFreqStats]
+
+        // setup block
+        const data = {
+        'labels': Array.from({ length: curFreqStats.length }, (_, i) => i + 'h'),
+        'datasets': [
+            {
+            'label': `QSO duration: ${Math.floor(curCumulatedDuration/curFreqRecords)}s`,
+            'data': Array.from({ length: curFreqStats.length }, (_, i) => (curFreqStats[i].count) ? Math.floor(parseInt(curFreqStats[i].duration) / curFreqStats[i].count):0),
+            'borderColor': computedStyle.getPropertyValue('--canvas-bg-ratio'),
+            'fill': false,
+            'tension': 0.4,
+            'hidden': false,
+                        'pointRadius': pointRadius,
+                        'pointHoverRadius': pointHoverRadius,
+                        'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-ratio'),
+            'yAxisID': 'yRatio',
+            },
+            {
+            'label': `Cumulated duration: ${new Date(curCumulatedDuration * 1000).toISOString().substr(11, 8)}`,
+            'data': Array.from({ length: curFreqStats.length }, (_, i) => Math.floor(parseInt(curFreqStats[i].duration) / 60)),
+            'borderColor': computedStyle.getPropertyValue('--canvas-bg-duration'),
+            'fill': false,
+            'tension': 0.4,
+            'hidden': false,
+                        'pointRadius': pointRadius,
+                        'pointHoverRadius': pointHoverRadius,
+                        'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-duration'),
+            'yAxisID': 'yDuration'
+            },
+            {
+            'label': `Calls: ${curFreqRecords}`,
+            'data': Array.from({ length: curFreqStats.length }, (_, i) => curFreqStats[i].count),
+            'borderColor': computedStyle.getPropertyValue('--canvas-bg-calls'),
+            'fill': false,
+            'tension': 0.4,
+            'hidden': false,
+                        'pointRadius': pointRadius,
+                        'pointHoverRadius': pointHoverRadius,
+                        'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-calls'),
+            'yAxisID': 'yCount'
+            },
+            {
+            'label': `OMs ${curIndividualRecords.size}`,
+            'data': Array.from({ length: curFreqStats.length }, (_, i) => curFreqStats[i].individual.size),
+            'borderColor': computedStyle.getPropertyValue('--canvas-bg-individual'),
+            'fill': false,
+            'tension': 0.4,
+            'hidden': false,
+                        'pointRadius': pointRadius,
+                        'pointHoverRadius': pointHoverRadius,
+                        'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-individual'),
+            'yAxisID': 'yIndividual'
+            }
+        ]
+        }
+
+        if (mainChart) {
+        switch(statsType) {
+            case 'count':
+            mainChart.options.scales.yCount.ticks.callback = (value, index, values) => { return value + ' ptt' }
+            data.datasets.splice(0, 2)
+                        data.datasets.splice(1, 1)
+            mainChart.data = data
+
+            mainChart.options.scales.yCount.display = true
+                        mainChart.options.scales.yIndividual.display = false
+                        mainChart.options.scales.yDuration.display = false
+                        mainChart.options.scales.yRatio.display = false
+
+            mainChart.options.scales.yCount.ticks.display = true
+                        mainChart.options.scales.yIndividual.ticks.display = false
+                        mainChart.options.scales.yDuration.ticks.display = false
+                        mainChart.options.scales.yRatio.ticks.display = false
+            break
+
+                    case 'individual':
+            mainChart.options.scales.yIndividual.ticks.callback = (value, index, values) => { return value + ' OM' }
+            data.datasets.splice(0, 3)
+            mainChart.data = data
+
+            mainChart.options.scales.yCount.display = false
+                        mainChart.options.scales.yIndividual.display = true
+                        mainChart.options.scales.yDuration.display = false
+                        mainChart.options.scales.yRatio.display = false
+
+                        mainChart.options.scales.yCount.ticks.display = false
+            mainChart.options.scales.yIndividual.ticks.display = true
+                        mainChart.options.scales.yDuration.ticks.display = false
+                        mainChart.options.scales.yRatio.ticks.display = false
+            break
+
+            case 'duration':
+            mainChart.options.scales.yDuration.ticks.callback = (value, index, values) => { return value + ' min' }
+            data.datasets.splice(0, 1)
+            data.datasets.splice(1, 2)
+            mainChart.data = data
+
+            mainChart.options.scales.yCount.display = false
+                        mainChart.options.scales.yIndividual.display = false
+                        mainChart.options.scales.yDuration.display = true
+                        mainChart.options.scales.yRatio.display = false
+
+            mainChart.options.scales.yCount.ticks.display = false
+                        mainChart.options.scales.yIndividual.ticks.display = false
+                        mainChart.options.scales.yDuration.ticks.display = true
+                        mainChart.options.scales.yRatio.ticks.display = false
+            break
+
+            case 'ratio':
+            mainChart.options.scales.yRatio.ticks.callback = (value, index, values) => { return value + ' sec' }
+            data.datasets.splice(1, 3)
+            mainChart.data = data
+
+            mainChart.options.scales.yCount.display = false
+                        mainChart.options.scales.yIndividual.display = false
+                        mainChart.options.scales.yDuration.display = false
+                        mainChart.options.scales.yRatio.display = true
+
+            mainChart.options.scales.yCount.ticks.display = false
+                        mainChart.options.scales.yIndividual.ticks.display = false
+                        mainChart.options.scales.yDuration.ticks.display = false
+                        mainChart.options.scales.yRatio.ticks.display = true
+            break
+
+            case 'all':
+            default:
+            mainChart.data = data
+
+            mainChart.options.scales.yCount.display = false
+                        mainChart.options.scales.yIndividual.display = false
+                        mainChart.options.scales.yDuration.display = false
+                        mainChart.options.scales.yRatio.display = false
+
+            mainChart.options.scales.yCount.ticks.display = false
+                        mainChart.options.scales.yIndividual.ticks.display = false
+                        mainChart.options.scales.yDuration.ticks.display = false
+                        mainChart.options.scales.yRatio.ticks.display = false
+            break
+        }
+        }
+
+        // plugin block
+            
+        const canvasBackgroundColor = {
+                id: 'canvasBackgroundColor',
+                beforeDraw(chart, args, pluginOptions) {
+            let hours = new Date().getHours()
+            let minutes = new Date().getMinutes()
+                    const { ctx, chartArea: { top, bottom, left, right, width}, scales: { x } } = chart
+
+                    if (false) {
+                        ctx.fillStyle = 'rgba(255, 26, 104, 0.5)'
+                        ctx.fillRect(left+(width/TIME_INTERVALS) * (hours + minutes / 60), top, 3, bottom-25)
+                    }
+                    else {
+                        ctx.fillStyle = 'rgba(255, 26, 104, 0.1)'
+                        ctx.fillRect(left+(width/TIME_INTERVALS) * (hours + minutes / 60), top, (width/TIME_INTERVALS), bottom-25)
+                        
+                        // new day coming up
+                        if (hours == TIME_INTERVALS-1 && minutes > 0) {
+                            ctx.fillRect(left, top, (width/TIME_INTERVALS) * minutes / 60, bottom-25)
+                        }
+                    }
+                }
+            }
+
+        if (mainChart == null) {
+        // config block
+
+        const config = {
+            'type': 'line',
+            'data': data,
+            'options': {
+            'layout': {
+                'padding': 0
+            },
+            'scales': {
+                'x': {
+                'ticks': { 
+                    'color': computedStyle.getPropertyValue('--canvas-labels-color'), 
+                    'beginAtZero': true 
+                }
+                },
+                'yCount': {
+                'ticks': { 
+                    'color': computedStyle.getPropertyValue('--canvas-bg-calls'),
+                    'beginAtZero': true,
+                    'display': false
+                },
+                'grid': {
+                    'display': false
+                },
+                'display': false
+                },
+                'yIndividual': {
+                'ticks': { 
+                    'color': computedStyle.getPropertyValue('--canvas-bg-individual'),
+                    'beginAtZero': true,
+                    'display': false
+                },
+                'grid': {
+                    'display': false
+                },
+                'display': false
+                },
+                'yDuration': {
+                'ticks': { 
+                    'color': computedStyle.getPropertyValue('--color-bg-duration'),
+                    'beginAtZero': true,
+                    'display': false
+                },
+                'grid': {
+                    'display': false
+                },
+                'display': false
+                },
+                'yRatio': {
+                'ticks': { 
+                    'color': computedStyle.getPropertyValue('--color-bg-ratio'),
+                    'beginAtZero': true,
+                    'display': false
+                },
+                'grid': {
+                    'display': false
+                },
+                'display': false
+                }
+            },
+            'plugins': {
+                'legend': {
+                labels: {
+                    color: computedStyle.getPropertyValue('--canvas-labels-color'),
+                    font: { size: 14 }
+                }
+                }
+                        }
+            },
+            plugins: [canvasBackgroundColor]
+        }
+
+        // render block
+        mainChart = new Chart(
+            canvas,
+            config,
+        )
+        }
+
+        mainChart.update()
+
+        document.getElementById('tgstatspanel').innerText = (parseInt(specialtg) > 0) ? `TG${specialtg} specific stats`:''
     }
+
+    function frequentationStats(record) {
+        if (record.DONTCOUNT == null) {
+            if (record.TGID != tabActive)
+				return
+
+			let index = parseInt(record.TIME.substring(0, 2))
+			curFreqRecords++
+			curCumulatedDuration += parseInt(record.DELAY)
+
+			curFreqStats[index].count++
+			curFreqStats[index].duration += parseInt(record.DELAY)
+
+			if (!curIndividualRecords.has(record.DMRID))
+				curIndividualRecords.add(record.DMRID)
+
+			if (!curFreqStats[index].individual.has(record.DMRID))
+				curFreqStats[index].individual.add(record.DMRID)
+
+			// if more than one day history then loop stats
+			if (traffic_last_N_days != 1 && index == 0) {
+				curFreqStats[TIME_INTERVALS].count = curFreqStats[index].count
+				curFreqStats[TIME_INTERVALS].duration = curFreqStats[index].duration
+				curFreqStats[TIME_INTERVALS].individual = curFreqStats[index].individual
+			}
+		}
+	}
 
     function doTraffic(t) {
         if (t != null)  {
-            if (Array.isArray(t))
-                traffic = t;
-            else
-                traffic.unshift(t);
+            startPackets = new Set()
 
-            if (traffic.length > 0) {
-                checkDeadOnline();
+            if (Array.isArray(t))
+				traffic = t;
+			else
+				traffic.unshift(t);
+
+            let trafficLength = traffic.length;
+
+            if (trafficLength > 0) {
+				checkDeadTicker();
 
                 // keeps the n last unique items
                 // traffic = uniqByKeepLast(traffic, it => it.DMRID);
@@ -324,8 +754,18 @@
 
                 $(".sliderItem").removeClass("tabOnline");
 
-                for(var i=0; i < traffic.length; i++) {
-                    var tgid = parseInt(traffic[i].TGID);
+				// reset freqstats array
+				curFreqRecords = 0
+				curIndividualRecords = new Set()
+				curCumulatedDuration = 0
+
+				for(let i=0; i<=TIME_INTERVALS; i++)
+					curFreqStats[i] = {'count': 0, 'duration': 0, 'ratio': 0, 'individual': new Set() };
+
+                    for (var i = 0; i < trafficLength; i++) {
+					var record = traffic[i];
+
+                    var tgid = parseInt(record.TGID);
 
                     // skip excluded TG
                     if (tgfilter.has(''+tgid))
@@ -339,12 +779,14 @@
                             continue;
                     }
 
+                    frequentationStats(record)
+
                     var tgName = "tgId"+tgid;
 
                     if (tabActive == "0")
                         tabActive = tgid;
 
-                    if (tghilite.has(traffic[i].TGID))
+                    if (tghilite.has(record.TGID))
                         bgClass = 'tgWhite';
                     else
                         bgClass = 'tgGreen';
@@ -382,9 +824,9 @@
                         var tbs = getTgTableState("hblink" + tgid);
                     }
 
-                    var callsign = traffic[i].CALLSIGN;
-                    var dmrid = traffic[i].DMRID;
-                    var delay = traffic[i].DELAY;
+                    var callsign = record.CALLSIGN;
+                    var dmrid = record.DMRID;
+                    var delay = record.DELAY;
 
                     if (delay > 1000)
                         delay = "xx";
@@ -401,34 +843,34 @@
                     if (callsign == "")
                         callsign = dmrid;
 
-                    if ($('#hblink'+traffic[i].TGID+' >tr td[dmrid='+ traffic[i].DMRID +']').length == 0) {
+                    if ($('#hblink'+record.TGID+' >tr td[dmrid='+ record.DMRID +']').length == 0) {
 						/* deal with content if < displaylines */
 						if ($('#tb' + tgName +' >tbody >tr').length < displayLines) {
 
-							var flagUrl = getFlag(traffic[i].CALLSIGN, traffic[i].DMRID);
+							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
 							if (flagUrl == "")
                                 flagUrl = flag64["shield"]; // "shield.png";
 
 							content = '<tr class=' + bgClass + '>';
-							content += "<td class='tdDate'>" + traffic[i].DATE + "</td>";
-							content += "<td class='tdTime'>" + traffic[i].TIME + "</td>";
-							content += "<td class='slot'>" + traffic[i].TS + "</td>";
+							content += "<td class='tdDate'>" + record.DATE + "</td>";
+							content += "<td class='tdTime'>" + record.TIME + "</td>";
+							content += "<td class='slot'>" + record.TS + "</td>";
 							content += "<td class='callsign ellipsis'>";
 							content += "<img class='tgflag' src='" + flagUrl + "'/>"
 							content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
-							content += "<td dmrid=" + traffic[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
-							if (traffic[i].NAME.toUpperCase() == callsign)
-								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + callsign + "</td>";
+							content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+							if (record.NAME.toUpperCase() == callsign)
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
 							else
-								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + enhanceNames(traffic[i].NAME) + "</td>";
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
 							content += "<td class='talkgroup'>" + tgid + "</td>";
-							content += "<td class='alias ellipsis'>" + traffic[i].ALIAS + "</td>";
-							if (traffic[i].PACKET == "START")
+							content += "<td class='alias ellipsis'>" + record.ALIAS + "</td>";
+							if (record.PACKET == "START")
 								content += "<td class='online'>ONLINE</td>";
 							else
 								content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
-							content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
-							content += "<td class='infra'>" + traffic[i].SYS + "</td>";
+							content += "<td class='netid'>" + record.SRC_ID + "</td>";
+							content += "<td class='infra'>" + record.SYS + "</td>";
 							content += "</tr>";
 
                             $("#hblink" + tgid).append(content);
@@ -438,6 +880,28 @@
 
                 hideInactiveTables();
             }
+
+			let redraw = false
+
+			if (oldFreqStats != null) {
+				// will redraw if changes are more than 0.19
+				for(let i=0; i<curFreqStats.length; i++) {
+					if (oldFreqStats[i].count < 1)
+						continue
+
+					let change = 100 * Math.abs( (curFreqStats[i].count - oldFreqStats[i].count) / oldFreqStats[i].count )
+
+					if (change > 0.01) {
+							redraw = true
+							break
+					}
+				}
+			}
+			else
+				redraw = true
+
+			if (redraw)
+				doChart()
         }
     }
     
@@ -446,7 +910,23 @@
     };
 
     window.onload = () => {
+        urlCache = {}
         listeners = 0;
+
+        traffic_last_N_days = parseInt("__TRAFFIC_LAST_N_DAYS__")
+
+		ticker = null;
+		tickerTG = [];
+		statusCountdown = 0
+
+		curFreqRecords = 0
+		curIndividualRecords = new Set()
+		curCumulatedDuration = 0
+		curFreqStats = []
+		oldFreqStats = null
+		specialtg = ""
+		mainChart = null
+		statsType = "all"
 
         var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
 
@@ -546,6 +1026,7 @@
 
         $("#menubar").show();
         $("#siteHeader").show();
+        $("#freqstatsdiv").show()
     };
 
     window.onunload = () => {
@@ -553,6 +1034,7 @@
     }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/jquery.bxslider.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/vendor/jquery.easing.1.3.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.15/vendor/jquery.fitvids.js"></script>
