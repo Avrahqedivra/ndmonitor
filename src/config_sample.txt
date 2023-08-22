@@ -77,7 +77,7 @@ export const __theme__: string                  = "light_theme"
 export const admin_user__: string               = 'admin'
 
 // Authorization of access to dashboard# as user
-export const __web_auth__: boolean              =  true
+export const __web_auth__: boolean              = false
 
 // secret salt key for passcode generator
 export const __web_secret_key__: string         = "SECRETKEY"
