@@ -93,7 +93,7 @@ export const __last_active_size__: number       = 0
 export const __lastheard_size__: number         = 8000
 // Nb lines in first packet sent to dashboard
 export const __traffic_size__: number           = 7000
-// Nb lines in first packet sent to dashboard
+// Nb of days of traffic should be seen on the dashbaord, 0 for all
 export const __traffic_last_N_days__: number    = 0
 // Display percent
 export const __displayPercent__: boolean        = true

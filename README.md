@@ -42,6 +42,22 @@
         http://monitorip:port
 
 
+    /**
+    * gencode utility (crc16 based)
+    */
+    if you decide to make your dashbaord private with a password, you'll need to: 
+
+        - set config.__web_auth__ to true
+        - set config.__web_secret_key__ to "a new secret key"
+        - use gencode to compute a password from your login string
+
+    After the secret key has been set just do:
+
+        node ./dist/gencode.ts mylogin <enter>
+
+    if everyhting is ok, you'll get a string of 4 or 5 digits that will be your password (nothing is stored anywhere)
+    
+
 **NDMonitor is based on HBMon V1 a "web dashboard" for HBlink by N0MJS.**
 **and a newer version HBMon V2 (2021) by SP2ONG**
 
