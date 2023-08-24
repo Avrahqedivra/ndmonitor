@@ -88,7 +88,7 @@ export const __do_ipmap__: boolean              = true
 // Display lastactive TG table
 export const __lastActiveTg__: boolean          = true
 // Max lines in lastactive table (0 means all TGs defined in TG_ORDER list)
-export const __last_active_size__: number       = 50
+export const __last_active_size__: number       = 0
 // Lastheard file size
 export const __lastheard_size__: number         = 8000
 // Nb lines in first packet sent to dashboard
