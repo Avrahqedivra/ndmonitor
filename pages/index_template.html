@@ -322,8 +322,10 @@ function dragElement(elmnt) {
 		tgsettings = {};
 	}
 
-	last_active_size = parseInt("__LAST_ACTIVE_SIZE__");
+	last_active_size = parseInt("__LAST_ACTIVE_SIZE__");	
 	if (last_active_size == 0)
+		last_active_size = 1000
+	else
 		last_active_size = tgorder.size;
 
 	//   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array

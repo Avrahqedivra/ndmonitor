@@ -131,7 +131,7 @@ export class Monitor {
    * accepts tgid, tgid*, and tgid..tgid interval
    */
   IsTgidAllowed(tgid: string) {
-    if (config.tgid_allowed.length == 0)
+    if (config.tgid_allowed.length < 2)
       return true
 
     let pattern = null
@@ -278,6 +278,7 @@ export class Monitor {
       case '/loglast.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
+      case '/statictgs.html':
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;
