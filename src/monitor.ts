@@ -278,7 +278,6 @@ export class Monitor {
       case '/loglast.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
-      case '/statictgs.html':
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;
