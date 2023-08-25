@@ -230,6 +230,13 @@ export class Monitor {
 
       let filepath = `${config.__path__}assets/${filename}`
 
+      if (!fs.existsSync(filepath)) {
+        logger.error(`Error file ${filepath} doesn't exists`);
+        res.statusCode = 500;
+        res.end(`The requested file ${filename} doesn't exists`);
+        return
+      }
+
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Content-Length', fs.statSync(filepath).size);
 
