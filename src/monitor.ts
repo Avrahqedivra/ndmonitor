@@ -230,6 +230,17 @@ export class Monitor {
 
       let filepath = `${config.__path__}assets/${filename}`
 
+      try {
+        const gpcValue = req.header('Sec-GPC')
+  
+        if (gpcValue === "1") {
+          // signal detected, do something
+          logger.info(`gpc request detected`)
+        }
+      }
+      catch(e) {
+      }
+  
       if (!fs.existsSync(filepath)) {
         logger.error(`Error file ${filepath} doesn't exists`);
         res.statusCode = 500;
