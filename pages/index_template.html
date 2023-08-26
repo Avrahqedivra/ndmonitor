@@ -228,7 +228,7 @@
 	</center>
 </body>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
 function updateTime() {
@@ -771,7 +771,7 @@ function dragElement(elmnt) {
 				if (om.DELAY == 0)
 					bgClass += " darker ";
 
-				var alias = om.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+				var alias = om.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
 
 				content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
 					+ "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
@@ -1096,7 +1096,7 @@ function dragElement(elmnt) {
 					if (flagUrl == "")
 						flagUrl = flag64["shield"]; // "shield.png";
 
-					var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+					var alias = record.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
 
 					if (alias.indexOf("<img") == -1) {
 					
@@ -1532,7 +1532,7 @@ function dragElement(elmnt) {
 					var showColumns = showColumnsDefault;
 					var hideDmrid = hideDmridDefault;
 
-					var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+					var alias = record.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
 
 					/* check if table already exists */
 					if (document.getElementById(tgName) == null) {
@@ -1568,7 +1568,7 @@ function dragElement(elmnt) {
 
 								break;
 							}
-						};
+						}
 
 						emptyTable += '<thead id="' + tgName + '" tgid="' + tgid + '" tbodyid=hblink' + tgid + '">' 
 							+ '<tr class="headerRow">' 
