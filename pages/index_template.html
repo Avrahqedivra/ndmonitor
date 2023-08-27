@@ -1780,7 +1780,7 @@ function dragElement(elmnt) {
 
 	$(document).ready(function () {
 		TIME_INTERVALS = 24
-
+		
 		// document ready occurs before windows.onLoad
 		if (getConfigFromLocalStorage != null) {
 			getConfigFromLocalStorage();
@@ -1954,7 +1954,8 @@ function dragElement(elmnt) {
 			$("#siteHeader").show();
 			$("#freqstatsdiv").show()
 		}
-		else {
+		else 
+		{
 			$("#sitelogo").show();
 
 			setTimeout(() => {

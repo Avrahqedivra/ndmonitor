@@ -50,9 +50,8 @@ let __buttonBar_html__: any = ''
 let __footer_html__: any = ""
 
 // system variables
-const extensions: string[] = ['.ico', '.jpg', '.png', '.gif', '.css', '.js']
+const extensions: string[] = ['.ico', '.jpg', '.png', '.gif', '.css', '.js', '.mp3', '.mp4', '.webm', '.mpeg', '.ogg', '.ppt', '.pptx']
 
-// 2023-06-22 00:19:32 CEST,1,GROUP VOICE,END,RIS-PEER+,208081098,208081098,TS1,TG20800,YSF FRANCE (I2),2080166,F1PTL, Bruno VICOGNE
 type LastHeardSchema = {
   datetime: string        // 00
   delay: string           // 01
@@ -289,6 +288,7 @@ export class Monitor {
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages/index_template.html`)))
         break
 
+      case '/videobanner.html':
       case '/bridges.html':
       case '/tginfo.html':
       case '/map.html':
@@ -296,6 +296,8 @@ export class Monitor {
       case '/loglast.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
+      case '/newindex.html':        
+      case '/statictgs.html':
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;
@@ -314,6 +316,13 @@ export class Monitor {
             '.png' : { mimetype: 'image/png', folder: '/images'},
             '.gif' : { mimetype: 'image/gif', folder: '/images'},
             '.css' : { mimetype: 'text/css', folder: '/css' },
+            '.mp3' : { mimetype: 'audio/mp3', folder: '/media' },
+            '.mp4' : { mimetype: 'video/mp4', folder: '/media' },
+            '.mpeg' : { mimetype: 'video/mpeg', folder: '/media' }, 
+            '.ogg' : { mimetype: 'video/ogg', folder: '/media' },
+            '.webm' : { mimetype: 'video/webm', folder: '/media' },
+            '.ppt' : { mimetype: 'application/vnd.ms-powerpoint', folder: '/media' },
+            '.pptx' : { mimetype: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', folder: '/media' },
             '.js' :  { mimetype: 'text/javascript', folder: '/scripts' }
           } [ req.url.substr(dotOffset) ];
   
