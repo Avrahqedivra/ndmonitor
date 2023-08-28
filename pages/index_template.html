@@ -1098,19 +1098,16 @@ function dragElement(elmnt) {
 
 					var alias = record.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
 
-					if (alias.indexOf("<img") == -1) {
-					
-						var tgf = getTgFlag(record.TGID);
-						if (typeof tgf === 'string' || tgf instanceof String) {
-							alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
-						}
-						else {
-							flagFirst = tgf[0];
-							flagSecond = tgf[1];
+					var tgf = getTgFlag(record.TGID);
+					if (typeof tgf === 'string' || tgf instanceof String) {
+						alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
+					}
+					else {
+						flagFirst = tgf[0];
+						flagSecond = tgf[1];
 
-							alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
-						}
-					} 
+						alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
+					}
 
 					content = '<tr class=' + bgClass + '>'
 						+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
@@ -1532,7 +1529,23 @@ function dragElement(elmnt) {
 					var showColumns = showColumnsDefault;
 					var hideDmrid = hideDmridDefault;
 
-					var alias = record.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+					var alias = record.ALIAS; 
+
+					/**
+					 *  if you want to add flags to single tgs uncomment change false to true
+					 */
+					if (false)
+						var tgf = getTgFlag(record.TGID);
+						if (typeof tgf === 'string' || tgf instanceof String) {
+							alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
+						}
+						else {
+							flagFirst = tgf[0];
+							flagSecond = tgf[1];
+
+							alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
+						}
+					}
 
 					/* check if table already exists */
 					if (document.getElementById(tgName) == null) {
