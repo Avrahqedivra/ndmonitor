@@ -1534,7 +1534,7 @@ function dragElement(elmnt) {
 					/**
 					 *  if you want to add flags to single tgs uncomment change false to true
 					 */
-					if (false)
+					if (false) {
 						var tgf = getTgFlag(record.TGID);
 						if (typeof tgf === 'string' || tgf instanceof String) {
 							alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
@@ -1700,9 +1700,8 @@ function dragElement(elmnt) {
 						}
 					}
 				}
-			}
 
-			doLastActiveNew();
+			doLastActiveNew()
 
 			// https://codesandbox.io/s/canvas-fill-style-from-css-variables-ljnhf?file=/src/index.js:72-247
 			// https://www.calculatorsoup.com/calculators/algebra/percent-change-calculator.php
@@ -1729,17 +1728,18 @@ function dragElement(elmnt) {
 			if (redraw)
 				doChart()
 		}
+		}
 	}
 
 	function log(msg) {
-		console.log(msg);
-	};
+		console.log(msg)
+	}
 
 	function treatTables(CTable, emaster) {
 		if (CTable != null) {
-			updateOpenBridges(CTable["OPENBRIDGES"]);
-			updateMasters(CTable["MASTERS"], emaster);
-			updatePeers(CTable["PEERS"]);
+			updateOpenBridges(CTable["OPENBRIDGES"])
+			updateMasters(CTable["MASTERS"], emaster)
+			updatePeers(CTable["PEERS"])
 		}
 	}
 	
