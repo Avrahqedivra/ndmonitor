@@ -39,24 +39,33 @@ const localSubscribersFile = `${config.__path__}local_subscriber_ids.json`
 const activeUsersFile = `${config.__path__}assets/active_users.json`
 
 function calculateDailyGrowthRate(populationData) {
-  const growthRateData = [];
+  const growthRateData = []
 
   for (let day = 1; day < populationData.length; day++) {
-    const previousPopulation = populationData[day - 1];
-    const currentPopulation = populationData[day];
-    
-    const populationChange = currentPopulation - previousPopulation;
-    const growthRate = populationChange / previousPopulation;
+    const previousPopulation = populationData[day - 1]
+    const currentPopulation = populationData[day]
+    const populationChange = currentPopulation - previousPopulation
+    let growthRate = 0
+
+    if (previousPopulation == 0)
+      growthRate = 0
+    else
+      growthRate = populationChange / previousPopulation;
 
     growthRateData.push({
       day: day,
       currentPopulation: currentPopulation,
       growthRate: growthRate
-    });
+    })
   }
 
   return growthRateData;
 }
+
+let argv = process.argv.slice(2)
+let tg: string = ''
+if (argv.length == 1)
+  tg = parseInt(argv[0]).toString()
 
 console.log(`\n${BOLD}Active Users Utility v1.1 (c) 2023 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>${ENDC}`)
 console.log(`\n${' '.repeat(MARGIN)}will create "${activeUsersFile}" using "${lasheardFile}"`)
@@ -112,17 +121,18 @@ if (fs.existsSync(`${lasheardFile}`)) {
       // read the record from lastheard traffic
       record = traffic[i]
 
+      if (record.DATE != prevDate) {
+        prevDate = record.DATE
+        populationData.push(0)
+      }
+
       // if the user dmrid is not already registered
-      if (!singleUsers.has(record.DMRID)) {
+      if (!singleUsers.has(record.DMRID) && (tg == record.TGID || tg == '')) {
+
         // find his record in the radioid json file
         for(let j=0; j<users.length; j++) {
           // if found in the radioid json file
           if (users[j].id == record.DMRID) {
-
-            if (record.DATE != prevDate) {
-              prevDate = record.DATE
-              populationData.push(0)
-            }
 
             populationData[populationData.length-1]++
 
@@ -138,7 +148,9 @@ if (fs.existsSync(`${lasheardFile}`)) {
       }
     }
 
-    console.log(`\n\nFound ${activeUsers.length} different OMs${CURSORON} over ${populationData.length} days\n`)
+    let specialtg = tg == '' ? 'all TGs': `TG${tg}`
+
+    console.log(`\n\nFound ${activeUsers.length} different OMs${CURSORON} on ${specialtg} over ${populationData.length} days\n`)
 
     const dailyGrowthRates = calculateDailyGrowthRate(populationData);
 
