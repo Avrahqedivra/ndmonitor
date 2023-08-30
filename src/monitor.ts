@@ -379,7 +379,7 @@ export class Monitor {
 
     // if lastheard.log does not exists, create empty lastheard.json file
     if (!fs.existsSync(`${config.__log_path__}${config.__lastheard_log__}`)) {
-      fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), 'utf-8')
+      fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), { encoding:'utf-8', flag:'w' })
       return { jsonArray }
     }
 
@@ -427,7 +427,7 @@ export class Monitor {
       }
     }
 
-    fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), 'utf-8')
+    fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), { encoding:'utf-8', flag:'w' })
 
     if (config.__loginfo__)
       logger.info('Lastheard.json created and saved')
