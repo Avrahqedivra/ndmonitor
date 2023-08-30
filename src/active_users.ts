@@ -38,6 +38,26 @@ const subscribersFile = `${config.__path__}subscriber_ids.json`
 const localSubscribersFile = `${config.__path__}local_subscriber_ids.json`
 const activeUsersFile = `${config.__path__}assets/active_users.json`
 
+function calculateDailyGrowthRate(populationData) {
+  const growthRateData = [];
+
+  for (let day = 1; day < populationData.length; day++) {
+    const previousPopulation = populationData[day - 1];
+    const currentPopulation = populationData[day];
+    
+    const populationChange = currentPopulation - previousPopulation;
+    const growthRate = populationChange / previousPopulation;
+
+    growthRateData.push({
+      day: day,
+      currentPopulation: currentPopulation,
+      growthRate: growthRate
+    });
+  }
+
+  return growthRateData;
+}
+
 console.log(`\n${BOLD}Active Users Utility v1.1 (c) 2023 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>${ENDC}`)
 console.log(`\n${' '.repeat(MARGIN)}will create "${activeUsersFile}" using "${lasheardFile}"`)
 
@@ -68,6 +88,10 @@ if (fs.existsSync(`${lasheardFile}`)) {
     let eta: number         = 0
     let green: number       = 0
     let white: number       = 0
+
+    // Example population data (replace with your data)
+    let populationData      = [];
+    let prevDate            = ""
   
     // prepare progression bar
     console.log(`${CURSOROFF}\r\nParsing the ${trafficLength} calls found in lastheard\n`)
@@ -77,13 +101,13 @@ if (fs.existsSync(`${lasheardFile}`)) {
 
       // prepapre data for the progression bar
       elapsed = Date.now() - t1
-      speed   = Math.floor(i * 1000 / elapsed)
+      speed   = i * 1000 / elapsed
       eta     = Math.floor((trafficLength-i) / speed)
-      green   = Math.floor(i * ratio)
-      white   = Math.floor(maxprogbarlength - green)
+      green   = i * ratio
+      white   = maxprogbarlength - green
 
       // print progression bar
-      process.stdout.write(`${' '.repeat(MARGIN)}${GREEN}${'━'.repeat(green)}${ENDC}${'━'.repeat(white)}${(i+1).toString().padStart(6)}/${trafficLength} ${RED}${speed} rec/s${ENDC} eta ${eta}s${ERASEEOL}\r`)
+      process.stdout.write(`${' '.repeat(MARGIN)}${GREEN}${'━'.repeat(green)}${ENDC}${'━'.repeat(white)}${(i+1).toString().padStart(6)}/${trafficLength} ${RED}${Math.floor(speed)} rec/s${ENDC} eta ${eta}s${ERASEEOL}\r`)
 
       // read the record from lastheard traffic
       record = traffic[i]
@@ -94,10 +118,19 @@ if (fs.existsSync(`${lasheardFile}`)) {
         for(let j=0; j<users.length; j++) {
           // if found in the radioid json file
           if (users[j].id == record.DMRID) {
+
+            if (record.DATE != prevDate) {
+              prevDate = record.DATE
+              populationData.push(0)
+            }
+
+            populationData[populationData.length-1]++
+
             // flag him as registered
             singleUsers.add(record.DMRID)
             // add his rasioid record to the activeusers list
             activeUsers.push(users[j])
+
             // stop there, go to the next
             break
           }
@@ -105,9 +138,18 @@ if (fs.existsSync(`${lasheardFile}`)) {
       }
     }
 
-    console.log(`\n\nFound ${activeUsers.length} different OMs${CURSORON}\n`)
+    console.log(`\n\nFound ${activeUsers.length} different OMs${CURSORON} over ${populationData.length} days\n`)
+
+    const dailyGrowthRates = calculateDailyGrowthRate(populationData);
+
+    dailyGrowthRates.forEach(data => {
+      let str = `Day ${data.day.toString().padStart(2)}: Growth Rate ${data.growthRate.toFixed(2).toString().padStart(5)} New: ${data.currentPopulation.toString().padStart(3)}`
+      console.log(`${' '.repeat(MARGIN)}${str.padEnd(36)}${'━'.repeat(data.currentPopulation/2)}`)
+    })
+
+    console.log('\n')
 
     // write/overwrite the file
-    fs.writeFileSync(`${activeUsersFile}`, JSON.stringify(activeUsers), { encoding:'utf-8', flag:'w' })
+    // fs.writeFileSync(`${activeUsersFile}`, JSON.stringify(activeUsers), { encoding:'utf-8', flag:'w' })
   }
 }
