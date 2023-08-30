@@ -33,10 +33,63 @@ const CURSOROFF = '\x1b[?25l'
 const ERASEEOL  = '\x1b[0K'
 const MARGIN    = 4
 
-const lasheardFile = `${config.__log_path__}${config.__lastheard_file__}`
+const lasheardFile = `${config.__log_path__}${config.__lastheard_log__}`
 const subscribersFile = `${config.__path__}subscriber_ids.json`
 const localSubscribersFile = `${config.__path__}local_subscriber_ids.json`
 const activeUsersFile = `${config.__path__}assets/active_users.json`
+
+/**
+   * 
+   * createLogTableJson()
+   * 
+   * @returns jsonified log file
+   */
+function createLogTableJson(): any[] {
+  let jsonArray = []
+  let omset = new Set()
+
+  // else try to create a json file from the log file
+  const allFileContents = fs.readFileSync(lasheardFile, 'utf-8')
+
+  const logfile = allFileContents.split(/\r?\n/)
+
+  for(let i=logfile.length-1; i>-1; i--) {
+    var line = logfile[i]
+
+    if (line.length > 0) {
+      var row = line.split(',')
+
+      let report_tgid: string = row[8].substring(2)
+
+      // add endinf fname if missing
+      if (row.length < 13)
+        row.push('---')
+
+      try {
+        jsonArray.push({
+          'DATE':     row[0].substring(0, 10), 
+          'TIME':     row[0].substring(11, 19), 
+          'TYPE':     row[2].substring(6),        // remove 'GROUP ' string header
+          'PACKET':   row[3],
+          'SYS':      row[4], 
+          'SRC_ID':   row[5],
+          'TS':       row[7].substring(2), 
+          'TGID':     report_tgid, 
+          'ALIAS':    row[9], 
+          'DMRID':    row[10], 
+          'CALLSIGN': row[11].trim(),
+          'NAME':     row[12].trim(), 
+          'DELAY':    row[1]
+        })
+      }
+      catch(e) {
+        console.log(e)
+      }
+    }
+  }
+
+  return jsonArray
+}
 
 function calculateDailyGrowthRate(populationData) {
   const growthRateData = []
@@ -83,7 +136,8 @@ if (fs.existsSync(`${lasheardFile}`)) {
       console.log(`${' '.repeat(MARGIN)}After merge users dictionary contains ${users.length} records`)
     }
 
-    let traffic = JSON.parse(fs.readFileSync(`${lasheardFile}`, 'utf-8'))['TRAFFIC']
+    // let traffic = JSON.parse(fs.readFileSync(`${lasheardFile}`, 'utf-8'))['TRAFFIC']
+    let traffic = createLogTableJson()
 
     let trafficLength       = traffic.length
     let singleUsers         = new Set()
