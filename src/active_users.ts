@@ -150,6 +150,6 @@ if (fs.existsSync(`${lasheardFile}`)) {
     console.log('\n')
 
     // write/overwrite the file
-    // fs.writeFileSync(`${activeUsersFile}`, JSON.stringify(activeUsers), { encoding:'utf-8', flag:'w' })
+    fs.writeFileSync(`${activeUsersFile}`, JSON.stringify(activeUsers), { encoding:'utf-8', flag:'w' })
   }
 }
