@@ -723,8 +723,10 @@ export class Reporter {
     this.client.setKeepAlive(true, 5000)
 
     this.client.on('error', () => {
-      logger.info(`server socket error`)
-      launchIntervalConnect()
+      if (!config.testMode) {
+        logger.info(`server socket error`)
+        launchIntervalConnect()
+      }
     })
 
     this.client.on('close', () => {
@@ -782,7 +784,7 @@ export class Reporter {
       }, 5000)
     }
 
-    this.client.on('connect', () => {
+    let treatConnection = () => {
       clearIntervalConnect()
   
       /**
@@ -947,11 +949,16 @@ export class Reporter {
       this.client.on('data', (data: string) => {
         this.netstring.dataReceived(data)
       })
+    }
+
+    this.client.on('connect', () => {
+      treatConnection()
     })
 
     connect()
 
     if (config.testMode) {
+      treatConnection()
       this.simulateCtable()
     }
   }
@@ -967,7 +974,8 @@ export class Reporter {
           if (!fs.existsSync(filename))
             break
     
-          this.netstring.dataReceived(fs.readFileSync(filename))
+          
+            this.netstring.dataReceived(fs.readFileSync(filename))
         }
       }, 10000)
     }
