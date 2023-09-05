@@ -335,7 +335,7 @@ export class Reporter {
     for(let _hbp in _config) {
       var _hbp_data = _config[_hbp]
 
-      if (_hbp_data['ENABLED'] === true) {
+      if (_hbp_data['ENABLED'] == true) {
 
         // Process Master Systems
         if (_hbp_data['MODE'] === 'MASTER') {
@@ -559,7 +559,7 @@ export class Reporter {
           to_action = 'None'
         }
 
-        let active: string = (system['ACTIVE'] === true) ? 'Connected' : 'Disconnected'
+        let active: string = (system['ACTIVE'] == true) ? 'Connected' : 'Disconnected'
 
         let trigOn: string = ''
         let trigOff: string = ''

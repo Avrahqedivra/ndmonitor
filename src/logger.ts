@@ -33,7 +33,7 @@ export class Logger {
   }
 
   error(str: String) {
-    console.log(str)
+    console.error(str)
   }
 
   file(data: string, name?: string ) {

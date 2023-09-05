@@ -21,20 +21,25 @@
  *  
 */
 
-export const __BLACK__: string    = '\x1b[0;90m'
-export const __RED__: string      = '\x1b[0;91m'
-export const __GREEN__: string    = '\x1b[0;92m'
-export const __YELLOW__: string   = '\x1b[0;93m'
-export const __ORANGE__: string   = '\x1b[38;2;255;165;0m'
-export const __BLUE__: string     = '\x1b[0;94m'
-export const __MAGENTA__: string  = '\x1b[0;95m'
-export const __CYAN__: string     = '\x1b[0;96m'
-export const __WHITE__: string    = '\x1b[0;97m'
+export const __BLACK__:       string  = '\x1b[0;90m'
+export const __RED__:         string  = '\x1b[0;91m'
+export const __GREEN__:       string  = '\x1b[0;92m'
+export const __YELLOW__:      string  = '\x1b[0;93m'
+export const __ORANGE__:      string  = '\x1b[38;2;255;165;0m'
+export const __BLUE__:        string  = '\x1b[0;94m'
+export const __MAGENTA__:     string  = '\x1b[0;95m'
+export const __CYAN__:        string  = '\x1b[0;96m'
+export const __WHITE__:       string  = '\x1b[0;97m'
 
-export const __CLEAR__: string    = '\x1b[2J'
-export const __HOME__: string     = '\x1b[2H'
-export const __RESET__: string    = '\x1b[0m'
+export const __BOLD__ :       string  = '\x1b[1m'
+export const __CURSORON__ :   string  = '\x1b[?25h'
+export const __CURSOROFF__ :  string  = '\x1b[?25l'
+export const __ERASEEOL__ :   string  = '\x1b[0K'
 
-export const __OK__: string       = `${__GREEN__}OK${__RESET__}`
-export const __WARNING__: string  = `${__YELLOW__}Warning${__RESET__}`
-export const __FAILED__: string   = `${__RED__}Failed${__RESET__}`
+export const __CLEAR__:       string  = '\x1b[2J'
+export const __HOME__:        string  = '\x1b[2H'
+export const __RESET__:       string  = '\x1b[0m'
+
+export const __OK__:          string  = `${__GREEN__}OK${__RESET__}`
+export const __WARNING__:     string  = `${__YELLOW__}Warning${__RESET__}`
+export const __FAILED__:      string  = `${__RED__}Failed${__RESET__}`

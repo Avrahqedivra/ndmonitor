@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "1.7.0"
+export let __version__: string          = "1.8.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -232,7 +232,7 @@ export class Monitor {
       try {
         const gpcValue = req.header('Sec-GPC')
   
-        if (gpcValue === "1") {
+        if (gpcValue === '1') {
           // signal detected, do something
           logger.info(`gpc request detected`)
         }
@@ -857,7 +857,7 @@ export class Monitor {
                       const envFiles: any[] = [  { path:  `${config.__path__}assets/`, file:  filename, url:  fileurl, stale: 86400 * 5 } ]
                   
                       downloader.downloadAndWriteFiles(envFiles).then(() => {
-                        logger.info(`ccs7manager ${filename} downloaded and saved.\n`)  
+                        logger.info(`ccs7manager ${filename} downloaded and saved.\n`)
                         ws.send(JSON.stringify({ 'FILENAME': filename }))
                       }).catch(err => {
                         logger.info(`ccs7manager download request error ${filename}`)

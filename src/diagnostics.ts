@@ -106,7 +106,7 @@ export class Diagnostics {
 
             exec(cmd, (error, stdout, stderr) => {
               if (error) {
-                if (error.code === 1) {
+                if (error.code == 1) {
                   try {
                     ping_time = parseFloat(stdout.split('time=')[1].split(' ')[0])
                     ping_time *= 1.000 // Convert to milliseconds
@@ -153,7 +153,7 @@ export class Diagnostics {
               exec(cmd, (error, stdout, stderr) => {
 
                 if (error) {
-                  if (error.code === 1) {
+                  if (error.code == 1) {
                     resolve((stdout.toString().trim() === 'active') ? 1 : 0)
                   } else {
                     resolve((stdout.toString().trim() === 'inactive') ? 0 : -1)
