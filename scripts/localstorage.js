@@ -84,9 +84,11 @@ function enhanceNames(name) {
 
         if (names != null && names[name] != null)
             return names[name].capitalize(true)
+
+        return name.capitalize(true)
     }
 
-    return name.capitalize(true)
+    return ''
 }
 
 function getTgTableState(name) {
