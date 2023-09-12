@@ -130,15 +130,15 @@ export class PickleParser {
     let buffer = Buffer.from(pickle, 'binary')
 
     buffer["readLine"] = (i: number) => {
-      var index = pickle.indexOf('\n', i)
+      var index = buffer.indexOf('\n', i)
       if (index == -1)
           throw "Could not find end of line"
 
-      return pickle.subarray(i, index)
+      return buffer.subarray(i, index)
     }
 
-    for (var i = 0; i < pickle.length; ) {
-      var opindex = i, opcode = pickle[i++];
+    for (var i = 0; i < buffer.length; ) {
+      var opindex = i, opcode = buffer[i++];
 
       switch (String.fromCharCode(opcode)) {
         // protocol 2
@@ -286,7 +286,7 @@ export class PickleParser {
             catch(e) {
                 this.stack.push(0);
 
-                fs.writeFileSync(`./log/BININT1${Date.now()}.txt`, pickle.toString('utf-8'), { encoding: 'utf8' })
+                fs.writeFileSync(`./log/BININT1${Date.now()}.txt`, buffer.toString('utf-8'), { encoding: 'utf8' })
             }
 
             i += 1;
