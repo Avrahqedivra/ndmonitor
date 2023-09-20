@@ -30,12 +30,14 @@
         edit config.ts      (use an UTF-8 capable editor, vscode or notepad++ for exemple)
     
     build the transpiled files with: 
-    
+        
+        return to the ndmonitor main folder
+
         npm run build
 
     after build test with: 
     
-        nodejs ./dist/monitor.js
+        node ./dist/monitor.js
     
     test with your browser on: 
         
