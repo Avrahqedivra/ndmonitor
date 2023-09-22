@@ -994,6 +994,11 @@ function dragElement(elmnt) {
 
 			for (let i = 0, count = 0; i < trafficLength; i++) {
 				var record = traffic[i];
+
+				// skip excluded TG
+				if (tgfilter.has(record.TGID))
+					continue;
+
 				if (tgshas(record, tgs) == -1)
 					tgs.push({ "id": record.TGID, "dmrids": new Set([record.DMRID]), "count": 1 });
 				else {
@@ -1023,6 +1028,11 @@ function dragElement(elmnt) {
 				// added max length last_active_size
 				for (let i = 0; i < lastActiveLength; i++) {
 					var record = lastActive[i];
+
+					// skip excluded TG
+					if (tgfilter.has(record.TGID))
+						continue;
+
 					var link = '"tgId' + parseInt(record.TGID) + '"';
 					var delay = record.DELAY;
 					var callsign = record.CALLSIGN;
