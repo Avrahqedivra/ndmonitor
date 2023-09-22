@@ -429,7 +429,7 @@
 		})
 
 		getQRZImage(callsign, (link) => {
-			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href=https://qrz.com/db/" + callsign + "><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href='https://qrz.com/db/" + callsign + "'><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
 			$("#followup").append(content);
 			$("#followUpModal").show();
 		})
@@ -857,7 +857,7 @@
 							content += "<td class='slot'>" + record.TS + "</td>";
 							content += "<td class='callsign ellipsis'>";
 							content += "<img class='tgflag' src='" + flagUrl + "'/>"
-							content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+							content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
 							content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
 							if (record.NAME.toUpperCase() == callsign)
 								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";

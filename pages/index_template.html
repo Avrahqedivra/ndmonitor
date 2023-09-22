@@ -780,7 +780,7 @@ function dragElement(elmnt) {
 		})
 
 		getQRZImage(callsign, (link) => {
-			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href=https://qrz.com/db/" + callsign + "><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+			$("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href='https://qrz.com/db/" + callsign + "'><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
 			$("#followup").append(content);
 			$("#followUpModal").show();
 		})
@@ -1125,7 +1125,7 @@ function dragElement(elmnt) {
 						+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
 
 					// they both depend on TX connected
-						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>"
+						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
 						+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
 
 					if (record.NAME.toUpperCase() == callsign)
@@ -1686,7 +1686,7 @@ function dragElement(elmnt) {
 									+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
 
 								// they both depend on TX connected
-									+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>"
+									+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
 									+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
 
 								if (record.NAME.toUpperCase() == callsign)
