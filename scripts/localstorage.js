@@ -1,4 +1,4 @@
-cookieSettingsName = window.location.hostname+"_fdjson_settings"
+cookieSettingsName = window.location.hostname+"_ndjson_settings"
 settingsValidity = 5	    // 5 days
 settings = [ { config: { "theme": "theme-dark", hidetg: false, "last": 0 } }, { "map": { "zoom" : 6.5 } }, { name: "openbridges", "open": true }, {"name": "masters", "open": true }, { "name": "peers", "open": true }];
 
