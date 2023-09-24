@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "1.8.0"
+export let __version__: string          = "1.9.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -118,7 +118,7 @@ export class Monitor {
   private dashboardServer: WebSocketServer = null
   private webServer = null
   private reporter = null
-
+  
   constructor() {
   }
 
@@ -288,7 +288,6 @@ export class Monitor {
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages/index_template.html`)))
         break
 
-      case '/videobanner.html':
       case '/bridges.html':
       case '/tginfo.html':
       case '/map.html':
@@ -296,6 +295,7 @@ export class Monitor {
       case '/loglast.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
+      case '/logbook.html':
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;
@@ -359,33 +359,36 @@ export class Monitor {
       break
     }
   }
-  
-  /**
-   * 
-   * createLogTableJson()
-   * 
-   * @returns jsonified log file
-   */
-  createLogTableJson() {
-    let jsonArray = []
-    let counter = 0
-    let omset = new Set()
 
-    // if lastheard.json exists, return the file content
-    if (fs.existsSync(`${config.__log_path__}${config.__lastheard_file__}`))
-      return JSON.parse(fs.readFileSync(`${config.__log_path__}${config.__lastheard_file__}`, 'utf-8'))['TRAFFIC']
+  findInSet = (pred: any, set: any) => { 
+    for (let item of set) if(pred(item)) return item
+  }
+
+  completeMissingData(callsign: string, name: string, dmrid: string): any {
+    if (dmrid.length > 6) {
+      for(let i=0; i<__subscriber_ids__.length; i++) {
+        if (__subscriber_ids__[i][dmrid])
+          return __subscriber_ids__[i][dmrid]
+      }
+    }
+    
+    return { 'CALLSIGN': callsign, 'NAME': name, 'DMRID': dmrid }
+  }
+
+  parseLogfile(sorting: boolean): any[] {
+    let jsonArray: any[] = []
+    let counter = 0
 
     // if lastheard.log does not exists, create empty lastheard.json file
-    if (!fs.existsSync(`${config.__log_path__}${config.__lastheard_log__}`)) {
-      fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), { encoding:'utf-8', flag:'w' })
-      return { jsonArray }
-    }
+    if (!fs.existsSync(`${config.__log_path__}${config.__lastheard_log__}`))
+      return jsonArray
 
     // else try to create a json file from the log file
     const allFileContents = fs.readFileSync(`${config.__log_path__}${config.__lastheard_log__}`, 'utf-8')
 
     const logfile = allFileContents.split(/\r?\n/)
 
+    // start from the end to keep the last traffic
     for(let i=logfile.length-1; i>-1 && counter < config.__traffic_size__; i--) {
       var line = logfile[i]
 
@@ -402,6 +405,19 @@ export class Monitor {
           try {
             counter++
 
+            let callsign = row[11].trim()
+            let name = row[12].trim()
+
+            if (!callsign.length || !name.length) {
+              let record = this.completeMissingData(row[11].trim(), row[12].trim(), row[10].trim())
+
+              if (!callsign.length)
+                callsign = record.CALLSIGN
+
+              if (!name.length)
+                name = record.NAME
+            }
+
             jsonArray.push({
               'DATE':     row[0].substring(0, 10), 
               'TIME':     row[0].substring(11, 19), 
@@ -413,8 +429,8 @@ export class Monitor {
               'TGID':     report_tgid, 
               'ALIAS':    row[9], 
               'DMRID':    row[10], 
-              'CALLSIGN': row[11].trim(),
-              'NAME':     row[12].trim(), 
+              'CALLSIGN': callsign,
+              'NAME':     name,
               'DELAY':    row[1]
             })
           }
@@ -425,6 +441,46 @@ export class Monitor {
       }
     }
 
+    if (sorting) {
+      // generic comparison function
+      let cmp = (x: any, y: any) => {
+        return x > y ? 1 : x < y ? -1 : 0
+      }
+
+      jsonArray.sort((a: any, b:any) => {
+        // note the minus before -cmp, for descending order
+        return cmp( 
+            [cmp(a.DATE, b.DATE), cmp(a.TIME, b.TIME)], 
+            [cmp(b.DATE, a.DATE), cmp(b.TIME, a.TIME)]
+        )
+      })
+    }
+
+    return jsonArray
+  }
+  
+  /**
+   * 
+   * createLogTableJson()
+   * 
+   * @returns jsonified log file
+   */
+  createLogTableJson() {
+    let jsonArray: any[] = []
+    let counter: number = 0
+
+    // if lastheard.log does not exists, create empty lastheard.json file
+    if (!fs.existsSync(`${config.__log_path__}${config.__lastheard_log__}`)) {
+      fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), { encoding:'utf-8', flag:'w' })
+      return jsonArray
+    }
+
+    // if lastheard.json exists, return the file content
+    if (fs.existsSync(`${config.__log_path__}${config.__lastheard_file__}`))
+      return JSON.parse(fs.readFileSync(`${config.__log_path__}${config.__lastheard_file__}`, 'utf-8'))['TRAFFIC']
+
+    jsonArray = this.parseLogfile(false)
+
     fs.writeFileSync(`${config.__log_path__}${config.__lastheard_file__}`, JSON.stringify({ 'TRAFFIC': jsonArray }), { encoding:'utf-8', flag:'w' })
 
     if (config.__loginfo__)
@@ -433,13 +489,13 @@ export class Monitor {
     return { jsonArray }
   }
   
-  readLastHeard() {
+  loadTraffic() {
     // clear array
     this.__traffic__ = []
 
     if (!fs.existsSync(`${config.__log_path__}${config.__lastheard_file__}`)) {
       this.createLogTableJson()
-      return
+      // return
     }
   
     try {
@@ -569,14 +625,6 @@ export class Monitor {
       { path:  config.__path__, file:  config.__subscriber_file__, url:  config.__subscriber_url__, stale:  config.__file_reload__ * 24 * 3600 }
     ]
 
-    try {
-      this.readLastHeard()
-      logger.info(`\nlastheard contains ${this.__traffic__.length} records`)
-    }
-    catch(e) {
-      logger.info(`\nError reading ${config.__log_path__ + config.__lastheard_file__}`)
-    }
-
     logger.info('\nStarting files download, be patient, it could take several minutes...')
 
     downloader.downloadAndWriteFiles(envFiles).then(() => {
@@ -585,7 +633,7 @@ export class Monitor {
         logger.info(`\nBuilding dictionaries`)
 
         // making peers dictionary
-        this.__peer_ids__ = utils.mk_full_id_dict(config.__path__, config.__peer_file__, 'peer')        
+        this.__peer_ids__ = utils.mk_full_id_dict(config.__path__, config.__peer_file__, 'peer')
         if (this.__peer_ids__)
           logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
 
@@ -641,6 +689,14 @@ export class Monitor {
 
         __siteLogo_html__ = replaceSystemStrings(loadTemplate(`${config.__path__}pages/${config.__siteLogo__}`))
         __buttonBar_html__ = replaceSystemStrings(loadTemplate(`${config.__path__}pages/${config.__buttonBar__}`))
+
+        try {
+          this.loadTraffic()
+          logger.info(`\nlastheard contains ${this.__traffic__.length} records`)
+        }
+        catch(e) {
+          logger.info(`\nError reading ${config.__log_path__ + config.__lastheard_file__}`)
+        }
 
         /**
          * dashboard websocket server
@@ -775,7 +831,6 @@ export class Monitor {
                 _message['CONTACTS'] = this.__contacts__ids__
 
               _message['DIAGNOSTICS'] = this.reporter.build_Diagnostic_table()
-              // _message['USERS'] = this.__local_subscriber_ids__
             }
 
             _message['PACKETS'] = {}
@@ -788,20 +843,20 @@ export class Monitor {
               initialList = [...this.__traffic__]
 
               // generic comparison function
-              let cmp = (x: any, y: any) => {
-                return x > y ? 1 : x < y ? -1 : 0
-              }
+              // let cmp = (x: any, y: any) => {
+              //   return x > y ? 1 : x < y ? -1 : 0
+              // }
 
-              initialList.sort((a: any, b:any) => {
-                // note the minus before -cmp, for descending order
-                return cmp( 
-                    [-cmp(a.DATE, b.DATE), -cmp(a.TIME, b.TIME)], 
-                    [-cmp(b.DATE, a.DATE), -cmp(b.TIME, a.TIME)]
-                )
-              })
+              // initialList.sort((a: any, b:any) => {
+              //   // note the minus before -cmp, for descending order
+              //   return cmp( 
+              //       [-cmp(a.DATE, b.DATE), -cmp(a.TIME, b.TIME)], 
+              //       [-cmp(b.DATE, a.DATE), -cmp(b.TIME, a.TIME)]
+              //   )
+              // })
 
               if (config.__traffic_last_N_days__ > 0) {
-                for(let i=0; i<initialList.length; i++) {
+                for(let i=0; i<initialList.length && i<config.__traffic_size__; i++) {
                   var t = new Date(initialList[i].DATE + ' 00:00:00')
 
                   if ((Date.now() - t.getTime()) / 1000 / 86400 >= config.__traffic_last_N_days__) {
@@ -811,7 +866,7 @@ export class Monitor {
                 }
               }
               else {
-                initialList.length = config.__traffic_size__
+                initialList.length = Math.min(initialList.length, config.__traffic_size__)
               }
 
               if (ws.fromPage) {
@@ -821,8 +876,12 @@ export class Monitor {
                   case 'loglast':
                     break
 
+                  case 'logbook':
+                    _message['PACKETS'] = { 'TRAFFIC': this.parseLogfile(true) }
+                    break
+
                   default:
-                    _message['PACKETS'] = { 'TRAFFIC': initialList  }
+                    _message['PACKETS'] = { 'TRAFFIC': initialList }
                     break
                 }
               }

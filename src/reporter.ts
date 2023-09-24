@@ -593,10 +593,14 @@ export class Reporter {
 
       this.dashboardServer.clients.forEach((ws: any) => {
         if (ws.fromPage) {
-          if (ws.page === 'dashboard')
-            ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
-          else
-            ws.send(JSON.stringify({ 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
+          if (ws.page !== 'logbook') {
+            if (ws.page === 'dashboard')
+              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
+            else
+              ws.send(JSON.stringify({ 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
+          } else {
+            ws.send(JSON.stringify({ 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
+          }
         }
       })
           

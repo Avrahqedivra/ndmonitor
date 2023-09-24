@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+    <head>
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
+        <title>NDMonitor</title>
+        
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+
+	      <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629), HBJSON (c) JMC 2021-2023" />
+
+        <!-- for date picker -->
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+        <style>
+          .caption {
+              background-color: var(--color-bg-headerRow);
+              color: var(--color-fg-headerRow);
+              margin: 0 0 1.5rem 0;
+              height: 2.7rem;
+              font-size: 1.2rem;
+              font-weight: normal;
+          }
+
+          button {
+              font-size: 9pt;
+              border: .5px solid var(--color-table-border);
+              padding: 0.3rem;
+              background-color: var(--color-bg-headerRow);
+              color: var(--color-fg-headerRow);
+          }
+
+          button:hover, button:focus {
+              border: .5px solid var(--color-table-border);
+              background-color: var(--color-map-stroke);
+          }
+
+          button:disabled {
+            background-color: var(--color-button-disabled);
+          }
+
+          .title {
+              padding-left: 1rem;
+              padding-top: 8px;
+              display: inline-block;
+          }
+
+          .footer_logbook {
+            margin-top: 0.5rem;
+            width: 100%;
+            bottom: 0;
+            text-align: left;
+            border-top: .5px solid var(--color-table-border);
+            font-family: "Segoe UI";
+            font-size: 13pt;
+            font-weight: bold;
+            text-transform: uppercase;
+          }
+
+          footer .static {
+            display: inline-block;
+            margin: 0.25rem 0 0.25rem 0.25rem;
+          }
+
+          footer .status {
+            color: #00C000;
+            display: inline-block;
+            margin: 0.25rem 0 0.25rem 0.25rem;
+          }
+
+          .modal_logbook {
+            margin-top: 3rem;
+          }
+
+          /* Modal Content */
+          .modal-content_logbook {
+              text-align: left;
+              background-color: var(--color-trbg);
+              color: var(--color-table-fg);
+              min-width: 80rem;
+              margin: auto;
+              border: .5px solid var(--color-table-border);
+          }
+
+          .group {
+            border: .5px solid var(--color-table-border);
+            display: inline-block;
+          }
+
+          input
+          {
+            border: .5px solid var(--color-table-border);
+          }
+
+          input:focus {
+            outline: none;
+            border-color: #0078D7;
+          }
+
+          .tdhr {
+            border-top: 2px solid #888;
+          }
+
+          /* option:checked:before { content: "✓" } */
+          select {
+            font-size: 9pt;
+            border-radius: 0 !important;
+            background-color: var(--color-bg-select);
+            color: var(--color-table-fg);
+            border: .5px solid var(--color-table-border);
+          }
+
+          select:focus, select:hover {    
+            border-color: var(--color-scrollbarthumb);
+          }
+
+          select option {
+            text-align: left;
+          }
+          select option:before {
+            font-size: 1.2rem;
+            font-weight: normal;
+            content: "☐ ";
+          }
+
+          select option:checked:before { 
+            padding: 0;
+            margin: 0;
+            content: "☑ ";
+            font-size: 1.2rem;
+          }
+              
+          select.widthHeight::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+          }
+
+          select.style::-webkit-scrollbar-track {
+            border: rgb(180, 180, 180);
+            background-color: var(--color-scrollbartrack);
+          }
+            
+          select.style::-webkit-scrollbar-thumb {
+            background-color: var(--color-scrollbarthumb);
+            border: 1px solid var(--color-table-border);
+          }
+
+          select option:checked {
+            background-color: var(--color-bg-select);
+            color: var(--color-table-fg);
+          }
+
+          /* ui-datepicker https://stackoverflow.com/questions/25474378/how-to-style-jquery-datepicker-calendar */
+          .ui-datepicker-header {
+            background-color: var(--color-trbg);
+            color: var(--color-table-fg);
+            border: .5px solid var(--color-table-border);
+          }
+          
+          .ui-datepicker thead {
+            background-color: #f7f7f7;
+            /*border-bottom: 1px solid #bbb;*/
+          }
+
+          .ui-datepicker th {
+            background-color:#808080;
+            text-transform: uppercase;
+            font-size: 8pt;
+            color: white;
+            /*text-shadow: 1px 0px 0px #fff;*/
+            /*filter: dropshadow(color=#fff, offx=1, offy=0);*/
+          }
+
+          /* query */
+          .queryContainer {
+            margin: 0 0 1.5rem 0;
+          }
+
+          #overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            background-color: var(--color-bg-overlay);
+          }
+
+          </style>
+    </head>
+
+	  <body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+
+            __BUTTON_BAR__
+
+            <div id="modals">
+              <!-- The Followup -->
+              <div id="followUpModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-followup">
+                  <span class="close close-followup">&times;</span>
+                  <table class="tablefixed">
+                    <thead id="theadFollowUp" tbodyid="followup">
+                      <tr class="headerRow">
+                        <th class="thlename">Name</th>
+                        <th class="thledate">Date</th>
+                        <th class="thletime">Time</th>
+                        <th class="thletg">TG</th>
+                        <th class="thlelog">LOG</th>
+                        <th class="thledelay">TX</th>
+                      </tr>
+                    </thead>
+                    <tbody id="followup">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+        
+              <!-- The Statistics -->
+              <div id="statisticsModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-statistics">
+                  <span class="close close-statistics">&times;</span>
+                  <table class="tablefixed">
+                    <thead id="theadStatistics" tbodyid="statistics">
+                      <tr class="headerRow">
+                        <th class="thlstg">TG</th>
+                        <th class="thlsCnx">Nb Cnx</th>
+                        <th class="thlsDelay">Total Time</th>
+                      </tr>
+                    </thead>
+                    <tbody id="statistics">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+        
+              <!-- The Listeners -->
+              <div id="listenersModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-listeners">
+                  <span class="close close-listeners">&times;</span>
+                  <table class="tablefixed">
+                    <thead id="theadListeners" tbodyid="listeners">
+                      <tr class="headerRow">
+                        <th class="thlscallsign">Callsign</th>
+                        <th class="thlsip">IP</th>
+                        <th class="thlsport">Port</th>
+                        <th class="thlsnetid">NetID</th>
+                      </tr>
+                    </thead>
+                    <tbody id="listeners">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+        
+              <!-- The Status -->
+              <div id="statusdiv" style="display: none;">
+                <!-- Modal content -->
+                <div class="modal-content-status">
+                  <span class="close close-status">&times;</span>
+                  <table class="tablefixed">
+                    <thead id="statusdivheader" tbodyid="status">
+                      <tr class="headerRow">
+                        <th class="thlename">Server<div id="statusCountdown" style="padding-right:0.5rem;float: right;">10</div></th>
+                        <th class="thledate">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="status">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+        
+            </div>
+
+            <div id="siteHeader" style="display: none">
+                <div id="insertPoint"  style="width: fit-content;">
+                  <div id="logbookPanel" class="modal_logbook">
+                    <!-- Modal content -->
+                    <div class="modal-content_logbook">
+                      <div class="caption">
+                          <div class="title">Logbook Generator by F4JDN</div>
+                      </div>
+                      <div class="queryContainer">
+                        <div style="display: inline-block; margin-left: 1rem;">Enter your callsign: <input style="width: 6rem;" type="text" id="yourCallsign"></div>
+                        <div style="display: inline-block; margin-left: 1rem;">Threshold: <input style="width: 3rem;" type="text" id="qsoLength"></div>
+                        <div style="display: inline-block; margin-left: 1rem;">Min duration: <input style="width: 3rem;" type="text" id="minDuration"></div>
+                        <div style="display: inline-block; margin-left: 1rem;">Start date: <input style="width: 5rem;" type="text" id="datepickerStart"></div>
+                        <div style="display: inline-block; margin-left: 1rem;">End date: <input style="width: 5rem;" type="text" id="datepickerEnd"></div>
+                        <div style="display: inline-block; margin-left: 1rem;"><button onclick='parseLogbook()' style="width: 4rem;">RUN</button></div>
+                      </div>
+    
+                      <div id="logbookModal" class="modal">
+                        <!-- Modal content -->
+                        <div class="modal-content-logbook">
+                          <span class="close close-logbook">&times;</span>
+                          <table class="tablefixed">
+                            <thead id="theadFollowUp" tbodyid="logbook">
+                              <tr class="headerRow">
+                                <th class="thlename">Name</th>
+                                <th class="thledate">Date</th>
+                                <th class="thletime">Time</th>
+                                <th class="thletg">TG</th>
+                                <th class="thlelog">LOG</th>
+                                <th class="thledelay">TX</th>
+                              </tr>
+                            </thead>
+                            <tbody id="logbook">
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="footer">
+                  <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN</a> 2021-2023.</span>
+              </div>
+              <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+          </div>
+          
+          <div id="overlay"></div>
+        </center>
+    </body>
+
+  <script type="text/javascript">
+	  function updateStatus(willBeShown) {
+      var content = ""
+      var alarm = false
+      var statusDivVisible = $("#statusdiv").is(":visible")
+
+      for(let i=0; i < diagStatus.length; i++) {
+        var server = diagStatus[i]
+
+        if (server["ACTION"] != "ping" && server["STATUS"] != 1)
+          alarm = true
+
+        if (statusDivVisible || willBeShown) {
+          content += "<tr class='trlisteners'><td>" + server['NAME'] + "</td>"
+
+          if (server["ACTION"] == "ping") {
+            var ping = server['TIME'];
+            if (ping == null || parseFloat(ping) < 0)
+              bgClass = "red";
+            else if (parseFloat(ping) < 30)
+              bgClass = "green";
+            else if (parseFloat(ping) < 60)
+              bgClass = "orange";
+            else
+              bgClass = "red";
+
+            content += "<td><div class='msrounded " + bgClass + "'>" + server['TIME'] + " ms</div></td>";
+          }
+          else {
+            var label = server['ACTION'] == "connect" ? "Port ":"Status "
+
+            // 🟠 (emoji orange circle)
+            // ⚪ (emoji white circle)
+            if (server['STATUS'] == 1)
+              content += "<td><div class='statusLabel'>" + label + "🟢</div></td>"
+            else if (server['STATUS'] == -1)
+              content += "<td><div class='statusLabel'>" + label + "🟠</div></td>"
+            else if (server['STATUS'] == -2)
+              content += "<td><div class='statusLabel'>" + label + "⚪</div></td>"
+            else
+              content += "<td><div class='statusLabel'>" + label + "🔴</div></td>"
+          }
+
+          content += "</tr>"
+          $("#status tr").remove()
+          $("#status").append(content);
+        }
+      }
+
+      if (alarm)
+        $("#serverstatus").addClass("alarm");
+      else
+        $("#serverstatus").removeClass("alarm");
+    }
+
+    function serverStatus() {
+      updateStatus(true);
+
+      $("#statusdiv").show();
+
+      // Make the DIV element draggable:
+      dragElement(document.getElementById("statusdiv"));
+    }
+
+    /**
+      https://stackoverflow.com/questions/65022204/make-a-popup-modal-dialog-movable-draggable-once-it-has-appeared
+    */
+
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      if (document.getElementById(elmnt.id + "header")) {
+        /* if present, the header is where you move the DIV from:*/
+        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+      } else {
+        /* otherwise, move the DIV from anywhere inside the DIV:*/
+        elmnt.onmousedown = dragMouseDown;
+      }
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        /* stop moving when mouse button is released:*/
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    function followUpdUser(dmrid) {
+      $("#followup tr").remove()
+
+      var content = ""
+      var bgClass = ""
+      var callsign = ""
+
+      traffic.forEach(om => {
+        if (om.PACKET == "END" && (om.DMRID == dmrid || om.CALLSIGN == dmrid)) {
+          // save callsign for later
+          if (callsign.length == 0)
+            callsign = om.CALLSIGN
+
+          bgClass = 'tgGreen';
+
+          var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+          if (om.DELAY == 0)
+            bgClass += " darker ";
+
+          var alias = om.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+          content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
+            + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
+            + om.TGID + "</td><td class='alias ellipsis'>" + alias + "</td><td class='delay'>" + delay + "</td></tr>";
+        }
+      })
+
+      getQRZImage(callsign, (link) => {
+        $("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href='https://qrz.com/db/" + callsign + "'><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+        $("#followup").append(content);
+        $("#followUpModal").show();
+      })
+    }
+
+    function followupdmrid() {
+      var val = $('#search').val();
+      $("#inputModal").hide();
+      if (val != "")
+        followUpdUser(val.toUpperCase());
+    }
+
+    function stats() {
+      statistics = [];
+
+      for(let i=0; i<traffic.length; i++) {
+        var record = traffic[i];
+
+        if (record.PACKET == "END") {
+          var tgid = ""+record.TGID;
+
+          record.DELAY = parseInt(record.DELAY);
+
+          if (record.DELAY > 9999)
+              record.DELAY = record.DELAY / 1000;
+
+          // skip hidden tgs
+          if (tgfilter.has('' + tgid))
+              continue;
+
+          if (statistics[tgid] == null) {
+            statistics[tgid] = { "tgid": record.TGID, "cnxCount": 1, "cnxTime": record.DELAY };
+          }
+          else {
+            statistics[tgid]["cnxCount"] = statistics[tgid]["cnxCount"] + 1;
+            statistics[tgid]["cnxTime"] = statistics[tgid]["cnxTime"] + record.DELAY;
+          }
+        }
+      }
+
+      for (const tgid of tgorder) {
+        // skip hidden tgs
+        if (tgfilter.has('' + tgid))
+            continue;
+
+        if (statistics[tgid] == null)
+          statistics[tgid] = { "tgid": tgid, "cnxCount": 0, "cnxTime": 0 };
+      }
+
+      $("#statistics tr").remove();
+        var content = "";
+
+        statistics.forEach(stat => {
+          cnxTime = parseInt(stat.cnxTime);
+
+          if (cnxTime < 60 )
+            delay = cnxTime + " sec";
+          else if (cnxTime < 3600)
+            delay = parseInt(cnxTime / 60) + " min";
+          else
+            delay = parseInt(cnxTime / 3600) + " hrs";
+
+          content += "<tr class='"+ (stat.cnxCount == 0 ? "trstatisticsred":"trstatisticsgreen") + "'><td class='tdstattg'>" 
+            + stat.tgid + "</td><td class='tdstatcnt'>" + stat.cnxCount + "</td><td class='tdstatdelay'>" + delay + "</td></tr>";
+        });
+
+        $("#statistics").append(content);
+        $("#statisticsModal").show();
+    }
+
+    function tgshas(record, tgs) {
+      var tgslength = tgs.length;
+      for (let i = 0; i < tgslength; i++) {
+        if (tgs[i].id == record.TGID)
+          return i;
+      }
+
+      return -1;
+    }
+
+    function logbookUser(dmrid) {
+      $("#logbook tr").remove()
+
+      var content = ""
+      var bgClass = ""
+      var callsign = ""
+
+      traffic.forEach(om => {
+        if (om.PACKET == "END" && (om.DMRID == dmrid || om.CALLSIGN == dmrid)) {
+          // save callsign for later
+          if (callsign.length == 0)
+            callsign = om.CALLSIGN
+
+          if (tghilite.has(om.TGID))
+            bgClass = 'tgWhite';
+          else
+            bgClass = 'tgGreen';
+
+          var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+          if (om.DELAY == 0)
+            bgClass += " darker ";
+
+          var alias = om.ALIAS;
+
+          content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
+            + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
+            + om.TGID + "</td><td class='alias ellipsis'>" + alias + "</td><td class='delay'>" + delay + "</td></tr>";
+        }
+      })
+    }
+
+    function writeSingleFile(filename, content) {
+        let blob = new Blob([content], { type: "text/plain;" });
+        let link = document.createElement("a");
+        window.URL = window.URL || window.webkitURL;
+        link.download = filename;
+        link.href = window.URL.createObjectURL(blob);
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(link.href);
+        }, 250);
+    }
+
+    function parseLogbook() {
+      myCallsign = document.getElementById('yourCallsign').value.toUpperCase()
+      qsoLength = parseInt(document.getElementById('qsoLength').value)
+      minDuration = parseInt(document.getElementById('minDuration').value)
+      startDate = $("#datepickerStart").datepicker("getDate")
+      endDate = $("#datepickerEnd").datepicker("getDate")
+      doTraffic(null)
+    }
+
+    function buildLine(t, record, callsign, dmrid, tgid, alias, delay) {
+      let bgClass = 'tgGreen';
+
+      var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
+      if (flagUrl == "")
+          flagUrl = flag64["shield"];
+
+      /* deal with content if < displaylines */
+      let content = '<tr class=' + bgClass + '>';
+        content += "<td class='tdDate'>" + record.DATE + "</td>";
+        content += "<td class='tdTime'>" + record.TIME + "</td>";
+        content += "<td class='slot'>" + record.TS + "</td>";
+        content += "<td class='callsign ellipsis'>";
+        content += "<img class='tgflag' src='" + flagUrl + "'/>"
+        content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
+        content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+        if (record.NAME.toUpperCase() == callsign)
+            content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
+        else
+            content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
+        content += "<td class='talkgroup'>" + tgid + "</td>";
+        content += "<td class='alias ellipsis'>" + alias + "</td>";
+        content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
+        content += "<td class='netid'>" + record.SRC_ID + "</td>";
+        content += "<td class='infra'>" + record.SYS + "</td>";
+        content += "</tr>";
+
+      if (t == null)
+        csvFile += `\n${record.DATE},${record.TIME},${record.TS},${callsign},${dmrid},${record.NAME},${tgid},${alias},${delay},${record.SRC_ID},${record.SYS}`
+
+      return content
+    }
+
+    function doTraffic(t) {
+      if (t != null) {
+        if (Array.isArray(t))
+          traffic = t;
+        else
+          traffic.unshift(t);
+      }
+      else {
+        csvFile = 'Date, Heure, Slot, Callsign, DMRID, Name, TG#, Log, TX, NetID, Infra'
+      }
+
+      let trafficLength = traffic.length;
+
+      if (trafficLength > 0) {
+        let content = "";
+
+        $(".lastheard tbody tr").remove();
+
+        for (var i=0; i<trafficLength; i++) {
+          var record = traffic[i];
+
+          if (startDate == '') {
+            startDate = new Date(traffic[0].DATE + ' 00:00:00')
+            endDate = new Date(traffic[trafficLength-1].DATE + ' 00:00:00')
+
+            $("#datepickerStart").datepicker({ dateFormat: 'dd-mm-yy'}).datepicker("setDate", startDate)
+            $("#datepickerEnd").datepicker({ dateFormat: 'dd-mm-yy'}).datepicker("setDate", endDate)
+          }
+
+          let dd = new Date(record.DATE + ' 00:00:00')
+          if (dd < startDate || dd > endDate || record.DELAY < 2)
+            continue
+
+          var tgid = parseInt(record.TGID);
+          var alias = record.ALIAS
+
+          if (!tgfilter.has('' + tgid) && record.PACKET == "END") {
+            var tgName = "tblogbook";
+
+            /* check if table already exists */
+            if (document.getElementById(tgName) == null) {
+              /* build the missing table */
+              var emptyTable = '<table id=' + tgName + ' class="tables lastheard tablefixed" style="width:fit-content;">' +
+                  '<thead>' +
+                  '<tr class="headerRow">' +
+                  '<th class="thledate">Date</th>' +
+                  '<th class="thletime">Heure</th>' +
+                  '<th class="thleslot">Slot</th>' +
+                  '<th class="thletx" colspan=2>TX Connectés</th>' +
+                  '<th class="thlename">Name</th>' +
+                  '<th class="thletg">TG#</th>' +
+                  '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' +
+                  '<th class="thledelay"TX(s)</th>' +
+                  '<th class="thlenetid">NetID</th>' +
+                  '<th class="thlemaster">Master Infra</th>' +
+                  '</tr>' +
+                  '</thead>' +
+                  '<tbody id="hblink"></tbody></table>';
+
+              /* insert new table into tg tables area */
+              $('#insertPoint').append(emptyTable);
+            }
+
+            var callsign = record.CALLSIGN;
+            var dmrid = record.DMRID;
+            var delay = record.DELAY;
+            let bgClass = 'tgGreen';
+
+            if (delay > 1000)
+                delay = "xx";
+            else if (delay < 2)
+                delay = "PTT";
+
+            if (callsign === "")
+                callsign = dmrid;
+
+            if (qsoStarted) {
+              var tt = new Date(record.DATE + ' 00:00:00')
+              if ((startTime - tt.getTime()) / 1000 < qsoLength ) {
+                if (currentTg == tgid) {
+                  if (myCallsign == callsign) // you spoke again on same tg
+                    startTime = new Date(record.DATE + ' 00:00:00').getTime()
+
+                  if (qsoOM.has(callsign))
+                    continue
+
+                  qsoOM.add(callsign)
+                } else {
+                  if (myCallsign.length > 0 && myCallsign == callsign) { // you spoke again on different tg
+                    startTime = new Date(record.DATE + ' 00:00:00').getTime()
+                    $("#hblink").append('<tr class="' + bgClass + '"><td class="tdhr" colspan="11"></td>');
+                  }
+                  else {
+                    qsoStarted = false
+                    $("#hblink").append('<tr class="' + bgClass + '"><td class="tdhr" colspan="11"></td>');
+                    continue
+                  }
+                }
+              }
+              else {
+                // you didn't speak for a long time
+                qsoStarted = false
+                $("#hblink").append('<tr class="' + bgClass + '"><td class="tdhr" colspan="11">&nbsp;</td>');
+                continue
+              }
+            } else {
+              if (myCallsign.length > 0 && callsign == myCallsign && delay > minDuration) {
+                qsoOM = new Set().add(callsign)
+                startTime = new Date(record.DATE + ' 00:00:00').getTime()
+                currentTg = tgid
+                qsoStarted = true
+
+                // findPreviousCorrespondant()
+                for(let p=i-1; p>0; p--) {
+                  var previous = traffic[p]
+
+                  // too far ahead
+                  if ((new Date(record.DATE + ' ' + record.TIME).getTime() - new Date(previous.DATE + ' ' + previous.TIME).getTime()) / 1000 > qsoLength)
+                    break
+
+                  if (previous.TGID == tgid) {
+                    if (!qsoOM.has(previous.CALLSIGN)) {
+                      // console.log(JSON.stringify(previous))
+                      qsoOM.add(previous.CALLSIGN)
+                      $("#hblink").append(buildLine(t, previous, previous.CALLSIGN, previous.DMRID, previous.TGID, previous.ALIAS, previous.DELAY));
+                    }
+                  }
+                }
+              }
+              else
+                continue
+            }
+
+            content = buildLine(t, record, callsign, dmrid, tgid, alias, delay)
+
+            $("#hblink").append(content);
+          }
+        }
+
+        if (t == null)
+          writeSingleFile('logbook.csv', csvFile)
+      }
+    }
+
+    var myCallsign = ''
+    var startDate = ''
+    var endDate = ''
+    var startTime = 0
+    var minDuration = 15
+    var qsoLength = parseInt("__START_TOT__"); if (qsoLength == 0) qsoLength = 240;
+    var qsoStarted = false
+    var lastheardOpen = true;
+    var sock = null;
+    var displayLines = parseInt("__DISPLAY_LINES__");
+    
+    traffic = [];
+    tgorder = new Set("__TGID_ORDER__".split(','));    
+    tgfilter = new Set("__TGID_FILTER__".split(','));
+
+    hide_dmrid = new Set("__HIDE_DMRID__".split(','));
+
+    document.getElementById("minDuration").value = minDuration
+    document.getElementById("qsoLength").value = qsoLength
+        
+    function enhanceNames(name) {
+        if (names[name] != null)
+            return names[name];
+
+        return name;
+    }
+
+    function gotoBottom(id){
+        var element = document.getElementById(id);
+        element.scrollTop = element.scrollHeight - element.clientHeight;
+    }
+
+    function log(msg) {
+        console.log(msg);
+    };
+
+    $(document).ready(() => {
+      // document ready occurs before windows.onLoad
+      if (getConfigFromLocalStorage != null) {
+          getConfigFromLocalStorage();
+
+          if (document.documentElement.className != settings[0].config.theme)
+              document.documentElement.className = settings[0].config.theme;
+      }
+
+      initMenubar();
+
+      $(window).click(function (event) {
+        if (event.target == document.getElementById("statusdiv"))
+          $("#statusdiv").hide();
+      });
+
+      $(window).click(function (event) {
+        if (event.target == document.getElementById("listenersModal"))
+          $("#listenersModal").hide();
+      });
+
+      $(window).click(function (event) {
+        if (event.target == document.getElementById("statisticsModal"))
+          $("#statisticsModal").hide();
+      });
+
+      $(document).on("click", ".close", function () {
+        $("#statisticsModal").hide();
+        $("#listenersModal").hide();
+        $("#followUpModal").hide();
+        $("#statusdiv").hide();
+      });
+
+      $(document).on("dblclick", "#listenersmenu", function (e) {
+        if (e.ctrlKey) {
+          $("#listeners tr").remove()
+          var content = ""
+
+          // listenerList = uniqByKeepLast(listenerList, swl => swl.NETID)
+
+          listenerList.forEach(swl => {
+            content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+          })
+
+          $("#listeners").append(content)
+          $("#listenersModal").show()
+        }
+      });
+    })
+
+    window.onload = function() {
+      diagStatus = [];
+      statusCountdown = 0;
+
+      try {
+		    tgbeacons = JSON.parse('__TGID_BEACONS__');
+      } catch(e) {
+        tgbeacons = {};
+      }
+
+      hideAllTG = false;
+      var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=logbook";
+
+      if (isNaN(displayLines))
+          displayLines = 10;
+
+      function WSConnection() {
+          'use strict';
+          this.socket = {};
+      }
+
+      WSConnection.prototype.connect = (url) => {
+          'use strict';
+
+          return new Promise((resolve, reject) => {
+              if ("WebSocket" in window)
+                  this.socket = new WebSocket(url);
+              else if ("MozWebSocket" in window)
+                  this.socket = new MozWebSocket(url);
+              else {
+                  log("Browser does not support WebSocket!");
+                  resolve();
+              }
+
+              this.socket.onopen = () => {
+                  log("Connected to " + url)
+                  resolve();
+              };
+
+              this.socket.onmessage = (e) => {
+                  var data = null;
+
+                  try {
+                    if (themeSettings == "auto")
+                        adjustTheme();
+
+                    data = JSON.parse(e.data);
+
+                    if (data != null) {
+                      // FIRST PACKET IS CONFIG
+                      if (data.CONFIG) {
+                        if (data.CONFIG.DIAGNOSTICS) {
+                          statusCountdown = 10
+                          diagStatus = data.CONFIG.DIAGNOSTICS;
+                          updateStatus(false);
+                        }
+
+                        if (data.CONFIG.PACKETS) {
+                          doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+                          $("#overlay").hide();
+                        }
+                      } else {
+                        if (data.DIAGNOSTICS) {
+                          statusCountdown = 10
+                          diagStatus = data.DIAGNOSTICS;
+                          updateStatus(false);
+                        }
+                      }
+                    }
+                  } catch(error) {
+                    log(error);
+                  }
+              };
+
+              socket.onerror = function (error) {
+                  console.log('WebSocket error: ' + error);
+                  reject(error);
+              };
+
+              socket.onclose = function (e) {
+                  log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                  this.sock = null;
+              };
+          });
+      };
+
+      WSConnection.prototype.disconnect = () => {
+          'use strict';
+          console.log("Disconnect request from local app layer");
+          this.socket.close();
+      };
+      
+      socket = new WSConnection().connect(wsuri);
+
+      $("#menubar").show()
+      $("#siteHeader").show()
+
+      $("#overlay").show();
+    }
+
+    window.onunload = () => {
+      if (socket != null && socket != {})
+          socket.disconnect();
+    }
+ </script>
+
+<!-- for date picker -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+</html>

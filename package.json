@@ -1,6 +1,6 @@
 {
   "name": "monitor",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "",
   "main": "monitor.js",
   "type": "module",
@@ -17,7 +17,6 @@
     "@types/ws": "^8.5.5"
   },
   "dependencies": {
-    "csv": "^6.3.3",
     "net": "^1.0.2",
     "permessage-deflate": "^0.1.7",
     "typescript": "^5.2.2",
