@@ -129,28 +129,33 @@ function readCookie(name) {
 }
 
 function saveSettings() {
-    themeSettings = document.documentElement.className
-    var ob = document.getElementById("openbridges").style.display != "none"
-    var ma = document.getElementById("masters").style.display != "none"
-    var pe = document.getElementById("peers").style.display != "none"
+    themeSettings = document.documentElement.className    
+    
+    if (document.getElementById("openbridges")) {
+        var ob = document.getElementById("openbridges").style.display != "none"
+        var ma = document.getElementById("masters").style.display != "none"
+        var pe = document.getElementById("peers").style.display != "none"
 
-    settings = [
-        { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now() } },
-        { "map": { "zoom" : (map != null) ? map.getZoom() : 6.5 } },
-        { "name": "openbridges",    "open": ob, "colspan": $("#theadOpenbridges tr th").length }, 
-        { "name": "masters",        "open": ma, "colspan": $("#theadMasters tr th").length }, 
-        { "name": "peers",          "open": pe, "colspan": $("#theadPeers tr th").length }
-    ]
+        settings = [
+            { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now() } },
+            { "map": { "zoom" : (map != null) ? map.getZoom() : 6.5 } },
+            { "name": "openbridges",    "open": ob, "colspan": $("#theadOpenbridges tr th").length }, 
+            { "name": "masters",        "open": ma, "colspan": $("#theadMasters tr th").length }, 
+            { "name": "peers",          "open": pe, "colspan": $("#theadPeers tr th").length }
+        ]
 
-    if (tgorder != null) {
-        tgorder.forEach(tg => {
-            var tgName = "tgId"+tg
-            var tgId = "hblink"+tg
-            if (document.getElementById(tgName) != null) {
-                var visible = document.getElementById(tgId).style.display != "none"
-                settings.push({ "name": tgId, "open": visible, "colspan": $("#" + tgName + " tr th").length })
-            }
-        });
+        if (tgorder != null) {
+            tgorder.forEach(tg => {
+                var tgName = "tgId"+tg
+                var tgId = "hblink"+tg
+                if (document.getElementById(tgName) != null) {
+                    var visible = document.getElementById(tgId).style.display != "none"
+                    settings.push({ "name": tgId, "open": visible, "colspan": $("#" + tgName + " tr th").length })
+                }
+            });
+        }
+    } else {
+        settings[0]['config'] = { "theme": themeSettings, "hidetg": settings[0]['config']['hidetg'], "last": Date.now() }
     }
     
     createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity)
