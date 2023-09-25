@@ -1009,6 +1009,10 @@ export class Reporter {
   updateLastheard(jsonStr: any) {
     // update log file
     this.monitor.__traffic__.unshift(jsonStr)
+    
+    // adjust max length
+    this.monitor.__traffic__.length = Math.min(this.monitor.__traffic__.length, config.__traffic_size__)
+    
     fs.writeFileSync(config.__log_path__ + 'lastheard.json', JSON.stringify({ 'TRAFFIC': this.monitor.__traffic__ }) , 'utf-8')
   }
 
