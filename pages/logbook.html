@@ -854,7 +854,7 @@
               document.documentElement.className = settings[0].config.theme;
       }
 
-      initMenubar();
+      initMenubar(null);
 
       $(window).click(function (event) {
         if (event.target == document.getElementById("statusdiv"))

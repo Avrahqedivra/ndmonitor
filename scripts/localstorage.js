@@ -46,7 +46,7 @@ function adjustMenuLayoutStyle(f) {
   lockbutton.classList.add(isFixed ? "fa-lock":"fa-lock-open")
 }
 
-function initMenubar() {
+function initMenubar(disabledMenuPattern) {
     lockbutton = document.getElementById("lockButton")
     menubar = document.getElementById("menubar")
     siteHeader = document.getElementById("siteHeader")
@@ -59,6 +59,27 @@ function initMenubar() {
     })
     
     adjustMenuLayoutStyle(isFixed)
+
+
+    /**
+     * disabledMenuPattern is like '--X----------X--'
+     * all the menus corresponding to a minus will be disabled
+     */
+    if (disabledMenuPattern != null) {
+        for(let i=0; i<disabledMenuPattern.length; i++) {
+            if (disabledMenuPattern.charAt(i) == 'X') {
+                var el = $(`#menubar ul li:nth-child(${i+1})`)
+                if (el.prop('tagName') === 'LI')
+                    $(`#menubar ul li:nth-child(${i+1})`).addClass('menudisabled')
+                else {
+                el = $(`#menubar ul div:nth-child(${i+1})`)
+                    if (el.prop('tagName') === 'DIV') {
+                        $(`#menubar ul div li`).addClass('menudisabled')
+                    }
+                }
+            }
+        }
+    }
 }
 
 String.prototype.capitalize = function (lower) {

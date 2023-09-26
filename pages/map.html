@@ -586,7 +586,7 @@
                     document.documentElement.className = settings[0].config.theme;
             }
 
-            initMenubar();
+            initMenubar(null);
 
             $(window).click(function(e) {
                 if (event.target == document.getElementById("listenersModal"))
