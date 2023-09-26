@@ -307,7 +307,7 @@ export class Monitor {
         }
 
         var filetype = {
-            '.html' : { mimetype: 'text/html', folder: '/pages'},
+            '.html' :{ mimetype: 'text/html', folder: '/pages'},
             '.htm' : { mimetype: 'text/html', folder: '/pages'},
             '.ico' : { mimetype: 'image/x-icon', folder: '/images'},
             '.jpg' : { mimetype: 'image/jpeg', folder: '/images'},
@@ -316,11 +316,11 @@ export class Monitor {
             '.css' : { mimetype: 'text/css', folder: '/css' },
             '.mp3' : { mimetype: 'audio/mp3', folder: '/media' },
             '.mp4' : { mimetype: 'video/mp4', folder: '/media' },
-            '.mpeg' : { mimetype: 'video/mpeg', folder: '/media' }, 
+            '.mpeg' :{ mimetype: 'video/mpeg', folder: '/media' }, 
             '.ogg' : { mimetype: 'video/ogg', folder: '/media' },
-            '.webm' : { mimetype: 'video/webm', folder: '/media' },
+            '.webm' :{ mimetype: 'video/webm', folder: '/media' },
             '.ppt' : { mimetype: 'application/vnd.ms-powerpoint', folder: '/media' },
-            '.pptx' : { mimetype: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', folder: '/media' },
+            '.pptx' :{ mimetype: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', folder: '/media' },
             '.js' :  { mimetype: 'text/javascript', folder: '/scripts' }
           } [ req.url.substr(dotOffset) ];
   

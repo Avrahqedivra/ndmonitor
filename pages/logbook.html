@@ -188,14 +188,26 @@
             background-color: var(--color-bg-overlay);
           }
 
-          </style>
+          .callsign {
+            display: inline-block;
+            width: 7rem;
+          }
+
+          .dmrid {
+            width: 4rem;
+            float: right;
+            margin-top: 0.5rem;
+          }
+      </style>
     </head>
 
 	  <body>
         <center>
             <noscript>You must enable JavaScript</noscript>
 
-            <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+            <div id="sitelogo" style="display: none">
+              __SITE_LOGO__
+            </div>
 
             __BUTTON_BAR__
 
@@ -278,57 +290,62 @@
                   </table>
                 </div>
               </div>
-        
             </div>
 
             <div id="siteHeader" style="display: none">
-                <div id="insertPoint"  style="width: fit-content;">
-                  <div id="logbookPanel" class="modal_logbook">
-                    <!-- Modal content -->
-                    <div class="modal-content_logbook">
-                      <div class="caption">
-                          <div class="title">Logbook Generator by F4JDN</div>
-                      </div>
-                      <div class="queryContainer">
-                        <div style="display: inline-block; margin-left: 1rem;">Enter your callsign: <input style="width: 6rem;" type="text" id="yourCallsign"></div>
-                        <div style="display: inline-block; margin-left: 1rem;">Threshold: <input style="width: 3rem;" type="text" id="qsoLength"></div>
-                        <div style="display: inline-block; margin-left: 1rem;">Min duration: <input style="width: 3rem;" type="text" id="minDuration"></div>
-                        <div style="display: inline-block; margin-left: 1rem;">Start date: <input style="width: 5rem;" type="text" id="datepickerStart"></div>
-                        <div style="display: inline-block; margin-left: 1rem;">End date: <input style="width: 5rem;" type="text" id="datepickerEnd"></div>
-                        <div style="display: inline-block; margin-left: 1rem;"><button onclick='parseLogbook()' style="width: 4rem;">RUN</button></div>
-                      </div>
-    
-                      <div id="logbookModal" class="modal">
-                        <!-- Modal content -->
-                        <div class="modal-content-logbook">
-                          <span class="close close-logbook">&times;</span>
-                          <table class="tablefixed">
-                            <thead id="theadFollowUp" tbodyid="logbook">
-                              <tr class="headerRow">
-                                <th class="thlename">Name</th>
-                                <th class="thledate">Date</th>
-                                <th class="thletime">Time</th>
-                                <th class="thletg">TG</th>
-                                <th class="thlelog">LOG</th>
-                                <th class="thledelay">TX</th>
-                              </tr>
-                            </thead>
-                            <tbody id="logbook">
-                            </tbody>
-                          </table>
-                        </div>
+              <div id="insertPoint"  style="width: fit-content;">
+                <div id="logbookPanel" class="modal_logbook">
+                  <!-- Modal content -->
+                  <div class="modal-content_logbook">
+                    <div class="caption">
+                        <div class="title">Logbook Generator by F4JDN</div>
+                    </div>
+                    <div class="queryContainer">
+                      <div style="display: inline-block; margin-left: 1rem;">Enter your callsign: <input style="width: 6rem;" type="text" id="yourCallsign"></div>
+                      <div style="display: inline-block; margin-left: 1rem;">Threshold: <input style="width: 3rem;" type="text" id="qsoLength"></div>
+                      <div style="display: inline-block; margin-left: 1rem;">Min duration: <input style="width: 3rem;" type="text" id="minDuration"></div>
+                      <div style="display: inline-block; margin-left: 1rem;">Start date: <input style="width: 5rem;" type="text" id="datepickerStart"></div>
+                      <div style="display: inline-block; margin-left: 1rem;">End date: <input style="width: 5rem;" type="text" id="datepickerEnd"></div>
+                      <div style="display: inline-block; margin-left: 1rem;"><button onclick='parseLogbook()' style="width: 4rem;">RUN</button></div>
+                    </div>
+  
+                    <div id="logbookModal" class="modal">
+                      <!-- Modal content -->
+                      <div class="modal-content-logbook">
+                        <span class="close close-logbook">&times;</span>
+                        <table class="tablefixed">
+                          <thead id="theadFollowUp" tbodyid="logbook">
+                            <tr class="headerRow">
+                              <th class="thlename">Name</th>
+                              <th class="thledate">Date</th>
+                              <th class="thletime">Time</th>
+                              <th class="thletg">TG</th>
+                              <th class="thlelog">LOG</th>
+                              <th class="thledelay">TX</th>
+                            </tr>
+                          </thead>
+                          <tbody id="logbook">
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div id="footer">
-                  <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN</a> 2021-2023.</span>
+              <div id="footer">
+                <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN</a> 2021-2023.</span>
               </div>
               <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
           </div>
           
-          <div id="overlay"></div>
+          <div id="overlay">
+            <div class="vertical-center">
+              <img src="spinner-loading.gif" width="64">
+              <p class='caption' style='margin-top: 1rem;'>Loading, please wait...</p>
+            </div>
+          </div>
         </center>
     </body>
 
@@ -607,30 +624,40 @@
     }
 
     function buildLine(t, record, callsign, dmrid, tgid, alias, delay) {
-      let bgClass = 'tgGreen';
+      let bgClass = 'tgPurple';
+      let palias = alias
 
       var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
       if (flagUrl == "")
           flagUrl = flag64["shield"];
+
+      var tgf = getTgFlag(tgid);
+      if (typeof tgf === 'string' || tgf instanceof String) {
+        palias = '<img class="tgflag" src="' + getTgFlag(tgid) + '">' + alias;
+      }
+      else {
+        flagFirst = tgf[0];
+        flagSecond = tgf[1];
+
+        palias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
+      }
 
       /* deal with content if < displaylines */
       let content = '<tr class=' + bgClass + '>';
         content += "<td class='tdDate'>" + record.DATE + "</td>";
         content += "<td class='tdTime'>" + record.TIME + "</td>";
         content += "<td class='slot'>" + record.TS + "</td>";
-        content += "<td class='callsign ellipsis'>";
-        content += "<img class='tgflag' src='" + flagUrl + "'/>"
-        content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
-        content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+        content += "<td><div class='callsign ellipsis'><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></div>";
+        content += "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
         if (record.NAME.toUpperCase() == callsign)
             content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
         else
             content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
         content += "<td class='talkgroup'>" + tgid + "</td>";
-        content += "<td class='alias ellipsis'>" + alias + "</td>";
+        content += "<td class='alias ellipsis'>" + palias + "</td>";
         content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
         content += "<td class='netid'>" + record.SRC_ID + "</td>";
-        content += "<td class='infra'>" + record.SYS + "</td>";
+        content += "<td class='infra ellipsis'>" + record.SYS + "</td>";
         content += "</tr>";
 
       if (t == null)
@@ -687,7 +714,7 @@
                   '<th class="thledate">Date</th>' +
                   '<th class="thletime">Heure</th>' +
                   '<th class="thleslot">Slot</th>' +
-                  '<th class="thletx" colspan=2>TX Connectés</th>' +
+                  '<th class="thletx">TX Connectés</th>' +
                   '<th class="thlename">Name</th>' +
                   '<th class="thletg">TG#</th>' +
                   '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' +
@@ -761,7 +788,6 @@
 
                   if (previous.TGID == tgid) {
                     if (!qsoOM.has(previous.CALLSIGN)) {
-                      // console.log(JSON.stringify(previous))
                       qsoOM.add(previous.CALLSIGN)
                       $("#hblink").append(buildLine(t, previous, previous.CALLSIGN, previous.DMRID, previous.TGID, previous.ALIAS, previous.DELAY));
                     }
