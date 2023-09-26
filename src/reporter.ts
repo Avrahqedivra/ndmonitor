@@ -839,13 +839,19 @@ export class Reporter {
               logger.info(`BRIDGE EVENT: ${message}`)
   
             var p = message.toString().split(',')
-            this.rts_update(p)
-  
+
+            const REPORT_TGID: string     = p[8]
+
+            // stop here if not allowed
+            if (!this.monitor.IsTgidAllowed(REPORT_TGID))
+              break
+
             const REPORT_TYPE: string     = p[0]
             const REPORT_RXTX: string     = p[2]
             const REPORT_SYS: string      = p[3]
             const REPORT_SRC_ID: string   = p[5]
-            const REPORT_TGID: string     = p[8]
+  
+            this.rts_update(p)
   
             // check for filtered BACKEND OBP
             if (config.__opb_backend__[REPORT_SYS] != null) {
