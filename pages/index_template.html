@@ -1814,7 +1814,7 @@ function dragElement(elmnt) {
 
 		document.cookie = "SameSite=None; Secure"
 
-		initMenubar(null);
+		initMenubar(__PAGE_MENU_STATE__);
 
 		$(window).click(function (event) {
 			if (event.target == document.getElementById("statusdiv"))

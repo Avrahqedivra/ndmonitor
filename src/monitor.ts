@@ -73,6 +73,7 @@ export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
 export let __mobilePhone__: boolean     = false
+export let __currentPageMenuState__     = null
 
 const loadTemplate = (filename: string): string => {
   return fs.readFileSync(filename, { encoding: 'utf8', flag: 'r' })
@@ -87,6 +88,7 @@ const replaceSystemStrings = (data: string): string => {
                 .replace('__FOOTER__',  __footer_html__)
                 .replace('__BUTTON_BAR__',  __buttonBar_html__)
                 .replace('__SOCKET_SERVER_PORT__',  `${config.__socketServerPort__}`)
+                .replace('__PAGE_MENU_STATE__',  __currentPageMenuState__)
                 .replace('__DISPLAY_LINES__',  `${config.__displayLines__}`)
                 .replace('__TGID_FILTER__',  config.__tgFilter__)
                 .replace('__TGID_ORDER__',  config.__tgidOrder__)
@@ -161,6 +163,9 @@ export class Monitor {
    */
 
   requestListener(req: any, res: any) {
+    let pageMenuStates = null
+    __currentPageMenuState__ = null
+
     try {
       var isIpad = !!req.headers['user-agent'].match(/iPad/);
       var isAndroid = !!req.headers['user-agent'].match(/Android/);
@@ -284,6 +289,9 @@ export class Monitor {
     switch (req.url) {
       case '/':
       case '/index.html':
+        if (pageMenuStates = config.__menubar_management__['index_template'])
+          __currentPageMenuState__ = `'${pageMenuStates['state']}'`
+
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages/index_template.html`)))
         break
@@ -296,6 +304,13 @@ export class Monitor {
       case '/index_tabs.html':
       case '/ccs7manager.html':
       case '/logbook.html':
+        // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
+        var regExp = /\/([^.]+)\./
+        var matches = regExp.exec(req.url)
+        
+        if (pageMenuStates = config.__menubar_management__[matches[1]])
+          __currentPageMenuState__ = `'${pageMenuStates['state']}'`
+
         res.writeHead(200, "Content-Type", "text/html")
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;

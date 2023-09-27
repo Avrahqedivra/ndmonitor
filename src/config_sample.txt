@@ -64,6 +64,28 @@ export const __to_be_monitored__: any[] = [
   {"name": "TP2", "type": "srv", "service": "analog_bridged2", "action": "check"}
 ]
 
+/** 
+ * menu management per page
+ * 
+ * depending on the number of top items in your menubar
+ * each dot represent a position in the menubar
+ * you can disable a menu by changing the dot to an X
+ * 
+ * '..X.............' the 3rd menu will be inactive
+ * 
+ */ 
+export const __menubar_management__: any = {
+    ['bridges'] :       { 'state': null },
+    ['ccs7manager']:    { 'state': null },
+    ['index_tabs']:     { 'state': null },
+    ['index_template']: { 'state': null },
+    ['log']:            { 'state': null },
+    ['logbook']:        { 'state': null },
+    ['loglast']:        { 'state': null },
+    ['map']:            { 'state': null },
+    ['tginfo']:         { 'state': null }
+}
+
 // allowed socket direct accesses (by default here, only from local machine, any page id, infinite lease, all tg)
 export const __allowed__socket_clients__: any[] = [
   { ipaddress: "127.0.0.1", id:"*", lease: "*", tglist: [] }

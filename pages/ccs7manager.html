@@ -632,7 +632,7 @@
                     document.documentElement.className = settings[0].config.theme;
             }
 
-            initMenubar(null);
+            initMenubar(__PAGE_MENU_STATE__);
 
             // Check for the various File API support.
             if (window.File && window.FileReader && window.FileList && window.Blob) {
