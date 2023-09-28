@@ -174,7 +174,7 @@
             for (let i = 0; i < logLastLength; i++) {
                 var record = logLast[i];
                 var tgid = parseInt(record.TGID);
-                var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+                var alias = record.ALIAS
 
                 if (!tgfilter.has('' + tgid) && record.PACKET == "END") {
                     var tgName = "logLast";

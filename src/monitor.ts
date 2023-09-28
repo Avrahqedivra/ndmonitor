@@ -301,6 +301,7 @@ export class Monitor {
       case '/map.html':
       case '/log.html':
       case '/loglast.html':
+      case '/subscribers.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
       case '/logbook.html':
@@ -841,8 +842,8 @@ export class Monitor {
               
               _message['BIGEARS'] = this.dashboardServer.clients.size.toString()
               _message['LISTENERS'] = rep.__listeners__
-              
-              if (ws.page !== 'loglast')
+
+              if (ws.page === 'map')
                 _message['CONTACTS'] = this.__contacts__ids__
 
               _message['DIAGNOSTICS'] = this.reporter.build_Diagnostic_table()
@@ -889,6 +890,7 @@ export class Monitor {
                   case 'tginfo':
                   case 'bridges':
                   case 'loglast':
+                  case 'subscribers':
                     break
 
                   case 'logbook':
@@ -915,9 +917,15 @@ export class Monitor {
 
               if (ws.fromPage && _command != null) {
                 if (_command.hasOwnProperty('request')) {
-                    if (_command['request'] == 'loglast') {
-                        ws.send(JSON.stringify({ 'LOGLAST': this.createLogTableJson() }))
-                    }
+                  if (_command['request'] === 'subscribers') {
+                    if (fs.existsSync(config.__local_subscriber_file__))
+                      ws.send(JSON.stringify({ 'SUBSCRIBERS': JSON.parse(loadTemplate(config.__local_subscriber_file__)).results }))
+                    else
+                      ws.send(JSON.stringify({ 'SUBSCRIBERS': {} }))
+                  }
+                  else
+                  if (_command['request'] === 'loglast')
+                    ws.send(JSON.stringify({ 'LOGLAST': this.createLogTableJson() }))
                 }
                 else {
                   if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
