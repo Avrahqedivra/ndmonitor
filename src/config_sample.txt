@@ -81,6 +81,7 @@ export const __menubar_management__: any = {
     ['index_template']: { 'state': null },
     ['log']:            { 'state': null },
     ['logbook']:        { 'state': null },
+    ['subscribers']:    { 'state': null },
     ['loglast']:        { 'state': null },
     ['map']:            { 'state': null },
     ['tginfo']:         { 'state': null }
