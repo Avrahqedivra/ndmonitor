@@ -25,8 +25,8 @@ import { logger } from "../monitor.js"
 
 export class NetStringReceiver {
   private receiveBox = null
-  private box: Buffer = Buffer.from("")
-  private _unprocessed = Buffer.from("")
+  private box: Buffer = Buffer.alloc(0)
+  private _unprocessed = Buffer.alloc(0)
   private totalLength: number = 0
   private offset: number = 0
 
@@ -35,8 +35,8 @@ export class NetStringReceiver {
   }
 
   reSync(): void {
-    this.box = Buffer.from("")
-    this._unprocessed = Buffer.from("")
+    this.box = Buffer.alloc(0)
+    this._unprocessed = Buffer.alloc(0)
     this.totalLength = 0
     this.offset = 0
   }
@@ -75,7 +75,7 @@ export class NetStringReceiver {
 
         this.receiveBox(this.box)
         // reset box
-        this.box = Buffer.from("")
+        this.box = Buffer.alloc(0)
       }
     }catch(e) {
       this.reSync()
