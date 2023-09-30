@@ -754,7 +754,9 @@
                 this.socket.close();
             };
 
-            socket = new WSConnection().connect(wsuri);
+            setTimeout(() => {
+                socket = new WSConnection().connect(wsuri);
+            }, 500)
         };
 
         window.onunload = () => {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html class="__THEME__">
-<head>
+  <head>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="20000"/>
@@ -16,109 +16,159 @@
     <link rel="stylesheet" href="mysite_template.css">
 
     <style>
-        .tables, #tbsubscribers {
-          margin-top: 0;
-        }
-    
-        #insertPoint {
-          margin-top: 2rem;
-          width: var(--table-width);
-          scrollbar-width: thin;
-          height: calc(100vh - 10rem);
+      .tables, #tbsubscribers {
+        margin-top: 0;
+      }
+  
+      #insertPoint {
+        margin-top: 2rem;
+        width: var(--table-width);
+        scrollbar-width: thin;
+        height: calc(100vh - 10rem);
+        overflow-y: scroll;
+      }
+  
+      #insertPoint::-webkit-scrollbar {
+        display: block;
+        width: 6px;
+        background-color: #404040;
+      }
+  
+      #insertPoint::-webkit-scrollbar-thumb {
+        background-color: #569cd6;
+      }
+
+      @supports (-moz-appearance:none) {
+        div[name="hbtables"] { 
           overflow-y: scroll;
+          width: fit-content;
+          margin-top: 0.5rem;
+          scrollbar-color: #569cd6 #404040;
         }
-    
-        #insertPoint::-webkit-scrollbar {
-          display: block;
-          width: 6px;
-          background-color: #404040;
-        }
-    
-        #insertPoint::-webkit-scrollbar-thumb {
-          background-color: #569cd6;
-        }
+      }
 
-        @supports (-moz-appearance:none) {
-          div[name="hbtables"] { 
-            overflow-y: scroll;
-            width: fit-content;
-            margin-top: 0.5rem;
-            scrollbar-color: #569cd6 #404040;
-          }
-        }
+      .caption {
+        background-color: var(--color-bg-headerRow);
+        color: var(--color-fg-headerRow);
+        margin: 0 0 1.5rem 0;
+        height: 2.7rem;
+        font-size: 1.2rem;
+        font-weight: normal;
+      }
 
-        .caption {
-          background-color: var(--color-bg-headerRow);
-          color: var(--color-fg-headerRow);
-          margin: 0 0 1.5rem 0;
-          height: 2.7rem;
-          font-size: 1.2rem;
-          font-weight: normal;
-        }
+      #overlay {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+        background-color: var(--color-bg-overlay);
+      }
 
-        #overlay {
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          display: none;
-          background-color: var(--color-bg-overlay);
-        }
+      .thsbdmrid {
+        width: 8rem;
+      }
+      .thsbcallsign {
+        width: 8rem;
+      }
+      .thsbfname {
+        width: auto;
+      }
+      .thsbcity {
+        width: 12rem;
+      }
+      .thsbstate {
+        width: 16rem;
+      }
+      .thsbcountry {
+        width: 12rem;
+      }
 
-        .thsbdmrid {
-          width: 8rem;
-        }
-        .thsbcallsign {
-          width: 8rem;
-        }
-        .thsbfname {
-          width: auto;
-        }
-        .thsbcity {
-          width: 12rem;
-        }
-        .thsbstate {
-          width: 16rem;
-        }
-        .thsbcountry {
-          width: 12rem;
-        }
+      .tdsbdmrid {
+        text-align: right;
+        padding-right: 2rem;
+      }
+      .tdsbcallsign {
+        text-align: left;
+        padding-left: 2rem;
+      }
+      .tdsbfname {
+        text-align: left;
+        padding-left: 2rem;
+      }
+      .tdsbcity {
+        text-align: left;
+        padding-left: 2rem;
+      }
+      .tdsbstate {
+        text-align: left;
+        padding-left: 2rem;
+      }
+      .tdsbcountry {
+        text-align: left;
+        padding-left: 2rem;
+      }
 
-        .tdsbdmrid {
-          text-align: right;
-          padding-right: 2rem;
-        }
-        .tdsbcallsign {
-          text-align: left;
-          padding-left: 2rem;
-        }
-        .tdsbfname {
-          text-align: left;
-          padding-left: 2rem;
-        }
-        .tdsbcity {
-          text-align: left;
-          padding-left: 2rem;
-        }
-        .tdsbstate {
-          text-align: left;
-          padding-left: 2rem;
-        }
-        .tdsbcountry {
-          text-align: left;
-          padding-left: 2rem;
-        }
+      #subscribers th i {
+        display: none;
+        float: right;
+        padding-right: 1rem;
+        padding-top: 0.20rem;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <center>
         <noscript>You must enable JavaScript</noscript>
 
 		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
 
         __BUTTON_BAR__
+
+        <div id="modals">
+          <!-- The Followup -->
+          <div id="followUpModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content-followup">
+              <span class="close close-followup">&times;</span>
+              <table class="tablefixed">
+                <thead id="theadFollowUp" tbodyid="followup">
+                  <tr class="headerRow">
+                    <th class="thlename">Name</th>
+                    <th class="thledate">Date</th>
+                    <th class="thletime">Time</th>
+                    <th class="thletg">TG</th>
+                    <th class="thlelog">LOG</th>
+                    <th class="thledelay">TX</th>
+                  </tr>
+                </thead>
+                <tbody id="followup">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- The Status -->
+          <div id="statusdiv" style="display: none;">
+            <!-- Modal content -->
+            <div class="modal-content-status">
+              <span class="close close-status">&times;</span>
+              <table class="tablefixed">
+                <thead id="statusdivheader" tbodyid="status">
+                  <tr class="headerRow">
+                    <th class="thlename">Server<div id="statusCountdown" style="padding-right:0.5rem;float: right;">10</div></th>
+                    <th class="thledate">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="status">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
 
         <div id="siteHeader" style="display:none">
             <!-- The Modal -->
@@ -182,52 +232,248 @@
             <p class='caption' style='margin-top: 1rem;'>Sorting, please wait...</p>
           </div>
         </div>
-  </center>
-</body>
+    </center>
+  </body>
 
-<script type="text/javascript">
+  <script type="text/javascript">
+    function updateTime() {
+      var now = new Date();
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
+      
+      // Pad single digits with leading zeros
+      hours = (hours < 10 ? "0" : "") + hours;
+      minutes = (minutes < 10 ? "0" : "") + minutes;
+      seconds = (seconds < 10 ? "0" : "") + seconds;
+      
+      var timeString = hours + ":" + minutes + ":" + seconds;
+      
+      document.getElementById("heure").textContent = timeString;
+    }
+    
+    /**
+      https://stackoverflow.com/questions/65022204/make-a-popup-modal-dialog-movable-draggable-once-it-has-appeared
+    */
+    
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      if (document.getElementById(elmnt.id + "header")) {
+        /* if present, the header is where you move the DIV from:*/
+        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+      } else {
+        /* otherwise, move the DIV from anywhere inside the DIV:*/
+        elmnt.onmousedown = dragMouseDown;
+      }
+    
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+    
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+    
+      function closeDragElement() {
+        /* stop moving when mouse button is released:*/
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    function getQRZImage (callsign, callback) {
+      const no_image_link = "https://s3.amazonaws.com/files.qrz.com/static/qrz/qrz_com200x150.jpg"
+      let cacheItem = urlCache[callsign]
+
+      if (cacheItem != null) {
+        callback(cacheItem)
+      } else {
+        const proxyurl = "http://" + document.location.hostname + ":" + document.location.port + "/";
+        const url = "https://www.qrz.com/lookup/"
+
+        fetch(proxyurl + url + callsign).then((response) => {
+          return response.text()
+        }).then((contents) => {
+          let link = no_image_link
+          let start = contents.indexOf("<td id=\"ppic\"")
+          if (start > 0) {
+            let linkStart = contents.indexOf("src=", start) + 5
+            let linkEnd = contents.indexOf("\"", linkStart)
+            let alink = contents.slice(linkStart, linkEnd)
+            if (alink.startsWith("http") == true) {
+              link = alink
+            } else {
+              console.log("image link not found in response")
+            }
+          };
+
+          urlCache[callsign] = link
+          callback(link)
+
+        }).catch(() => {
+          console.log("Can’t access " + url + " response. Blocked by browser?")
+          urlCache[callsign] = no_image_link
+          callback(no_image_link)
+        })
+      }
+    }
+  </script>
+
+  <script type="text/javascript">
+	  function updateStatus(willBeShown) {
+      var content = ""
+      var alarm = false
+      var statusDivVisible = $("#statusdiv").is(":visible")
+
+      for(let i=0; i < diagStatus.length; i++) {
+        var server = diagStatus[i]
+
+        if (server["ACTION"] != "ping" && server["STATUS"] != 1)
+          alarm = true
+
+        if (statusDivVisible || willBeShown) {
+          content += "<tr class='trlisteners'><td>" + server['NAME'] + "</td>"
+
+          if (server["ACTION"] == "ping") {
+            var ping = server['TIME'];
+            if (ping == null || parseFloat(ping) < 0)
+              bgClass = "red";
+            else if (parseFloat(ping) < 30)
+              bgClass = "green";
+            else if (parseFloat(ping) < 60)
+              bgClass = "orange";
+            else
+              bgClass = "red";
+
+            content += "<td><div class='msrounded " + bgClass + "'>" + server['TIME'] + " ms</div></td>";
+          }
+          else {
+            var label = server['ACTION'] == "connect" ? "Port ":"Status "
+
+            // 🟠 (emoji orange circle)
+            // ⚪ (emoji white circle)
+            if (server['STATUS'] == 1)
+              content += "<td><div class='statusLabel'>" + label + "🟢</div></td>"
+            else if (server['STATUS'] == -1)
+              content += "<td><div class='statusLabel'>" + label + "🟠</div></td>"
+            else if (server['STATUS'] == -2)
+              content += "<td><div class='statusLabel'>" + label + "⚪</div></td>"
+            else
+              content += "<td><div class='statusLabel'>" + label + "🔴</div></td>"
+          }
+
+          content += "</tr>"
+          $("#status tr").remove()
+          $("#status").append(content);
+        }
+      }
+
+      if (alarm)
+        $("#serverstatus").addClass("alarm");
+      else
+        $("#serverstatus").removeClass("alarm");
+    }
+
+	  function serverStatus() {
+		  updateStatus(true);
+
+		  $("#statusdiv").show();
+
+		  // Make the DIV element draggable:
+		  dragElement(document.getElementById("statusdiv"));
+	  }
+
+    function followUpdUser(dmrid) {
+      $("#followup tr").remove()
+
+      var content = ""
+      var bgClass = ""
+      var callsign = ""
+
+      traffic.forEach(om => {
+        if (om.PACKET == "END" && (om.DMRID == dmrid || om.CALLSIGN == dmrid)) {
+          // save callsign for later
+          if (callsign.length == 0)
+            callsign = om.CALLSIGN
+
+          if (tghilite.has(om.TGID))
+            bgClass = 'tgWhite';
+          else
+            bgClass = 'tgGreen';
+
+          var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+          if (om.DELAY == 0)
+            bgClass += " darker ";
+
+          var alias = om.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+
+          content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
+            + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
+            + om.TGID + "</td><td class='alias ellipsis'>" + alias + "</td><td class='delay'>" + delay + "</td></tr>";
+        }
+      })
+
+      getQRZImage(callsign, (link) => {
+        $("#followup").append("<tr class='" + "" + "'><td colspan='6' class='fuimg'><a target='_blank' href='https://qrz.com/db/" + callsign + "'><img style='height: 3rem;width: auto;' src='" + link + "'></a></td></tr>")
+        $("#followup").append(content);
+        $("#followUpModal").show();
+      })
+    }
+
+    function followupdmrid() {
+      var val = $('#search').val();
+      $("#inputModal").hide();
+      if (val != "")
+        followUpdUser(val.toUpperCase());
+    }
+  </script>
+
+  <script type="text/javascript">
     $(document).on("click", ".close", function () {
       $("#listenersModal").hide();
       $("#followUpModal").hide();
     });
 
-    function followUpdUser(dmrid) {
-        $("#followup tr").remove();
-        var content = "";
-        var bgClass = "";
-
-        subscribers.forEach(om => {
-            if (om.DMRID == dmrid) {
-                if (tghilite.has(om.TGID))
-                    bgClass = 'tgWhite';
-                else
-                    bgClass = 'tgGreen';
-
-                var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
-                if (om.DELAY == 0)
-                    bgClass += " darker ";
-
-                content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om
-                        .NAME) + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME +
-                    "</td><td class=''>" + om.TGID + "</td><td class='alias ellipsis'>" + om.ALIAS +
-                    "</td><td class='delay'>" + delay + "</td></tr>";
-            }
-        });
-
-        $("#followup").append(content);
-        $("#followUpModal").show();
-    }
-
-    function sortTable(crit) {
+    function sortTable(id, crit, sortType) {
       $("#overlay").show();
 
+      var classname = document.getElementById('tbsubscribers').getAttribute("class")
+      var curSortOrder = classname.indexOf("sortorder_down") != -1
+      var sortorder = (crit != criteria) ? "up" : (curSortOrder ? "up":"down")
+
+      let els = document.querySelectorAll('#subscribers th i')
+      for(let i=0; i<els.length; i++) {
+        els[i].style.display = 'none'
+      }
+
+      // reset background color to origin
+      els = document.getElementsByTagName('th')
+      for(let i=0; i<els.length; i++) {
+        els[i].style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--color-bg-headerRow');
+      }
+
+      // show sorting key column
+      document.getElementById(id).style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--color-message')
+      document.querySelector('#' + id + ' i').setAttribute('class', 'fas fa-sort-' + sortorder)
+      document.querySelector('#' + id + ' i').style.display = 'block'
+
       setTimeout(() => {
-        var sortType = new Set("id").has(crit)
-
-        var classname = document.getElementById('tbsubscribers').getAttribute("class")
-        var curSortOrder = classname.indexOf("sortorder_down") != -1
-        var sortorder = (crit != criteria) ? "up" : (curSortOrder ? "up":"down")
-
         criteria = crit
 
         if (sortorder == "up") {
@@ -283,12 +529,12 @@
           var emptyTable = '<table id="tb' + tbName + '" class="tables lastheard tablefixed sortorder_up" style="width:100%;">' +
               '<thead id="' + tbName + '">' +
               '<tr class="headerRow">' +
-              '<th class="thsbdmrid" onclick="javascript:sortTable(`id`)">DMR-ID</th>' +
-              '<th class="thsbcallsign" onclick="javascript:sortTable(`callsign`)">Callsign</th>' +
-              '<th class="thsbname" onclick="javascript:sortTable(`fname`)">Name</th>' +
-              '<th class="thsbcity" onclick="javascript:sortTable(`city`)">City</th>' +
-              '<th class="thsbstate" onclick="javascript:sortTable(`state`)">Region</th>' +
-              '<th class="thsbcountry" onclick="javascript:sortTable(`country`)">Country</th>' +
+              '<th id="thdmrid" class="thsbdmrid" onclick="javascript:sortTable(this.id, `id`, true)">DMR-ID<i class="fas fa-sort-up"></i></th>' +
+              '<th id="thcallsign" class="thsbcallsign" onclick="javascript:sortTable(this.id, `callsign`, false)">Callsign<i class="fas fa-sort-up"></i></th>' +
+              '<th id="thname" class="thsbname" onclick="javascript:sortTable(this.id, `fname`, false)">Name<i class="fas fa-sort-up"></i></th>' +
+              '<th id="thcity" class="thsbcity" onclick="javascript:sortTable(this.id, `city`, false)">City<i class="fas fa-sort-up"></i></th>' +
+              '<th id="thstate" class="thsbstate" onclick="javascript:sortTable(this.id, `state`, false)">Region<i class="fas fa-sort-up"></i></th>' +
+              '<th id="thcountry" class="thsbcountry" onclick="javascript:sortTable(this.id, `country`, false)">Country<i class="fas fa-sort-up"></i></th>' +
               '</tr>' +
               '</thead>' +
               '<tbody id="hblink"></tbody></table>';
@@ -342,22 +588,33 @@
       }
 
       initMenubar(__PAGE_MENU_STATE__);
+
+      $(document).on("click", ".close", function () {
+        $("#followUpModal").hide();
+        $("#statusdiv").hide();
+      });
     })
 
     window.onload = () => {
-      criteria = ""
-      subscribers = [];
-      hideAllTG = false;
+      statusCountdown = 0
+      listenerList = []
+      diagStatus = []
+      traffic = []
+      urlCache = {}
 
-      hide_dmrid = new Set("__HIDE_DMRID__".split(','));
-      tghilite = new Set("__TGID_HILITE__".split(','));
-      tgfilter = new Set("__TGID_FILTER__".split(','));
+      criteria = ""
+      subscribers = []
+      hideAllTG = false
+
+      hide_dmrid = new Set("__HIDE_DMRID__".split(','))
+      tghilite = new Set("__TGID_HILITE__".split(','))
+      tgfilter = new Set("__TGID_FILTER__".split(','))
 
       try {
-		    tgbeacons = JSON.parse('__TGID_BEACONS__');
-	    } catch(e) {
-		    tgbeacons = {};
-	    }
+        tgbeacons = JSON.parse('__TGID_BEACONS__')
+      } catch(e) {
+        tgbeacons = {}
+      }
 
       var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=subscribers";
 
@@ -395,11 +652,26 @@
 
               data = JSON.parse(e.data);
 
-              // console.log("");
-              // console.log(data);
-              // console.log("");
-
               if (data != null) {
+                // FIRST PACKET IS CONFIG
+                if (data.CONFIG) {
+                  if (data.CONFIG.PACKETS) {
+                    traffic = data.CONFIG.PACKETS.TRAFFIC;
+                  }
+
+                  if (data.CONFIG.DIAGNOSTICS) {
+                    statusCountdown = 10
+                    diagStatus = data.CONFIG.DIAGNOSTICS;
+                    updateStatus(false);
+                  }
+
+                  if (data.CONFIG.BIGEARS)
+                    $("#btnlisteners").text(data.BIGEARS);
+
+                  if (data.CONFIG.LISTENERS)
+                    listenerList = data.CONFIG.LISTENERS;
+                }
+
                 if (data.SUBSCRIBERS != null) {
                   this.close();
                   $("#insertPoint div").remove();
@@ -429,11 +701,13 @@
         this.socket.close();
       };
 
-      socket = new WSConnection().connect(wsuri);
+      setTimeout(() => {
+        socket = new WSConnection().connect(wsuri);
+      }, 500)
 
       $("#menubar").show();
       $("#siteHeader").show();
-    };
+    }
 
     window.onunload = () => {
       socket = null

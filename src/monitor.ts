@@ -890,7 +890,6 @@ export class Monitor {
                   case 'tginfo':
                   case 'bridges':
                   case 'loglast':
-                  case 'subscribers':
                     break
 
                   case 'logbook':
