@@ -23,7 +23,7 @@ export const __bannerDelay__: number            = 0                             
 
 // list of NETWORK_ID from OPB links not to show in local "lastheard" traffic, for example: "260210,260211,260212"
 export const __opb_filter__ = []
-// allowed Backend OBP, if specified, precise all allowed SRC_ID, for example { "OBP-GLOBAL": { "20881", "20883" } }
+// allowed Backend OBP, if specified, precise all allowed SRC_ID, for example { "OBP-GLOBAL1": [ "208xx", "208yy" ], "OBP-GLOBAL2": [ "208ww", "208zz" ] }
 export const __opb_backend__: any       = {}
 // tg1, tg2 etc to be excluded, for example "800,801,802,3339"
 export const __tgFilter__: string       = ""
