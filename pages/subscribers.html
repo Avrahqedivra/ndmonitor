@@ -437,11 +437,14 @@
     }
 
     function followupdmrid() {
-      var val = $('#search').val();
-      $("#inputModal").hide();
-      if (val != "")
-        followUpdUser(val.toUpperCase());
-    }
+      filterCriteria = $('#search').val().toUpperCase();
+
+      $("#overlay").show();
+      setTimeout(() => {
+        treatSubscribers(null);
+        $("#overlay").hide();
+      }, 125)
+	  }
   </script>
 
   <script type="text/javascript">
@@ -543,34 +546,36 @@
           $('#insertPoint').append(emptyTable);
         }
 
-        var callsign = record.callsign;
-        var dmrid = record.id;
+        if (filterCriteria == "" || (filterCriteria != "" && JSON.stringify(record).toLocaleUpperCase().indexOf(filterCriteria) != -1)) {
+          var callsign = record.callsign;
+          var dmrid = record.id;
 
-        if (callsign == "")
-          callsign = dmrid;
+          if (callsign == "")
+            callsign = dmrid;
 
-        bgClass = 'tgWhite';
+          bgClass = 'tgWhite';
 
-        var flagUrl = getFlag(record.callsign, record.id);
-        if (flagUrl == "")
-          flagUrl = flag64["shield"];
+          var flagUrl = getFlag(record.callsign, record.id);
+          if (flagUrl == "")
+            flagUrl = flag64["shield"];
 
-        /* deal with content if < displaylines */
-        content = '<tr class=' + bgClass + '>';
-        content += "<td class='tdsbdmrid'>" + record.id + "</td>";
-        content += "<td class='callsign tdsbcallsign ellipsis'><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
-        if (record.fname.toUpperCase() == callsign)
-          content += "<td class='alink tdsbfname ellipsis' onclick='followUpdUser(" + dmrid + ")'>" + callsign + "</td>";
-        else
-          content += "<td class='alink tdsbfname ellipsis' onclick='followUpdUser(" + dmrid + ")'>" + enhanceNames(record.fname) + "</td>";
+          /* deal with content if < displaylines */
+          content = '<tr class=' + bgClass + '>';
+          content += "<td class='tdsbdmrid'>" + record.id + "</td>";
+          content += "<td class='callsign tdsbcallsign ellipsis'><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
+          if (record.fname.toUpperCase() == callsign)
+            content += "<td class='alink tdsbfname ellipsis' onclick='followUpdUser(" + dmrid + ")'>" + callsign + "</td>";
+          else
+            content += "<td class='alink tdsbfname ellipsis' onclick='followUpdUser(" + dmrid + ")'>" + enhanceNames(record.fname) + "</td>";
 
-        content += "<td class='tdsbcity'>" + record.city + "</td>";
-        content += "<td class='tdsbstate'>" + record.state + "</td>";
-        content += "<td class='tdsbcountry'>" + record.country + "</td>";
-        
-        content += "</tr>";
+          content += "<td class='tdsbcity'>" + record.city + "</td>";
+          content += "<td class='tdsbstate'>" + record.state + "</td>";
+          content += "<td class='tdsbcountry'>" + record.country + "</td>";
+          
+          content += "</tr>";
 
-        $("#hblink").append(content);
+          $("#hblink").append(content);
+        }
       }
     }
 
@@ -603,6 +608,7 @@
       urlCache = {}
 
       criteria = ""
+      filterCriteria = ""
       subscribers = []
       hideAllTG = false
 
