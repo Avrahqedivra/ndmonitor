@@ -70,11 +70,11 @@ function initMenubar(disabledMenuPattern) {
             if (disabledMenuPattern.charAt(i) == 'X') {
                 var el = $(`#menubar ul li:nth-child(${i+1})`)
                 if (el.prop('tagName') === 'LI')
-                    $(`#menubar ul li:nth-child(${i+1})`).addClass('menudisabled')
+                    $(`#menubar ul > li:nth-child(${i+1})`).addClass('menudisabled')
                 else {
                 el = $(`#menubar ul div:nth-child(${i+1})`)
                     if (el.prop('tagName') === 'DIV') {
-                        $(`#menubar ul div li`).addClass('menudisabled')
+                        $(`#menubar ul > div li`).addClass('menudisabled')
                     }
                 }
             }
