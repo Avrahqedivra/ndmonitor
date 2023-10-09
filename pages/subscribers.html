@@ -630,6 +630,9 @@
         this.socket = {};
       }
 
+      document.getElementById("search").setAttribute("placeholder", "Search string");
+      document.getElementById("menuSearch").style.display = "inline-block";		
+
       WSConnection.prototype.connect = function (url) {
         'use strict';
 
