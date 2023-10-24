@@ -591,7 +591,8 @@ function dragElement(elmnt) {
 
 	function isUserConnected(ip) {
 		if (ip != '127.0.0.1') {
-			for(let swl in listenerList) {
+			for(let item in listenerList) {
+				let swl = listenerList[item]
 				if (swl.IP == record['IP']) {
 					
 					return true
