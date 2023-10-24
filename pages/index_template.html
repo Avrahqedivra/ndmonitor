@@ -44,6 +44,24 @@
 						scrollbar-color: #569cd6 #404040;
 				}
 			}
+
+			.note {
+    		position: relative;
+			}
+
+			.note:after {
+				content: "";
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 0; 
+				height: 0; 
+				display: block;
+				border-left: 10px solid transparent;
+				border-bottom: 10px solid transparent;
+
+				border-top: 10px solid var(--color-note-triangle);
+		}
 		</style>
 	</head>
 	
@@ -571,6 +589,19 @@ function dragElement(elmnt) {
 		return "";
 	}
 
+	function isUserConnected(ip) {
+		if (ip != '127.0.0.1') {
+			for(let swl in listenerList) {
+				if (swl.IP == record['IP']) {
+					
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+
 	function updateMasters(masters, emaster) {
 		if (masters != null && $('#masters').is(':visible')) {
 				var content = "";
@@ -617,17 +648,18 @@ function dragElement(elmnt) {
 										hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
 
 										content += '<tr>'
-											+ '<td rowspan="2">'
+											+ '<td rowspan="2"' + (isUserConnected(record['IP']) ? ' class="note"':'') + '>'
 											+ '<div class="tooltip">'
 											+ '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
 											+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
 											+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
 											+ '<span class="tooltiptext">'
-											+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
-											+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
-											+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
-											+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
-											+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
+												+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
+												+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
+												+ '&nbsp;&nbsp;&nbsp;<b>IP address</b>: ' + record["IP"]
+												+ '<br>&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
+												+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
+												+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
 											+ '</span></span></div><br>'
 											+ '<div class="msLocation">' + record["LOCATION"] + '</div></td>'
 											+ '<td class="tdGradient" rowspan="2">' + record["CONNECTED"] + '</td>'
@@ -937,7 +969,7 @@ function dragElement(elmnt) {
 						else
 							$('#insertPoint').append(emptyTable);
 
-							console.log(emptyTable);
+							// console.log(emptyTable);
 					} 
 					
 					// treat title

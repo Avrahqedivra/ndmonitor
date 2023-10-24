@@ -1277,8 +1277,8 @@ select {
   --color-fg-mscallsign: #be3a1f;
   --color-fw-mscallsign: normal;
 
-  --color-fg-tdgradient: #fefefe;
-  --color-bg-tdgradient: #928888;
+  --color-fg-tdgradient: #1e1e1e;
+  --color-bg-tdgradient: #f1e8e8;
 
   --color-fg-obnetid: #be3a1f;  
   --color-fw-obnetid: normal;
@@ -1335,6 +1335,8 @@ select {
   --color-bg-individual: rgb(241, 101, 171);
   --color-bg-ratio: rgb(105, 175, 105);
   --color-bg-all: rgb(233, 122, 122);
+
+  --color-note-triangle: rgb(226, 15, 15);
 }
 
 .theme-dark {
@@ -1497,6 +1499,8 @@ select {
   --color-bg-individual: rgb(241, 101, 171);
   --color-bg-ratio: rgb(105, 175, 105);
   --color-bg-all: rgb(233, 122, 122);
+
+  --color-note-triangle: rgb(226, 15, 15);
 }
 
 .chartstype {
