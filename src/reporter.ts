@@ -843,7 +843,7 @@ export class Reporter {
             const REPORT_TGID: string     = p[8]
 
             // stop here if not allowed
-            if (!this.monitor.IsTgidAllowed(REPORT_TGID))
+            if (!this.monitor.IsTgidAllowed(REPORT_TGID) && !config.tgid_allow_obp_and_masters)
               break
 
             const REPORT_TYPE: string     = p[0]
