@@ -7,13 +7,6 @@
     width: 100%;
 }
 
-#siteLogo {
-    height: 6rem;
-    margin-top: 0.5rem;
-    margin-left: 0rem;
-    margin-bottom: 0.3rem;
-}
-
 #infoLine {
     margin: 1rem 0 1rem 0;
     color: var(--color-fg-infoline);
@@ -164,20 +157,10 @@ h1 {
     position: relative;
 }
   
-.vertical-center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-}
 /* -------------- end menubar style -------------- */
 
-sitelogo {
-    display: none;
-    position: relative;
-    height: 100%;
-    width: 100%;
+#siteLogo {
+    height: 6rem;
 }
 
 #siteHeader {
@@ -189,9 +172,6 @@ sitelogo {
     position: absolute;
     top: calc(var(--color-sitelogo-posY) - (var(--color-sitelogo-height) / 2));
     left: var(--color-sitelogo-posX);
-    -ms-transform: translateY(calc(-1 * var(--color-sitelogo-posY)));
     transform: translateY(calc(-1 * var(--color-sitelogo-posY)));
-
-    -ms-transform: translateX(calc(-1 * var(--color-sitelogo-posX)));
     transform: translateX(calc(-1 * var(--color-sitelogo-posX)));
 }
