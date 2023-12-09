@@ -175,3 +175,25 @@ h1 {
     transform: translateY(calc(-1 * var(--color-sitelogo-posY)));
     transform: translateX(calc(-1 * var(--color-sitelogo-posX)));
 }
+
+#menuSearch button {
+    background-color: var(--color-menubar-background);
+    color:var(--color-menubar-foreground);
+    border-style: unset;
+    width: 1.4rem;
+    padding: 0;
+    margin: 0;
+}
+
+#menuSearch input {
+    background: none;
+    border: none;
+    transition: 0.4s;
+    width: 0;
+}
+
+#menuSearch:hover input, #menuSearch input:focus-within {
+    outline: none;
+    width: 8rem;
+    background: var(--color-menubar-foreground);
+}

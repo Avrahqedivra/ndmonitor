@@ -82,9 +82,11 @@
       
     <li><a href="#" title="FixMenu"><i id="lockButton" class="fas fa-lock"></i></a></li>
 
-    <div id="menuSearch" style="display: none;">
-      <li><input title="Type your contact" type="search" id="search" name="search" placeholder="DMRID/CALLID"></li>
-      <li><button title="Search your contact" type="button" class="fas fa-search" onclick="followupdmrid()"></button></li>
-    </div>
+    <li id="menuSearch" style="display: inline-block;">
+      <div class="bar">
+        <input type="search" id="search" name="search" placeholder="DMRID/CALLID" autocomplete="off">
+        <button title="Search your contact" type="button" id="searchbutton" class="search-btn fas fa-search" onclick="followupdmrid()"></button>
+      </div>
+    </li>
   </ul>
 </div>

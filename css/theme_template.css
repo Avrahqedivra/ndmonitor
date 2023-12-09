@@ -866,11 +866,6 @@ color: #569cd6;
   height: inherit;
 }
 
-input[name="search"]:focus {
-  outline: none !important;
-  border: 1px solid var(--color-light);
-}
-
 .modal-content-input button {
   height: inherit;
 }
@@ -1354,7 +1349,7 @@ select {
   --normal-fillopacity: 0.15;
 
   /* generic */
-  --color-page: #1e1e1e;
+  --color-page: #101010;
   --color-footer: #8E8E8E;
   --color-fg-marquee: #B1B1B1;
 
@@ -1379,8 +1374,8 @@ select {
   /* table */
   --color-fw-table: normal;
   --color-table-fg: #ffffff;
-  --color-table-border: #404040;
-  --color-trbg: #1e1e1e;
+  --color-table-border: #303030;
+  --color-trbg: #101010;
   --color-bg-headerRow: #37373d;
   --color-fg-headerRow: #ffffff;
 
@@ -1486,7 +1481,7 @@ select {
   --color-text-progressbar: #ffffff;
 
   --color-menubar-foreground: #ffffff;
-  --color-menubar-background: #303030;
+  --color-menubar-background: #252525;
   --color-menubar-hover: #505050;
   --color-menubar-zoombackground: rgba(255, 128, 39, 0.4);
 
