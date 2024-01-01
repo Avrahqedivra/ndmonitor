@@ -50,7 +50,7 @@ let __buttonBar_html__: any = ''
 let __footer_html__: any = ""
 
 // system variables
-const extensions: string[] = ['.ico', '.jpg', '.png', '.gif', '.css', '.js', '.mp3', '.mp4', '.webm', '.mpeg', '.ogg', '.ppt', '.pptx']
+const extensions: string[] = ['.ico', '.jpg', '.png', '.gif', '.css', '.js', '.mp3', '.mp4', '.webm', '.mpeg', '.ogg', '.ppt', '.pptx', '.svg']
 
 type LastHeardSchema = {
   datetime: string        // 00
@@ -181,8 +181,10 @@ export class Monitor {
       let authHeader = req.headers['authorization']
 
       if (!authHeader) {
-        res.setHeader('WWW-Authenticate', 'Basic realm="ndmonitor"')
-        res.writeHead(401, 'Content-Type', 'text/plain')
+        res.writeHead(401, {
+          'WWW-Authenticate': 'Basic realm="ndmonitor"',
+          "Content-Type": 'text/plain'
+        })
         res.end()
         return
       }
@@ -192,8 +194,10 @@ export class Monitor {
         let [username, password] = decodedData.split(':')
 
         if (crc16.compute(username, config.__web_secret_key__).toString() != password) {
-          res.setHeader('WWW-Authenticate', 'Basic realm="ndmonitor"')
-          res.writeHead(401, 'Content-Type', 'text/html')
+          res.writeHead(401, {
+            'WWW-Authenticate': 'Basic realm="ndmonitor"',
+            "Content-Type": 'text/html'
+          })
           res.end()
           return
         }
@@ -228,7 +232,7 @@ export class Monitor {
       return
     }
 
-    if (req.url.toString().endsWith('.json')) {
+    if (req.url.toString().endsWith('.json') || req.url.toString().endsWith('.zip') || req.url.toString().endsWith('.rar')) {
       let fileurl:string = req.url.toString()
       let filename: string = fileurl.substring(fileurl.lastIndexOf('/') + 1, fileurl.length)
 
@@ -281,7 +285,9 @@ export class Monitor {
     let error404 = (res: any) => {
       fs.promises.readFile(`${config.__path__}pages/error404.html`)
       .then(content => {
-        res.writeHead(404, 'Content-Type', 'text/html')
+        res.writeHead(404, { 
+          'Content-Type': 'text/html' 
+        })
         res.end(content)
       })
     }
@@ -292,8 +298,10 @@ export class Monitor {
         if (pageMenuStates = config.__menubar_management__['index_template'])
           __currentPageMenuState__ = `'${pageMenuStates['state']}'`
 
-        res.writeHead(200, "Content-Type", "text/html")
-        res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages/index_template.html`)))
+          res.writeHead(200, { 
+            'Content-Type': 'text/html' 
+          })
+          res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages/index_template.html`)))
         break
 
       case '/bridges.html':
@@ -312,15 +320,16 @@ export class Monitor {
         if (pageMenuStates = config.__menubar_management__[matches[1]])
           __currentPageMenuState__ = `'${pageMenuStates['state']}'`
 
-        res.writeHead(200, "Content-Type", "text/html")
+        res.writeHead(200, { 
+          'Content-Type': 'text/html' 
+        })
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
         break;
   
       default:
         var dotOffset = req.url.lastIndexOf('.');
-        if (dotOffset == -1 || !extensions.includes(req.url.substr(dotOffset))) {
+        if (dotOffset == -1 || !extensions.includes(req.url.substr(dotOffset)))
           return error404(res)
-        }
 
         var filetype = {
             '.html' :{ mimetype: 'text/html', folder: '/pages'},
@@ -328,6 +337,7 @@ export class Monitor {
             '.ico' : { mimetype: 'image/x-icon', folder: '/images'},
             '.jpg' : { mimetype: 'image/jpeg', folder: '/images'},
             '.png' : { mimetype: 'image/png', folder: '/images'},
+            '.svg' : { mimetype: 'image/svg+xml', folder: '/images'},
             '.gif' : { mimetype: 'image/gif', folder: '/images'},
             '.css' : { mimetype: 'text/css', folder: '/css' },
             '.mp3' : { mimetype: 'audio/mp3', folder: '/media' },
@@ -344,6 +354,9 @@ export class Monitor {
         let mimetype: string = filetype.mimetype;
         let filename: string = req.url.toString()
   
+        if (req.url.substr(dotOffset) == ".svg")
+          console.log("svg")
+
         // any icon from old apple device
         if (filename.indexOf('apple-touch-icon') != -1)
           filename = "/apple-touch-icon.png"
@@ -353,8 +366,10 @@ export class Monitor {
           if (folder === '/images')
             filename = '/sitelogo.png'
           else {
-            res.writeHead(200, mimetype)
-            res.end("")
+          res.writeHead(200, {
+            "Content-Type": mimetype,
+          })
+          res.end("")
             return
           }
         }
@@ -362,7 +377,9 @@ export class Monitor {
         try {
           fs.promises.readFile(`${config.__path__}${folder}${filename}`)
             .then(content => {
-              res.writeHead(200, mimetype)
+              res.writeHead(200, {
+                "Content-Type": mimetype,
+              })
               res.end(content)
             }),
             (reason: any) => {
@@ -587,7 +604,9 @@ export class Monitor {
       }
 
       const downloader = new FileDownloader()
-      const envFiles: any[] = [  { path:  `${config.__path__}assets/`, file:  filename, url:  fileurl, stale:  5 * 24 * 3600 } ]
+      const envFiles: any[] = [  
+        { path:  `${config.__path__}assets/`, file:  filename, url:  fileurl, stale:  5 * 24 * 3600 }
+      ]
   
       downloader.downloadAndWriteFiles(envFiles).then(() => {
         logger.info('File downloaded and saved.\n')  
