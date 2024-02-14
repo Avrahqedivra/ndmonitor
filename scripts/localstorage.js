@@ -100,7 +100,7 @@ function zoom(v) {
 }
 
 function enhanceNames(name) {
-    if (name != null) {
+    if (name != null && name != "") {
         name = name.replace(/None/g, "")
 
         if (names != null && names[name] != null)
@@ -109,7 +109,7 @@ function enhanceNames(name) {
         return name.capitalize(true)
     }
 
-    return ''
+    return '-- UNKNOWN --'
 }
 
 function getTgTableState(name) {
