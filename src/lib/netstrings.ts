@@ -17,7 +17,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
  *  
 */
 import fs from 'fs'
@@ -79,7 +79,7 @@ export class NetStringReceiver {
       }
     }catch(e) {
       this.reSync()
-      fs.writeFileSync(`./log/NETSTRING${Date.now()}.txt`, data.toString('utf-8'), { encoding: 'utf8' })
+      // fs.writeFileSync(`./log/NETSTRING${Date.now()}.txt`, data.toString('utf-8'), { encoding: 'utf8' })
     }
   }
 }
