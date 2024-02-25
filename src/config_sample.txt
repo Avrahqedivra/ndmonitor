@@ -39,7 +39,8 @@ export const __tgid_settings__: string  = '{ \
                                             }'
 
 // all tgid not in this list will be excluded. if empty all will be allowed. 3 kind of format : interval = 'tgidstart..tgidend' / statingwith 'tgidstart*' / 'tgid'
-export const tgid_allowed: string[]    = ['2080000..2080099','206*','265']
+// if first character is ~ (tilda) the the logic result will be inverted
+export const tgid_allowed: string[]    = ['2080000..2080099','206*','265', '~800..810']
 
 // show tg traffic in obp and masters even if not in tgid_allowed
 export const tgid_allow_obp_and_masters = false

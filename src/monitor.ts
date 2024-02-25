@@ -135,21 +135,26 @@ export class Monitor {
     if (config.tgid_allowed.length < 2)
       return true
 
+    let negate = false
     let pattern = null
     let index = -1
     
     for(let i=0; i < config.tgid_allowed.length; i++) {
       pattern = config.tgid_allowed[i]
 
+      // if negate note nagation, and get interval
+      if (negate = pattern.startsWith('~'))
+        pattern = pattern.substring(1)
+
       if (pattern == tgid)
-        return true
+        return negate ? false:true
 
       if ((index = pattern.indexOf('*')) != -1 && tgid.startsWith(pattern.substring(0, index)))
-        return true
+        return negate ? false:true
 
       if ((index = pattern.indexOf('..')) != -1) {
         if (parseInt(pattern.substring(0, index)) <= parseInt(tgid) && parseInt(tgid) <= parseInt(pattern.substring(index+2)))
-          return true
+          return negate ? false:true
       }
     }
 
