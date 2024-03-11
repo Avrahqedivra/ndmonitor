@@ -166,12 +166,12 @@
 							<th class="thleslot">Slot</th>
 							<th class="thletx" colspan=2>TX Connectés</th>
 							<th class="thlename">Name</th>
-							<th class="thletg">TGs</th>
+							<th class="thletg">TG #<div style="display: inline-block;" class="tgCount"></div></th>
 							<th class="thlepc">%</th>
 							<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI)</a></th>
 							<th class="thledelay">TX (s)</th>
 							<th class="thlenetid">NetID</th>
-							<th class="thlemaster">Master Infra</th>
+							<th class="thlemaster">Masters <div style="display: inline-block;" class="masterCount"></div></th>
 						</tr>
 					</thead>
 					<tbody id="lastActiveBody"></tbody>
@@ -209,7 +209,7 @@
 					<table class="tables tablefixed network">
 						<thead id="theadMasters" tbodyid="masters">
 							<tr class="headerRow">
-								<th class="thmsmaster">Master</th>
+								<th class="thmsmaster">Master <div style="display: inline-block;" class="masterCount"></div></th>
 								<th class="thmsnetid">NetID</th>
 								<th class="thmstime">Connecté(s)</th>
 								<th class="thmsslot">Slot</th>
@@ -249,6 +249,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
+	const FLASH_INTERVAL = 30
+	const FLASH_DURATION = 6
+
 function updateTime() {
   var now = new Date();
   var hours = now.getHours();
@@ -467,6 +470,17 @@ function dragElement(elmnt) {
 
 				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
+				cnxTime = record["STATS"]["CONNECTED"]
+
+				cnxState = ''
+
+				if (parsedTime = parseElapsedTime(cnxTime)) {
+					if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
+						cnxState = 'msCnxOnline'
+					else
+						cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
+				}
+
 				content += "<tr><td class='msMasters' rowspan='3'>" + peer
 					+ "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td></tr>"
 
@@ -477,21 +491,20 @@ function dragElement(elmnt) {
 					+ '</span></span></div><br><div class="msLocation">' + record["LOCATION"] + '</div></td>'
 
 					+ '<td class="' + peState + '" rowspan="2">'
-					+ record["STATS"]["CONNECTED"] 
-					+ '<br><div style="font: 8pt arial, sans-serif">'
-					+ record["STATS"]["PINGS_SENT"] 
-					+ " / " + record["STATS"]["PINGS_ACKD"] 
-					+ " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) 
-					+ "</div></td>"
+					+ '<div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + record["STATS"]["CONNECTED"]  + "</div>"
+					+ '<br><div class="msPings">' + record["STATS"]["PINGS_SENT"] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + "</div></td>"
 
 					+ '<td class="' + ts1 + '">TS1</td>'
 					+ '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>'
-					+ '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>'
-					+ '</tr>'
+					+ '<td class="' + cnx1 + '">' + record["1"]["DEST"] 
+					+ ((record["1"]["TGIMG"] == undefined) ? '' : buildImages(record["1"]["TGIMG"]))
+					+ '</td></tr>'
 
 					+ '<tr><td class="' + ts2 + '">TS2</td>'
 					+ '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>'
-					+ '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td></tr>';
+					+ '<td class="' + cnx2 + '">' + record["2"]["DEST"] 
+					+ ((record["2"]["TGIMG"] == undefined) ? '' : buildImages(record["2"]["TGIMG"]))
+					+ '</td></tr>';
 			}
 
 			$("#peers").append(content);
@@ -603,100 +616,184 @@ function dragElement(elmnt) {
 		return false
 	}
 
+	function buildImages(str) {
+		let list = str.split(',')
+		let tgImgs = ''
+
+		for(let i=0; i<list.length; i++)
+			if (tgImg64[list[i].trim()])
+				tgImgs += `<img class='tgImg tgImgMaster' src='${tgImg64[list[i].trim()]}'/>`
+
+		return tgImgs
+	}
+
+	function parseElapsedTime(elapsedTimeStr) {
+		try { 
+			let match = null
+			
+			// check days hours
+			if (match = elapsedTimeStr.match(/(\d+)d (\d+)h/)) {
+				const days = parseInt(match[1], 10);
+				const hours = parseInt(match[2], 10);
+				return { days, hours }
+			}
+
+			// check hours minutes
+			if (match = elapsedTimeStr.match(/(\d+)h (\d+)m/)) {
+				const hours = parseInt(match[1], 10);
+				const minutes = parseInt(match[2], 10);
+				return { hours, minutes };
+			}
+
+			// check minutes seconds
+			if (match = elapsedTimeStr.match(/(\d+)m (\d+)s/)) {
+				const minutes = parseInt(match[1], 10);
+				const seconds = parseInt(match[2], 10);
+				return { minutes, seconds }
+			}
+
+			// check only seconds
+			if (match = elapsedTimeStr.match(/(\d+)s/)) {
+				const minutes = 0;
+				const seconds = parseInt(match[1], 10);
+				return { minutes, seconds }
+			}
+
+			return null
+		}
+		catch(e) {
+			return null
+		}
+	}
+
 	function updateMasters(masters, emaster) {
+		var activeMastersCount = 0
+
 		if (masters != null && $('#masters').is(':visible')) {
-				var content = "";
-				$("#masters").empty();
+			var content = "";
+			$("#masters").empty();
 
-				for (let entry in masters) {
-						done = false;
+			for (let entry in masters) {
+					done = false;
 
-						if (!done) {
-								// skip empty peers
-								var length = Object.keys(masters[entry]["PEERS"]).length;
-								if (length == 0 && !emaster)
-										continue;
+					if (!done) {
+							// skip empty peers
+							var length = Object.keys(masters[entry]["PEERS"]).length;
+							if (length == 0 && !emaster)
+									continue;
 
-								rowspan = Math.max(1, length) * 2 + 1;
-								content += "<tr><td class='msMasters' rowspan='" + rowspan + "'>" + entry + "<br><div class='msRepeat'>" + masters[entry]["REPEAT"] + "</div></td></tr>";
-								done = true;
-						}
+							rowspan = Math.max(1, length) * 2 + 1;
+							content += "<tr><td class='msMasters' rowspan='" + rowspan + "'>" + entry + "<br><div class='msRepeat'>" + masters[entry]["REPEAT"] + "</div></td></tr>";
+							done = true;
+					}
 
-						var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"]);
-						var peersLength = peers.length;
+					var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"]);
+					var peersLength = peers.length;
 
-						try {
-							if (peersLength == 0) {
-									content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">N/A</div><span class="msNetID">&nbsp;(Id: n/a)</span>'
-									+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">&nbsp;&nbsp;&nbsp;<b><font color="yellow">N/A</font></b><br>'
-									+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: N/A</span></span></div><br>'
-									+ '<div class="msLocation">N/A</div></td><td class="tdGradient" rowspan="2">N/A</td><td class="msTS1">TS1</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
-									+ '<tr><td class="msTS2">TS2</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
-							} else {
-									for (let i = 0; i < peersLength; i++) {
-										netID = peers[i][0];
-										record = peers[i][1];
+					try {
+						if (peersLength == 0) {
+								content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">N/A</div><span class="msNetID">&nbsp;(Id: n/a)</span>'
+								+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">&nbsp;&nbsp;&nbsp;<b><font color="yellow">N/A</font></b><br>'
+								+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: N/A</span></span></div><br>'
+								+ '<div class="msLocation">N/A</div></td><td class="tdGradient" rowspan="2">N/A</td><td class="msTS1">TS1</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
+								+ '<tr><td class="msTS2">TS2</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
+						} else {
+								activeMastersCount++
+								
+								for (let i = 0; i < peersLength; i++) {
+									netID = peers[i][0];
+									record = peers[i][1];
 
-										ts1rx = record["1"]["TXRX"];
-										ts2rx = record["2"]["TXRX"];
+									cnxTime = record["CONNECTED"]
 
-										ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"));
-										ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"));
+									ts1rx = record["1"]["TXRX"];
+									ts2rx = record["2"]["TXRX"];
 
-										cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX");
-										cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX");
+									ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"));
+									ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"));
 
-										hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+									cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX");
+									cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX");
 
-										content += '<tr>'
-											+ '<td rowspan="2"' + (isUserConnected(record['IP']) ? ' class="note"':'') + '>'
-											+ '<div class="tooltip">'
-											+ '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
-											+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
-											+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
-											+ '<span class="tooltiptext">'
-												+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
-												+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
-												+ '&nbsp;&nbsp;&nbsp;<b>IP address</b>: ' + record["IP"]
-												+ '<br>&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
-												+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
-												+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
-											+ '</span></span></div><br>'
-											+ '<div class="msLocation">' + record["LOCATION"] + '</div></td>'
-											+ '<td class="tdGradient" rowspan="2">' + record["CONNECTED"] + '</td>'
-											+ '<td class="' + ts1 + '">TS1</td><td class="' + cnx1 + '">';
+									hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
 
-										// --------------------------------------------------------------------------------------------
-										if (record["1"]["SUB"] != "")
-											content += getMasterComboFlags(1, record["1"]["SUB"]);
 
-										content += record["1"]["SUB"] + '</td><td class="' + cnx1 + '"></div>'
+									if (record["SLOTS"].startsWith("Slot"))
+										record["SLOTS"] = 'VOIP'
 
-										// --------------------------------------------------------------------------------------------
-										if (record["1"]["DEST"] != "")
-												content += getMasterComboFlags(0, record["1"]["DEST"]);
+									msSlots = (record["SLOTS"].startsWith("VOIP")) ? '"msPoc">' : (record["SLOTS"].toLowerCase() === 'simplex') ? '"msSimplex">':'"msDuplex">'
 
-										content += record["1"]["DEST"] + '</td></tr><tr><td class="' + ts2 + '">TS2</td><td class="' + cnx2 + '">';
+									cnxState = ''
 
-										// --------------------------------------------------------------------------------------------
-										if (record["2"]["SUB"] != "")
-											content += getMasterComboFlags(1, record["2"]["SUB"]);
+									if (parsedTime = parseElapsedTime(cnxTime)) {
+										if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
+											cnxState = 'msCnxOnline'
+										else
+											cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
+									}
 
-										content += record["2"]["SUB"] + '</td><td class="' + cnx2 + '">';
+									content += '<tr>'
+										+ '<td rowspan="2"' + (isUserConnected(record['IP']) ? ' class="note"':'') + '>'
+										+ '<div class="tooltip">'
+										+ '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
+										+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
+										+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
+										+ '<span class="tooltiptext">'
+											+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
+											+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
+											+ '&nbsp;&nbsp;&nbsp;<b>IP address</b>: ' + record["IP"]
+											+ '<br>&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
+											+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
+											+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
+										+ '</span></span></div><br>'
+										+ '<div class="msLocation">' + record["LOCATION"] + '</div></td>'
+										+ '<td class="tdGradient" rowspan="2"><div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + cnxTime + '</div><br> <div class=' + msSlots + record["SLOTS"] + '</div></td>'
+										+ '<td class="' + ts1 + '">TS1</td><td class="' + cnx1 + '">';
 
-										// --------------------------------------------------------------------------------------------
-										if (record["2"]["DEST"] != "")
-												content += getMasterComboFlags(0, record["2"]["DEST"]);
+									// --------------------------------------------------------------------------------------------
+									if (record["1"]["SUB"] != "")
+										content += getMasterComboFlags(1, record["1"]["SUB"]);
 
-										content += record["2"]["DEST"] + '</td></tr>';
-								}
+									content += record["1"]["SUB"] + '</td><td class="' + cnx1 + '"></div>'
+
+									var tgImg = ''
+
+									// --------------------------------------------------------------------------------------------
+									if (record["1"]["DEST"] != "") {
+										tgImg = (record["1"]["TGIMG"] == undefined) ? '' : buildImages(record["1"]["TGIMG"])
+										content += getMasterComboFlags(0, record["1"]["DEST"]);
+									}
+
+									content += record["1"]["DEST"] + tgImg + '</td></tr><tr><td class="' + ts2 + '">TS2</td><td class="' + cnx2 + '">';
+
+									// --------------------------------------------------------------------------------------------
+									tgImg = ''
+
+									if (record["2"]["SUB"] != "")
+										content += getMasterComboFlags(1, record["2"]["SUB"]);
+
+									content += record["2"]["SUB"] + '</td><td class="' + cnx2 + '">';
+
+									// --------------------------------------------------------------------------------------------
+									if (record["2"]["DEST"] != "") {
+										tgImg = (record["2"]["TGIMG"] == undefined) ? '' : buildImages(record["2"]["TGIMG"])
+										content += getMasterComboFlags(0, record["2"]["DEST"]);
+									}
+
+									content += record["2"]["DEST"] + tgImg + '</td></tr>';
 							}
-						} catch (error) {
 						}
-				}
+					} catch (error) {
+					}
+			}
 
-				$(content).appendTo("#masters");
-				content = "";
+			$(content).appendTo("#masters");
+			content = "";
+
+			var els = document.getElementsByClassName("masterCount")
+			for(let i=0; i<els.length; i++) {
+				els[i].innerText = activeMastersCount + "/" + Object.keys(masters).length
+			}
 		}
 	}
 
@@ -804,7 +901,7 @@ function dragElement(elmnt) {
 				if (om.DELAY == 0)
 					bgClass += " darker ";
 
-				var alias = om.ALIAS; // .replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+				var alias = om.ALIAS
 
 				content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) 
 					+ "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>" 
@@ -1136,6 +1233,10 @@ function dragElement(elmnt) {
 					var flagFirst = "";
 					var flagSecond = "";
 
+					// add tg network picture
+					// var tgImg = (record.TGIMG == undefined || tgImg64[record.TGIMG] == undefined) ? '' : `<img class='tgImg' src='${tgImg64[record.TGIMG]}'/>`
+					var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])
+
 					if (flagUrl == "")
 						flagUrl = flag64["shield"]; // "shield.png";
 
@@ -1151,6 +1252,8 @@ function dragElement(elmnt) {
 
 						alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
 					}
+
+					alias += tgImg
 
 					content = '<tr class=' + bgClass + '>'
 						+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
@@ -1194,6 +1297,8 @@ function dragElement(elmnt) {
 					$("#p"+record.TGID+ " div.greenBar").css({ "left": ""+percentage+"%", "width": ""+(100-percentage)+"%" });
 				}
 			}
+
+			document.getElementsByClassName("tgCount")[0].innerHTML = $('#lastActiveBody tr').length
 		}
 	}
 
@@ -1713,31 +1818,34 @@ function dragElement(elmnt) {
 							if (flagUrl == "")
 								flagUrl = flag64["shield"]; // "shield.png";
 
-								content = '<tr class=' + bgClass + '>'
+							// add tg network picture
+							var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])
+
+							content = '<tr class=' + bgClass + '>'
 									+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
 									+ "<td class='tdTime"+ ((showColumns.charAt(1) == '-') ? " visible'":"'") + ">" +record.TIME + "</td>"
 									+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
 
-								// they both depend on TX connected
-									+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
-									+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
+							// they both depend on TX connected
+								+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
+								+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
 
-								if (record.NAME.toUpperCase() == callsign)
-									content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
-								else
-									content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
+							if (record.NAME.toUpperCase() == callsign)
+								content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
+							else
+								content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
 
-								content += "<td class='talkgroup"+ ((showColumns.charAt(5) == '-') ? " visible'":"'") + ">" + tgid + "</td>"
-									+ "<td class='alias ellipsis"+ ((showColumns.charAt(6) == '-') ? " visible'":"'") + ">" + alias + "</td>";
+							content += "<td class='talkgroup"+ ((showColumns.charAt(5) == '-') ? " visible'":"'") + ">" + tgid + "</td>"
+								+ "<td class='alias ellipsis"+ ((showColumns.charAt(6) == '-') ? " visible'":"'") + ">" + alias + tgImg + "</td>";
 
-								if (record.PACKET === "START")
-									content += "<td class='online"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + "><div class='ticker" + record.TGID + "'>00:00</div></td>";
-								else
-									content += "<td class='delay"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + ">" + ((delay != undefined) ? delay : "") + "</td>";
+							if (record.PACKET === "START")
+								content += "<td class='online"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + "><div class='ticker" + record.TGID + "'>00:00</div></td>";
+							else
+								content += "<td class='delay"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + ">" + ((delay != undefined) ? delay : "") + "</td>";
 
-								content += "<td class='netid"+ ((showColumns.charAt(8) == '-') ? " visible'":"'") + ">" + netid + "</td>"
-									+ "<td class='infra ellipsis"+ ((showColumns.charAt(9) == '-') ? " visible'":"'") + ">" + record.SYS + "</td>"
-									+ "</tr>";
+							content += "<td class='netid"+ ((showColumns.charAt(8) == '-') ? " visible'":"'") + ">" + netid + "</td>"
+								+ "<td class='infra ellipsis"+ ((showColumns.charAt(9) == '-') ? " visible'":"'") + ">" + record.SYS + "</td>"
+								+ "</tr>";
 
 							$("#hblink" + tgid).append(content);
 						}
@@ -1886,20 +1994,20 @@ function dragElement(elmnt) {
 
 				saveSettings();
 			}, 125);
-		});
+		})
 
 		$(document).on("click", ".network thead", function () {
 			$("#" + $(this).attr('tbodyid')).toggle(100, () => {
     		saveSettings();
-  		});
-		});
+  		})
+		})
 
 		$(document).on("click", ".close", function () {
 			$("#statisticsModal").hide();
 			$("#listenersModal").hide();
 			$("#followUpModal").hide();
 			$("#statusdiv").hide();
-		});
+		})
 
 		$(document).on("dblclick", "#listenersmenu", function (e) {
 			if (e.ctrlKey) {
@@ -1915,15 +2023,29 @@ function dragElement(elmnt) {
 				$("#listeners").append(content)
 				$("#listenersModal").show()
 			}
-		});
+		})
 
 		document.getElementById("search").addEventListener('keyup', (event) => {
   		const keyName = event.key;
 			// As the user releases the Ctrl key, the key is no longer active,
 			// so event.ctrlKey is false.
-			if (keyName === 'Escape')
-				document.getElementById("inputModal").style.display = 'none';
-		}, false);
+			switch(keyName) {
+				case 'Escape':
+					document.getElementById("inputModal").style.display = 'none';
+					break
+
+				case 'Enter':
+					followupdmrid()
+					break
+
+				default:
+					break
+			}
+		}, false)
+
+		document.getElementById("search").addEventListener('mouseover', () => {
+    	document.getElementById("search").focus();
+		})
 
 		// freqstats
 		$(document).on("click", "div.chartbutton", (event) => {
@@ -1950,6 +2072,19 @@ function dragElement(elmnt) {
 			doTraffic(traffic)
 		})
 	})
+
+	/**
+	 * speaker flahing  management
+	 */
+	function flashSpeaker() {
+		if (!(flashSpeakerEvery++ % FLASH_INTERVAL)) {
+			flashSpeakerDuration = FLASH_DURATION
+			$("#speakerIcon").addClass("blinkMe")
+		}
+
+		if ($("#speakerIcon").hasClass("blinkMe") && !(++flashSpeakerDuration % FLASH_DURATION))
+				$("#speakerIcon").removeClass("blinkMe")
+	}
 
 	window.onload = () => {
 		urlCache = {}
@@ -1983,6 +2118,9 @@ function dragElement(elmnt) {
 		mainChart = null
 		statsType = "all"
 
+		flashSpeakerEvery = FLASH_INTERVAL
+		flashSpeakerDuration = FLASH_DURATION
+
 		if (mobileDevice)	{
 			var r = document.querySelector(':root');
 			r.style.setProperty('--table-width', '100%');
@@ -2002,7 +2140,7 @@ function dragElement(elmnt) {
 				$("#insertPoint").append($("<div id='tg" + tgid + "marker'></div>"));
 		});
 
-		document.getElementById("menuSearch").style.display = "inline-block";		
+		document.getElementById("menuSearch").style.display = "inline-block";				
 
 		// don't show banner if already done within 3600s
 		if (bannerDelay == 0 || (Math.floor(Date.now() - settings[0].config.last) / 1000) < 3600) {
@@ -2048,7 +2186,9 @@ function dragElement(elmnt) {
 
 					ticker = setInterval(() => {
 						// Update the time every second
-						updateTime();
+						updateTime()
+
+						flashSpeaker()
 
 						if (statusCountdown > 0)
 							statusCountdown--
@@ -2077,6 +2217,7 @@ function dragElement(elmnt) {
 								}
 							}
 						}
+
 					}, 1000)
 		
 					resolve()
@@ -2185,14 +2326,6 @@ function dragElement(elmnt) {
 		setTimeout(() => {
 			socket = new WSConnection().connect(wsuri);
 		}, 250);
-	}
-
-	window.onunload = () => {
-		socket = null;
-		if (ticker != null) {
-			clearInterval(ticker);
-			ticker = null;
-		}
 	}
 </script>
 

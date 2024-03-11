@@ -17,16 +17,39 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
  *  
 */
 
 import fs from "fs";
-import * as https from 'https'
-import * as http from 'http'
+import * as config from './config.js'
 
 export class Utils {
   constructor() {
+  }
+
+  /**
+   * add tgid image field to lastheard
+   */
+  getNetWorkPicture(tgid: string, alias: string): any {
+    if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+      for(let entry of config.__tgImage__) {
+        let tgs = new Set(Object.values(entry)[0].toString().split(','))
+                
+        if (tgs.has(tgid)) {
+          let exts = entry['ext'].split(',')
+
+          for(let i=0; i<exts.length; i++) {
+            if (exts[i].trim().length)
+              alias = alias.replace(exts[i].trim(), '')
+          }
+          return {'TGIMG' : Object.keys(entry)[0], 'ALIAS': alias}
+        }
+      }
+
+      // returns default picture (last entry of config.__tgImage__) and unmodified alias
+      return { 'TGIMG' : Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0], 'ALIAS': alias}
+    }
   }
 
   get_alias(_id: string, _dict: any): [] {

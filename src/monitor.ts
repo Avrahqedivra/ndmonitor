@@ -17,7 +17,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
  *  
 */
 
@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "1.9.0"
+export let __version__: string          = "2.0.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -648,7 +648,7 @@ export class Monitor {
     
     logger.info(`${globals.__RESET__}`)
     
-    logger.info(`\nNDMonitor v${__version__} (c) 2023 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>`
+    logger.info(`\nNDMonitor v${__version__} (c) 2023-24 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>`
     + '\nBased on HBMonitor 2019-2021 by Waldek, SP2ONG'
     + '\nBased on Python 3 version 2019 by Steve Miller, KC1AWV <smiller@kc1awv.net>')
 
@@ -857,7 +857,7 @@ export class Monitor {
             // update ipmap table
             this.reporter.mapIpAdresses()
 
-            // prepare initial packet            
+            // prepare initial packet
             if (ws.fromPage) {
               if (ws.page === 'dashboard') {
                 _message['CTABLE'] = rep.__ctable__
@@ -907,6 +907,22 @@ export class Monitor {
               }
               else {
                 initialList.length = Math.min(initialList.length, config.__traffic_size__)
+              }
+
+              /**
+               * add tgid image field to lastheard
+               */
+              if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+                const def = Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0]
+
+                for(let i=0; i<initialList.length; i++) {
+                  let record = initialList[i]
+                  
+                  let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
+                  
+                  record['TGIMG'] = networkData['TGIMG']
+                  record['ALIAS'] = networkData['ALIAS']
+                }
               }
 
               if (ws.fromPage) {

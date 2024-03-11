@@ -27,6 +27,22 @@ export const __opb_filter__ = []
 export const __opb_backend__: any       = {}
 // tg1, tg2 etc to be excluded, for example "800,801,802,3339"
 export const __tgFilter__: string       = ""
+// tgid associated pictures. Item format is { "list of picture names from tgImg64[] of localstorage.js": 'list of tgids sharing same picture', ext: 'list of pattern to be removed in DEST string' }
+export const __tgImage__: any        = [
+                                          { "freedmr,multi": '20899,38,39', ext: '(FD),(ALL)' },
+                                          { "ipsc2": '20800,208000,7,208009,208004,208005,3022,84,2080000,208001', ext: '(I2)' },
+                                          { "brandmeister": '208,2081,208101,20876,2062,206,64701,2087,20825,2281,20871,2085,20877,20853,20830,20878,937,20894,2089,208977,969,311953', ext: '(BM)' },
+                                          { "xlx": '228101,20801,20833,302211,208301,208305', ext: '(XLX)' },
+                                          { "hblink": '33,971', ext: '(HB)' },
+                                          { "multi": '20899', ext: '' },
+                                          { "c4fm": '', ext: '(C4FM)' },
+                                          { "dstar": '', ext: '(DSTAR)' },
+                                          { "wiresx": '20802', ext: '(WIRES-X)' },
+                                          
+                                          // last one will be the DEFAULT
+                                          { "dmr": '', ext: '(DMR)' }
+                                        ]
+
 // tg order on html monitor page, for example "38,7,39,777"
 export const __tgidOrder__: string      = ""
 // tg optional settings

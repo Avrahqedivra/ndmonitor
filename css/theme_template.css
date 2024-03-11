@@ -422,10 +422,10 @@ thead {
   width: 2rem;
 }
 .thletx { 
-  width: 12rem;
+  width: 11rem;
 }
 .thlename { 
-  width: 11rem;
+  width: 9rem;
 }
 .thletg {
   font-weight: normal;
@@ -590,7 +590,7 @@ thead {
   color: var(--color-dmrid);
   text-align: end;
   padding-right: 0.5rem;
-  width: 4rem;
+  width: 3rem;
 }
 .percent {
   font-size: 0.8rem;
@@ -678,7 +678,7 @@ color: #569cd6;
   font-weight: var(--color-fw-msmasters);
 }
 
-#masters tr {
+#masters tr, #peers tr {
   line-height: 1.8rem;
 }
 
@@ -697,7 +697,7 @@ color: #569cd6;
   margin-left: auto;
 }
 
-#masters td {
+#masters td, #peers td {
   padding: 0;
   margin: 0;
   border-collapse: collapse;
@@ -711,7 +711,7 @@ color: #569cd6;
   display: inline-block;
 }
 .msRepeat {
-  font-size: 0.7rem;
+  /* font-size: 0.7rem; */
   color: var(--color-msRepeat);
   font-weight: var(--color-fw-msrepeat);
 }
@@ -752,7 +752,42 @@ color: #569cd6;
   font-size: 0.9rem;  
   color: var(--color-fg-msTSRX);
 }
-
+.msSimplex {
+  font-size: 0.9rem;
+  color: var(--color-fg-msTS2);
+  text-transform:uppercase;
+}
+.msDuplex {
+  font-size: 0.9rem;
+  color: var(--color-fg-msTS1);
+  text-transform:uppercase;
+}
+.msPOC {
+  font-size: 0.9rem;
+  color: var(--color-fg-msTSRX);
+  text-transform:uppercase;
+}
+.cnxState {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 25%;
+  position: absolute;
+  top: 0.65rem;
+  left: 0.5rem;
+}
+.cnxTime {
+  display: inline-block;
+}
+.msCnxOnline {
+  background-color: green;
+}
+.msCnxWarming {
+  background-color: yellow;
+}
+.msCnxStarting {
+  background-color: orange;
+}
 /* PEERS STYLE CLASSES */
 .thpemaster { 
   width: 12rem;
@@ -773,14 +808,23 @@ color: #569cd6;
   width: auto;
 }
 .peON {
-  background-color:#b5cea8;
+  position: relative;
+  /* background-color:#b5cea8; */
+  background-color:var(--color-trbg);
+  color: var(--color-dmrid);
+  font-size: 0.9rem;
 }
 .peOFF {
-  background-color:#FF69B4;
+  position: relative;
+  /* background-color:#FF69B4; */
+  background-color:var(--color-trbg);
+  color: var(--color-dmrid);
+  font-size: 0.9rem;
 }
 .tdGradient {
+  position: relative;
   color: var(--color-fg-tdgradient);
-  background-color: var(--color-bg-tdgradient);
+  /* background-color: var(--color-bg-tdgradient); */
   font-size: 0.9rem;
 }
 
@@ -948,6 +992,13 @@ color: #569cd6;
   border: 1px solid #606060;
 }
 
+.tgImg {
+  margin-right: 0.25rem;
+  float: inline-end;
+  height: 20px;
+  border: none;
+}
+
 /* The Close Button */
 .close {
   position:absolute;
@@ -966,6 +1017,7 @@ color: #569cd6;
 
 .close-status {
   top: -0.45rem;
+  right: 28px;
 }
 
 .close-followup {
@@ -1586,3 +1638,26 @@ canvas {
   font-size: 1.4rem;
 }
 
+@keyframes blink {
+  0%, 50% {
+      visibility: hidden;
+  }
+}
+
+.blinkMe {
+  animation: blink 1s infinite;
+}
+
+.tgCount {
+  color: var(--color-fg-headerRow);
+}
+
+.masterCount {
+  color: var(--color-fg-headerRow);
+}
+
+.msPings {
+  color: var(--color-fg-msTS2);
+  font-size: 0.9rem;
+  text-transform:uppercase;
+}

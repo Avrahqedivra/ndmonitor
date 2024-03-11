@@ -17,7 +17,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
  *  
 */
 
@@ -85,17 +85,17 @@ export class Reporter {
     let hours: number   = Math.floor(elapsed/3600) % 24
     let days: number    = Math.floor(elapsed/86400)
     if (days)
-        return `${days}d ${hours}h`
+        return `${days.toString().padStart(3, '0')}d ${hours.toString().padStart(2, '0')}h`
 
     let minutes: number = Math.floor(elapsed/60) % 60
     if (hours)
-        return `${hours}h ${minutes}m`
+        return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`
 
     let seconds: number = Math.trunc(elapsed % 60)
     if (minutes)
-        return `${minutes}m ${seconds}s`
+        return `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`
 
-    return `${seconds}s`
+    return `${seconds.toString().padStart(2, '0')}s`
   }
 
   /**
@@ -649,6 +649,12 @@ export class Reporter {
           ctabdata['SRC']       = peer
           ctabdata['SUB']       = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
           ctabdata['DEST']      = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
+          ctabdata['TGID']      = destination
+
+
+          let networkData = utils.getNetWorkPicture(ctabdata['TGID'], ctabdata['DEST'])
+          ctabdata['TGIMG'] = networkData['TGIMG']
+          ctabdata['DEST'] = networkData['ALIAS']
         }
 
         if (action === 'END') {
@@ -658,6 +664,8 @@ export class Reporter {
           ctabdata['SUB']       = ''
           ctabdata['SRC']       = ''
           ctabdata['DEST']      = ''
+          ctabdata['TGID']      = ''
+          ctabdata['TGIMG']     = ''
 
           // deal with Extracommands etc..
           this.extra.rts_update(parseInt(destination))
@@ -678,22 +686,29 @@ export class Reporter {
       ctabdata = __ctable__['PEERS'][system][timeSlot]
 
       if (action === 'START') {
-          ctabdata['TIMEOUT']     = timeout
-          ctabdata['TS']          = true
-          ctabdata['SUB']         = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
-          ctabdata['SRC']         = sourcePeer
-          ctabdata['DEST']        = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
+        ctabdata['TIMEOUT']     = timeout
+        ctabdata['TS']          = true
+        ctabdata['SUB']         = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
+        ctabdata['SRC']         = sourcePeer
+        ctabdata['DEST']        = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
+        ctabdata['TGID']        = destination
 
-          ctabdata['TXRX']        = (sourcePeer == null || sourceSub == null || destination == null) ? '': trx
+        let networkData = utils.getNetWorkPicture(ctabdata['TGID'], ctabdata['DEST'])
+        ctabdata['TGIMG'] = networkData['TGIMG']
+        ctabdata['DEST'] = networkData['ALIAS']
+
+        ctabdata['TXRX']        = (sourcePeer == null || sourceSub == null || destination == null) ? '': trx
       }
 
       if (action === 'END') {
-          ctabdata['TS']          = false
-          ctabdata['TYPE']        = ''
-          ctabdata['SUB']         = ''
-          ctabdata['SRC']         = ''
-          ctabdata['DEST']        = ''
-          ctabdata['TXRX']        = ''
+        ctabdata['TS']          = false
+        ctabdata['TYPE']        = ''
+        ctabdata['SUB']         = ''
+        ctabdata['SRC']         = ''
+        ctabdata['DEST']        = ''
+        ctabdata['TXRX']        = ''
+        ctabdata['TGID']        = ''
+        ctabdata['TGIMG']       = ''
       }
     }
 
@@ -882,13 +897,18 @@ export class Reporter {
               var REPORT_CALLSIGN = callfname[0].trim()
               var REPORT_FNAME    = callfname[1].trim()
               var REPORT_BOTH     = utils.alias_short(REPORT_DMRID,  __subscriber_ids__)
+              var REPORT_TGIMG    = ''
   
               var jsonStr = {}
-  
+
+              let networkData = utils.getNetWorkPicture(REPORT_TGID, REPORT_ALIAS)
+              REPORT_TGIMG = networkData['TGIMG']
+              REPORT_ALIAS = networkData['ALIAS']
+    
               if (REPORT_PACKET === 'END') {
                 let REPORT_DELAY = parseInt(p[9])
                 // append new entry
-                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': REPORT_DELAY }
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'TGIMG': REPORT_TGIMG, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': REPORT_DELAY }
   
                 this.updateLastheard(jsonStr)
   
@@ -908,13 +928,13 @@ export class Reporter {
               }
               else 
               if (REPORT_PACKET === 'START') {
-                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }              
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'TGIMG': REPORT_TGIMG ,'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
                 
                 this.updateLastheard(jsonStr)
               }
               else
               if (REPORT_PACKET === 'END WITHOUT MATCHING START')
-                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE':REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE':REPORT_TYPE.substring(6), 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'TGIMG': REPORT_TGIMG, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
               else
                 jsonStr = { 'DATE': now.substring(0, 10), 'TIME': now.substring(10), 'PACKET': 'UNKNOWN GROUP VOICE LOG MESSAGE' }              
   

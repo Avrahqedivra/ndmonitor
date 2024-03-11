@@ -18,7 +18,7 @@
  *  THE SOFTWARE.
  *
  *  Based on the work of Jeremy Lainé on github https://www.npmjs.com/package/jpickle
- *  Copyright(c) 2023 F4JDN - Jean-Michel Cohen
+ *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
  *  
 */
 import fs from "fs"
