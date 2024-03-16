@@ -818,7 +818,7 @@
               + '<th class="thledate">Date</th>'
               + '<th class="thletime">Heure</th>'
               + '<th class="thleslot">Slot</th>'
-              + '<th class="thletx" colspan=2>TX Connectés</th>'
+              + '<th class="thletx">TX Connectés</th>'
               + '<th class="thlename">Name</th>'
               + '<th class="thletg">TG' + tgid + '</th>'
               + '<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>'
@@ -873,8 +873,8 @@
               content += "<td class='slot'>" + record.TS + "</td>";
               content += "<td class='callsign ellipsis'>";
               content += "<img class='tgflag' src='" + flagUrl + "'/>"
-              content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
-              content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+              content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>";
+              content += "<div dmrid=" + record.DMRID + " class='dmrid'>(" + record.DMRID + ")</div></td>";
               if (record.NAME.toUpperCase() == callsign)
                 content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
               else

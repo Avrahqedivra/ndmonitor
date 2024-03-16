@@ -1,6 +1,7 @@
 /* --Buttons HTML code-- */
 #siteHeader {
-    width: var(--table-width);
+  margin: auto;
+  width: var(--table-width);
 }
 
 .mobilesiteHeader {

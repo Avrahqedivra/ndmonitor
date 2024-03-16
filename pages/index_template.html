@@ -164,7 +164,7 @@
 							<th class="thledate">Date</th>
 							<th class="thletime" id="heure">Heure</th>
 							<th class="thleslot">Slot</th>
-							<th class="thletx" colspan=2>TX Connectés</th>
+							<th class="thletx">TX Connectés</th>
 							<th class="thlename">Name</th>
 							<th class="thletg">TG #<div style="display: inline-block;" class="tgCount"></div></th>
 							<th class="thlepc">%</th>
@@ -1093,7 +1093,7 @@ function dragElement(elmnt) {
 							+ '<th class="thledate'+ ((showColumns.charAt(0) == "-") ? ' visible"':'"') + '>Date</th>'
 							+	'<th class="thletime'+ ((showColumns.charAt(1) == "-") ? ' visible"':'"') + '>Heure</th>'
 							+ '<th class="thleslot'+ ((showColumns.charAt(2) == "-") ? ' visible"':'"') + '>Slot</th>' 
-							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + ' colspan=2>TX Connectés</th>'
+							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + '>TX Connectés</th>'
 							+ '<th class="thlename'+ ((showColumns.charAt(4) == "-") ? ' visible"':'"') + '>Name</th>'
 							+ '<th class="thletg'+ ((showColumns.charAt(5) == "-") ? ' visible"':'"') + '>TG' + tgid + '</th>' 
 							+ '<th class="thlelog'+ ((showColumns.charAt(6) == "-") ? ' visible"':'"') + '><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' 
@@ -1261,8 +1261,8 @@ function dragElement(elmnt) {
 						+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
 
 					// they both depend on TX connected
-						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
-						+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
+						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>"
+						+ "<div dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</div></td>";
 
 					if (record.NAME.toUpperCase() == callsign)
 						content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + dmrid + ")'>" + callsign + "</td>";
@@ -1736,7 +1736,7 @@ function dragElement(elmnt) {
 							+ '<th class="thledate'+ ((showColumns.charAt(0) == "-") ? ' visible"':'"') + '>Date</th>' 
 							+ '<th class="thletime'+ ((showColumns.charAt(1) == "-") ? ' visible"':'"') + '>Heure</th>' 
 							+ '<th class="thleslot'+ ((showColumns.charAt(2) == "-") ? ' visible"':'"') + '>Slot</th>' 
-							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + ' colspan=2>TX Connectés</th>' 
+							+ '<th class="thletx'+ ((showColumns.charAt(3) == "-") ? ' visible"':'"') + '>TX Connectés</th>' 
 							+ '<th class="thlename'+ ((showColumns.charAt(4) == "-") ? ' visible"':'"') + '>Name</th>' 
 							+ '<th class="thletg'+ ((showColumns.charAt(5) == "-") ? ' visible"':'"') + '>TG' + tgid + '</th>' 
 							+ '<th class="thlelog'+ ((showColumns.charAt(6) == "-") ? ' visible"':'"') + '><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' 
@@ -1827,8 +1827,8 @@ function dragElement(elmnt) {
 									+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
 
 							// they both depend on TX connected
-								+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>"
-								+ "<td dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</td>";
+								+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>"
+								+ "<div dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</div></td>";
 
 							if (record.NAME.toUpperCase() == callsign)
 								content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
@@ -2253,7 +2253,7 @@ function dragElement(elmnt) {
 								}
 
 								if (data.CONFIG.BIGEARS)
-									$("#btnlisteners").text(data.BIGEARS);
+									$("#btnlisteners").text(data.CONFIG.BIGEARS);
 
 								if (data.CONFIG.LISTENERS)
 									listenerList = data.CONFIG.LISTENERS;

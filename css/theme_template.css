@@ -28,6 +28,7 @@ a::-webkit-scrollbar, select::-webkit-scrollbar {
 }
 
 html, body {
+  --table-width: 82rem;
   font-size: var(--color-fz-html);
   font-family: var(--color-font-html);
   font-weight: bold;
@@ -107,7 +108,7 @@ html, body {
   width: 6px;
   background-color: #404040;
 }
-.content::-webkit-scrollbar-thumb, select::-webkit-scrollbar-thumb {
+.content::-webkit-scrollbar-thumb, select::-webkit-scrollbar-thumb, #insertPoint::-webkit-scrollbar-thumb {
   background-color: #569cd6;
 }
 .content thead th {
@@ -311,7 +312,6 @@ thead {
 }
 .tables {
   margin-top: 1rem;
-  width: var(--table-width);
 }
 #sysoptables .tables {
   width: var(--table-width);
@@ -360,7 +360,7 @@ thead {
   padding: 0 0.5rem 0 2rem;
 }
 .entitledTables {
-  width: var(--table-width);
+  width: 100%;
 }
 /* end title styles */
 
@@ -422,21 +422,21 @@ thead {
   width: 2rem;
 }
 .thletx { 
-  width: 11rem;
+  width: 10rem;
 }
 .thlename { 
-  width: 9rem;
+  width: 12rem;
 }
 .thletg {
   font-weight: normal;
-  width: 4em;
+  width: 5rem;
 }
 .thlepc {
   font-weight: normal;
-  width: 3em;
+  width: 3rem;
 }
 .thlelog { 
-  width: 18rem;
+  width: 19rem;
 }
 .thledelay { 
   width: 4rem;
@@ -570,7 +570,7 @@ thead {
 .alias {
   color: var(--color-alias);
   text-align: left;
-  padding-left: 1.5rem;
+  padding-left: 0.5rem;
 }            
 .callsign {
   text-align: left;
@@ -585,6 +585,8 @@ thead {
   text-decoration: underline;
 }
 .dmrid {
+  padding-top: 0.45rem;
+  float: inline-end;
   font-size: 0.8rem;
   font-weight: var(--color-fw-dmrid);
   color: var(--color-dmrid);
@@ -914,6 +916,37 @@ color: #569cd6;
   height: inherit;
 }
 
+.modal-content-messagebox {
+  scrollbar-width: thin;
+
+  width: 20rem;
+  margin: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-left: -12rem;
+  transform: translateY(-50%);
+
+  max-height: 60rem;
+  overflow-y: auto;
+}
+
+.modal-content-messagebox .tablefixed {
+  width: 100%;
+  height: 100%;
+  color: var(--color-table-fg);
+}
+
+.modal-content-messagebox tbody {
+  width: 100%;
+  height: 100%;
+  color: var(--color-table-fg);
+}
+
+.messabeboxText {
+  padding: 1rem;
+}
+
 .modal-content-statistics {
   scrollbar-width: thin;
 
@@ -1225,7 +1258,6 @@ select {
 
 .theme-light {
   /* html, body */
-  --table-width: 84rem;
   --color-fz-html: 11pt;
   --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
@@ -1388,7 +1420,6 @@ select {
 
 .theme-dark {
   /* html, body */
-  --table-width: 84rem;
   --color-fz-html: 11pt;
   --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
@@ -1552,7 +1583,6 @@ select {
 
 .chartstype {
   display: block;
-  width: 100%;
   height: 12rem;
   margin-top: 0.5rem;
   margin-bottom: 2.8rem;
