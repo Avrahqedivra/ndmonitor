@@ -359,9 +359,6 @@ export class Monitor {
         let mimetype: string = filetype.mimetype;
         let filename: string = req.url.toString()
   
-        if (req.url.substr(dotOffset) == ".svg")
-          console.log("svg")
-
         // any icon from old apple device
         if (filename.indexOf('apple-touch-icon') != -1)
           filename = "/apple-touch-icon.png"
