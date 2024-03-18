@@ -22,6 +22,8 @@
  *  
 */
 import fs from "fs"
+import { logger } from "../monitor.js"
+import * as config from '../config.js'
 
 export class PickleParser {
   private mark = 'THIS-NEEDS-TO-BE-UNIQUE-TO-SERVE-AS-A-BOUNDARY';
@@ -285,8 +287,11 @@ export class PickleParser {
             }
             catch(e) {
                 this.stack.push(0);
+                logger.info('Pickle Parser Out of sync. Please relaunch the monitor')
 
-                fs.writeFileSync(`./log/BININT1${Date.now()}.txt`, buffer.toString('utf-8'), { encoding: 'utf8' })
+                if (config.__loginfo__) {
+                    fs.writeFileSync(`${config.__log_path__}$BININT1${Date.now()}.txt`, buffer.toString('utf-8'), { encoding: 'utf8' })
+                }
             }
 
             i += 1;

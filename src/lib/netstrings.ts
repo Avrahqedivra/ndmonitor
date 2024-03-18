@@ -22,6 +22,7 @@
 */
 import fs from 'fs'
 import { logger } from "../monitor.js"
+import * as config from '../config.js'
 
 export class NetStringReceiver {
   private receiveBox = null
@@ -79,8 +80,11 @@ export class NetStringReceiver {
       }
     }catch(e) {
       this.reSync()
-      // fs.writeFileSync(`./log/NETSTRING${Date.now()}.txt`, data.toString('utf-8'), { encoding: 'utf8' })
+      logger.info('NetString out of sync. Please relaunch the monitor')
+
+      if (config.__loginfo__) {
+        fs.writeFileSync(`${config.__log_path__}$/NETSTRING${Date.now()}.txt`, data.toString('utf-8'), { encoding: 'utf8' })
+      }
     }
   }
 }
-
