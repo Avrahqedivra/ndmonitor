@@ -1262,7 +1262,7 @@ function dragElement(elmnt) {
 
 					// they both depend on TX connected
 						+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>"
-						+ "<div dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</div></td>";
+						+ "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
 
 					if (record.NAME.toUpperCase() == callsign)
 						content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + dmrid + ")'>" + callsign + "</td>";
@@ -1811,7 +1811,7 @@ function dragElement(elmnt) {
 					if (callsign == "")
 						callsign = dmrid;
 
-					if ($('#hblink' + record.TGID + ' >tr td[dmrid=' + record.DMRID + ']').length == 0) {
+					if ($('#hblink' + record.TGID + ' >tr div[dmrid=' + record.DMRID + ']').length == 0) {
 						/* deal with content if < displaylines */
 						if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
 							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
@@ -1828,7 +1828,7 @@ function dragElement(elmnt) {
 
 							// they both depend on TX connected
 								+ "<td class='callsign ellipsis"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + "><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>"
-								+ "<div dmrid=" + record.DMRID + " class='dmrid"+ ((showColumns.charAt(3) == '-') ? " visible'":"'") + ">(" + dmrid + ")</div></td>";
+								+ "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
 
 							if (record.NAME.toUpperCase() == callsign)
 								content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";

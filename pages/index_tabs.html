@@ -267,6 +267,24 @@
         $("#listenersModal").show();
       }
     });
+	
+	document.getElementById("search").addEventListener('keyup', (event) => {
+		const keyName = event.key;
+		// As the user releases the Ctrl key, the key is no longer active,
+		// so event.ctrlKey is false.
+		switch(keyName) {
+			case 'Escape':
+				document.getElementById("inputModal").style.display = 'none';
+				break
+
+			case 'Enter':
+				followupdmrid()
+				break
+
+			default:
+				break
+		}
+	}, false)
 
     // freqstats
     $(document).on("click", "div.chartbutton", (event) => {
@@ -388,28 +406,6 @@
     }
   }
 
-  function checkDeadOnline() {
-    try {
-      var found = false;
-
-      for (let i = 0; i < traffic.length; i++) {
-        if (traffic[i].PACKET == "START") {
-          var t = new Date(traffic[i].DATE + " " + traffic[i].TIME);
-          if ((Date.now() - t.getTime()) > 240000) {
-            found = true;
-            traffic[i].PACKET = "END";
-          }
-        }
-      }
-
-      if (found)
-        doTraffic(traffic);
-
-    } catch (error) {
-
-    }
-  }
-
   function followUpdUser(dmrid) {
     $("#followup tr").remove()
 
@@ -432,7 +428,7 @@
         if (om.DELAY == 0)
           bgClass += " darker ";
 
-        var alias = om.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
+        var alias = om.ALIAS;
 
         content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME)
           + "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME + "</td><td class=''>"
@@ -856,16 +852,16 @@
           if (callsign == "")
             callsign = dmrid;
 
-          if ($('#hblink' + record.TGID + ' >tr td[dmrid=' + record.DMRID + ']').length == 0) {
+          if ($('#hblink' + record.TGID + ' >tr div[dmrid=' + record.DMRID + ']').length == 0) {
             /* deal with content if < displaylines */
             if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
 
               var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
               if (flagUrl == "")
-                flagUrl = flag64["shield"]; // "shield.png";
+                flagUrl = flag64["shield"];
 
-							// add tg network picture
-							var tgImg = ((record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"]))
+				// add tg network picture
+				var tgImg = ((record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"]))
 
               content = '<tr class=' + bgClass + '>';
               content += "<td class='tdDate'>" + record.DATE + "</td>";
@@ -1057,10 +1053,6 @@
     $("#siteHeader").show();
     $("#freqstatsdiv").show()
   };
-
-  window.onunload = () => {
-    socket = null;
-  }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
