@@ -23,7 +23,7 @@
         #insertPoint {
             margin-top: 2rem;
             width: var(--table-width);
-            scrollbar-width: thin;
+            /* scrollbar-width: thin; */
             height: calc(100vh - 31.5rem);
             overflow-y: scroll;
         }
@@ -188,7 +188,7 @@
                             '<th class="thledate">Date</th>' +
                             '<th class="thletime">Heure</th>' +
                             '<th class="thleslot">Slot</th>' +
-                            '<th class="thletx" colspan=2>TX Connectés</th>' +
+                            '<th class="thletx">TX Connectés</th>' +
                             '<th class="thlename">Name</th>' +
                             '<th class="thletg">TG#</th>' +
                             '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' +
@@ -227,6 +227,9 @@
                     else
                         bgClass = 'tgGreen';
 
+                    // add tg network picture
+                    var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])
+
                     var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
                     if (flagUrl == "")
                         flagUrl = flag64["shield"];
@@ -238,14 +241,14 @@
                     content += "<td class='slot'>" + record.TS + "</td>";
                     content += "<td class='callsign ellipsis'>";
                     content += "<img class='tgflag' src='" + flagUrl + "'/>"
-                    content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a></td>";
-                    content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+                    content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>";
+                    content += "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
                     if (record.NAME.toUpperCase() == callsign)
                         content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
                     else
                         content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
                     content += "<td class='talkgroup'>" + tgid + "</td>";
-                    content += "<td class='alias ellipsis'>" + alias + "</td>";
+                    content += "<td class='alias ellipsis'>" + alias + tgImg + "</td>";
                     if (record.PACKET === "START")
                         content += "<td class='online'>ONLINE</td>";
                     else
@@ -259,6 +262,56 @@
             }
         }
     }
+
+	function buildImages(str) {
+		let list = str.split(',')
+		let tgImgs = ''
+
+		for(let i=0; i<list.length; i++)
+			if (tgImg64[list[i].trim()])
+				tgImgs += `<img class='tgImg tgImgMaster' src='${tgImg64[list[i].trim()]}'/>`
+
+		return tgImgs
+	}
+
+	function parseElapsedTime(elapsedTimeStr) {
+		try { 
+			let match = null
+			
+			// check days hours
+			if (match = elapsedTimeStr.match(/(\d+)d (\d+)h/)) {
+				const days = parseInt(match[1], 10);
+				const hours = parseInt(match[2], 10);
+				return { days, hours }
+			}
+
+			// check hours minutes
+			if (match = elapsedTimeStr.match(/(\d+)h (\d+)m/)) {
+				const hours = parseInt(match[1], 10);
+				const minutes = parseInt(match[2], 10);
+				return { hours, minutes };
+			}
+
+			// check minutes seconds
+			if (match = elapsedTimeStr.match(/(\d+)m (\d+)s/)) {
+				const minutes = parseInt(match[1], 10);
+				const seconds = parseInt(match[2], 10);
+				return { minutes, seconds }
+			}
+
+			// check only seconds
+			if (match = elapsedTimeStr.match(/(\d+)s/)) {
+				const minutes = 0;
+				const seconds = parseInt(match[1], 10);
+				return { minutes, seconds }
+			}
+
+			return null
+		}
+		catch(e) {
+			return null
+		}
+	}
 
     function log(msg) {
         console.log(msg);
@@ -369,10 +422,6 @@
 
         $("#menubar").show();
         $("#siteHeader").show();
-    };
-
-    window.onunload = () => {
-        socket = null
     }
 </script>
 

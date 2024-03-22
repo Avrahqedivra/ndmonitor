@@ -910,8 +910,6 @@ export class Monitor {
                * add tgid image field to lastheard
                */
               if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-                const def = Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0]
-
                 for(let i=0; i<initialList.length; i++) {
                   let record = initialList[i]
                   
@@ -960,8 +958,25 @@ export class Monitor {
                       ws.send(JSON.stringify({ 'SUBSCRIBERS': {} }))
                   }
                   else
-                  if (_command['request'] === 'loglast')
-                    ws.send(JSON.stringify({ 'LOGLAST': this.createLogTableJson() }))
+                  if (_command['request'] === 'loglast') {
+                    let loglastList = this.createLogTableJson()
+
+                    /**
+                     * add tgid image field to lastheard
+                     */
+                    if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+                      for(let i=0; i<loglastList.length; i++) {
+                        let record = loglastList[i]
+                        
+                        let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
+                        
+                        record['TGIMG'] = networkData['TGIMG']
+                        record['ALIAS'] = networkData['ALIAS']
+                      }
+                    }
+
+                    ws.send(JSON.stringify({ 'LOGLAST': loglastList }))
+                  }
                 }
                 else {
                   if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
