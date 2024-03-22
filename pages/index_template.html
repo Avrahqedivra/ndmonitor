@@ -448,7 +448,7 @@ function dragElement(elmnt) {
 	}
 
 	function updatePeers(peers) {
-		if (peers != null && $('#peers').is(':visible')) {
+		if (peers != null) {
 			$("#peers tr").remove();
 
 			//    console.log("");
@@ -470,17 +470,6 @@ function dragElement(elmnt) {
 
 				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
-				cnxTime = record["STATS"]["CONNECTED"]
-
-				cnxState = ''
-
-				if (parsedTime = parseElapsedTime(cnxTime)) {
-					if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
-						cnxState = 'msCnxOnline'
-					else
-						cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
-				}
-
 				content += "<tr><td class='msMasters' rowspan='3'>" + peer
 					+ "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td></tr>"
 
@@ -491,28 +480,30 @@ function dragElement(elmnt) {
 					+ '</span></span></div><br><div class="msLocation">' + record["LOCATION"] + '</div></td>'
 
 					+ '<td class="' + peState + '" rowspan="2">'
-					+ '<div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + record["STATS"]["CONNECTED"]  + "</div>"
-					+ '<br><div class="msPings">' + record["STATS"]["PINGS_SENT"] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + "</div></td>"
+					+ record["STATS"]["CONNECTED"] 
+					+ '<br><div style="font: 8pt arial, sans-serif">'
+					+ record["STATS"]["PINGS_SENT"] 
+					+ " / " + record["STATS"]["PINGS_ACKD"] 
+					+ " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) 
+					+ "</div></td>"
 
 					+ '<td class="' + ts1 + '">TS1</td>'
 					+ '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>'
-					+ '<td class="' + cnx1 + '">' + record["1"]["DEST"] 
-					+ ((record["1"]["TGIMG"] == undefined) ? '' : buildImages(record["1"]["TGIMG"]))
-					+ '</td></tr>'
+					+ '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>'
+					+ '</tr>'
 
 					+ '<tr><td class="' + ts2 + '">TS2</td>'
 					+ '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>'
-					+ '<td class="' + cnx2 + '">' + record["2"]["DEST"] 
-					+ ((record["2"]["TGIMG"] == undefined) ? '' : buildImages(record["2"]["TGIMG"]))
-					+ '</td></tr>';
+					+ '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td></tr>';
 			}
 
 			$("#peers").append(content);
 		}
 
+		// hide empty peers
 		($("#peersTable tbody tr").length == 0) ? $("#peersTable").hide() : $("#peersTable").show()
 	}
-
+	
 	// https://gist.github.com/umidjons/9614157
 	function sortMastersPeersByOnlineTime(peers) {
 		var peersArray = [];
