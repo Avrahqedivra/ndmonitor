@@ -510,9 +510,7 @@ function dragElement(elmnt) {
 			$("#peers").append(content);
 		}
 
-		if ($("#peersTable tbody tr").length == 0) {
-			$("#peersTable").hide()
-		}
+		($("#peersTable tbody tr").length == 0) ? $("#peersTable").hide() : $("#peersTable").show()
 	}
 
 	// https://gist.github.com/umidjons/9614157
