@@ -692,7 +692,7 @@ function dragElement(elmnt) {
 
 					try {
 						if (peersLength == 0) {
-								content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">N/A</div><span class="msNetID">&nbsp;(Id: n/a)</span>'
+								content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">n/a</div><span class="msNetID">&nbsp;(Id: n/a)</span>'
 								+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">&nbsp;&nbsp;&nbsp;<b><font color="yellow">N/A</font></b><br>'
 								+ '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: N/A<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: N/A</span></span></div><br>'
 								+ '<div class="msLocation">N/A</div></td><td class="tdGradient" rowspan="2">N/A</td><td class="msTS1">TS1</td><td class="msTSE">N/A</td><td class="msTSE">N/A</td></tr>'
@@ -732,11 +732,14 @@ function dragElement(elmnt) {
 											cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
 									}
 
+									callsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a'
+									location = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a'
+
 									content += '<tr>'
 										+ '<td rowspan="2"' + (isUserConnected(record['IP']) ? ' class="note"':'') + '>'
 										+ '<div class="tooltip">'
 										+ '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
-										+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
+										+ '<div class="msCallsign">' + callsign + '</div>'
 										+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
 										+ '<span class="tooltiptext">'
 											+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
