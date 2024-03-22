@@ -732,14 +732,14 @@ function dragElement(elmnt) {
 											cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
 									}
 
-									callsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a'
-									location = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a'
+									mscallsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a'
+									mslocation = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a'
 
 									content += '<tr>'
 										+ '<td rowspan="2"' + (isUserConnected(record['IP']) ? ' class="note"':'') + '>'
 										+ '<div class="tooltip">'
 										+ '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
-										+ '<div class="msCallsign">' + callsign + '</div>'
+										+ '<div class="msCallsign">' + mscallsign + '</div>'
 										+ '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
 										+ '<span class="tooltiptext">'
 											+ '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
@@ -749,7 +749,7 @@ function dragElement(elmnt) {
 											+ '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
 											+ '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
 										+ '</span></span></div><br>'
-										+ '<div class="msLocation">' + record["LOCATION"] + '</div></td>'
+										+ '<div class="msLocation">' + mslocation + '</div></td>'
 										+ '<td class="tdGradient" rowspan="2"><div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + cnxTime + '</div><br> <div class=' + msSlots + record["SLOTS"] + '</div></td>'
 										+ '<td class="' + ts1 + '">TS1</td><td class="' + cnx1 + '">';
 
