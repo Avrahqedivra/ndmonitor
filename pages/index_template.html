@@ -206,7 +206,7 @@
 						</tbody>
 					</table>
 					<br>
-					<table class="tables tablefixed network">
+					<table id="mastersTable" class="tables tablefixed network">
 						<thead id="theadMasters" tbodyid="masters">
 							<tr class="headerRow">
 								<th class="thmsmaster">Master <div style="display: inline-block;" class="masterCount"></div></th>
@@ -221,7 +221,7 @@
 						</tbody>
 					</table>
 					<br>
-					<table class="tables tablefixed network">
+					<table id="peersTable" class="tables tablefixed network">
 						<thead id="theadPeers" tbodyid="peers">
 							<tr class="headerRow">
 								<th class="thpemaster">Peer</th>
@@ -508,6 +508,10 @@ function dragElement(elmnt) {
 			}
 
 			$("#peers").append(content);
+		}
+
+		if ($("#peersTable tbody tr").length == 0) {
+			$("#peersTable").hide()
 		}
 	}
 
