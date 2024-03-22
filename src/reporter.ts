@@ -75,6 +75,11 @@ export class Reporter {
   private reconnectTries = MAXTRIES
   private errorMode = false
 
+  private dayPadding = 3
+  private hourPadding = 2
+  private minutePadding = 2
+  private secondsPadding = 2
+
   /**
    * Return friendly elapsed time from time in seconds 
    */
@@ -84,18 +89,20 @@ export class Reporter {
 
     let hours: number   = Math.floor(elapsed/3600) % 24
     let days: number    = Math.floor(elapsed/86400)
-    if (days)
-        return `${days.toString().padStart(3, '0')}d ${hours.toString().padStart(2, '0')}h`
+
+    if (days) {
+        return `${days.toString().padStart(this.dayPadding, '0')}d ${hours.toString().padStart(this.hourPadding, '0')}h`
+    }
 
     let minutes: number = Math.floor(elapsed/60) % 60
     if (hours)
-        return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`
+        return `${hours.toString().padStart(this.hourPadding, '0')}h ${minutes.toString().padStart(this.minutePadding, '0')}m`
 
     let seconds: number = Math.trunc(elapsed % 60)
     if (minutes)
-        return `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`
+        return `${minutes.toString().padStart(this.minutePadding, '0')}m ${seconds.toString().padStart(this.secondsPadding, '0')}s`
 
-    return `${seconds.toString().padStart(2, '0')}s`
+    return `${seconds.toString().padStart(this.secondsPadding, '0')}s`
   }
 
   /**
@@ -725,6 +732,13 @@ export class Reporter {
     this.diagnostics.runCheck()
 
     __ctable__ = { 'PEERS': {}, 'OPENBRIDGES': {} }
+
+    if (config.__extra_settings__?.masters && config.__extra_settings__.masters?.padding) {
+      this.dayPadding = (config.__extra_settings__.masters.padding?.days) ? config.__extra_settings__.masters.padding?.days : 3
+      this.hourPadding = (config.__extra_settings__.masters.padding?.hours) ? config.__extra_settings__.masters.padding?.hours : 2
+      this.minutePadding = (config.__extra_settings__.masters.padding?.minutes) ? config.__extra_settings__.masters.padding?.minutes : 2
+      this.secondsPadding = (config.__extra_settings__.masters.padding?.seconds) ? config.__extra_settings__.masters.padding?.seconds : 2
+    }
 
     try {
       setInterval(() => {

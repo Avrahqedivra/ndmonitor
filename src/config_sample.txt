@@ -21,6 +21,8 @@ export const __loginfo__: boolean               = false                         
 // how long the sitelogo should appear for the dashboard page
 export const __bannerDelay__: number            = 0                                           // banner display time, 0 = no banner
 
+// extra config
+export const __extra_settings__ = { "masters": { "padding": { "days": 3, "hours": 2, "minutes": 2, "seconds": 2 } } }
 // list of NETWORK_ID from OPB links not to show in local "lastheard" traffic, for example: [ "260210","260211","260212" ]
 export const __opb_filter__ = []
 // allowed Backend OBP, if specified, precise all allowed SRC_ID, for example { "OBP-GLOBAL1": [ "208xx", "208yy" ], "OBP-GLOBAL2": [ "208ww", "208zz" ] }
