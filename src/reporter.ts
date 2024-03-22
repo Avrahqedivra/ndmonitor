@@ -58,6 +58,7 @@ const MAXTRIES: number = 5
 
 // https://cs.lmu.edu/~ray/notes/jsnetexamples/
 export class Reporter {
+  private opbNotAllowed = null
   private monitor = null
   private dashboardServer = null
   private diagnostics = null
@@ -725,6 +726,7 @@ export class Reporter {
   // https://stackoverflow.com/questions/25791436/reconnect-net-socket-nodejs
 
   constructor(monitor: Monitor, address: string, port: number) {
+    this.opbNotAllowed = new Set()
     this.monitor = monitor
     this.dashboardServer = this.monitor.dashboardServer
     
@@ -894,7 +896,10 @@ export class Reporter {
               }
   
               if (!found) {
-                logger.info(`BACKEND OBP '${REPORT_SYS}' WITH ID='${REPORT_SRC_ID}' NOT ALLOWED`)
+                if (!this.opbNotAllowed.has(REPORT_SYS)) {
+                  this.opbNotAllowed.add(REPORT_SYS)
+                  logger.info(`BACKEND OBP '${REPORT_SYS}' WITH ID='${REPORT_SRC_ID}' NOT ALLOWED`)
+                }
                 return
               }
             }
