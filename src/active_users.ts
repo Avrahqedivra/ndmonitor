@@ -120,7 +120,7 @@ let tg: string = ''
 if (argv.length == 1)
   tg = parseInt(argv[0]).toString()
 
-console.log(`\n${BOLD}Active Users Utility v1.1 (c) 2023 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>${ENDC}`)
+console.log(`\n${BOLD}Active Users Utility v1.1 (c) 2023-24 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>${ENDC}`)
 console.log(`\n${' '.repeat(MARGIN)}will create "${activeUsersFile}" using "${lasheardFile}"`)
 
 if (fs.existsSync(`${lasheardFile}`)) {
