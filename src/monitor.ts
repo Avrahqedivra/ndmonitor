@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.1.0"
+export let __version__: string          = "2.0.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -175,7 +175,7 @@ export class Monitor {
       var isIpad = !!req.headers['user-agent'].match(/iPad/);
       var isAndroid = !!req.headers['user-agent'].match(/Android/);
 
-      if (__mobilePhone__ = (isIpad || isAndroid))
+      if (__mobilePhone__ = (isIpad || isAndroid) && config.__loginfo__)
         logger.info(`mobile phone connection ${req.headers['user-agent']}`)
     }
     catch(e) {
@@ -359,6 +359,9 @@ export class Monitor {
         let mimetype: string = filetype.mimetype;
         let filename: string = req.url.toString()
   
+        if (req.url.substr(dotOffset) == ".svg")
+          console.log("svg")
+
         // any icon from old apple device
         if (filename.indexOf('apple-touch-icon') != -1)
           filename = "/apple-touch-icon.png"
@@ -910,6 +913,8 @@ export class Monitor {
                * add tgid image field to lastheard
                */
               if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+                const def = Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0]
+
                 for(let i=0; i<initialList.length; i++) {
                   let record = initialList[i]
                   
@@ -958,25 +963,8 @@ export class Monitor {
                       ws.send(JSON.stringify({ 'SUBSCRIBERS': {} }))
                   }
                   else
-                  if (_command['request'] === 'loglast') {
-                    let loglastList = this.createLogTableJson()
-
-                    /**
-                     * add tgid image field to lastheard
-                     */
-                    if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-                      for(let i=0; i<loglastList.length; i++) {
-                        let record = loglastList[i]
-                        
-                        let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
-                        
-                        record['TGIMG'] = networkData['TGIMG']
-                        record['ALIAS'] = networkData['ALIAS']
-                      }
-                    }
-
-                    ws.send(JSON.stringify({ 'LOGLAST': loglastList }))
-                  }
+                  if (_command['request'] === 'loglast')
+                    ws.send(JSON.stringify({ 'LOGLAST': this.createLogTableJson() }))
                 }
                 else {
                   if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {

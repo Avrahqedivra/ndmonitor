@@ -5,12 +5,14 @@
 		<link rel="icon" type="image/x-icon" href="favicon.ico" />
 		<meta charset="UTF-8">
 		<meta http-equiv="refresh" content="20000"/>
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+
 		<title>NDMonitor</title>
 
     <link rel="stylesheet" href="theme_template.css">
     <link rel="stylesheet" href="mysite_template.css">
     <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
-
+		
 		<style>
 			/* #hbtables {
 				margin-top: 0rem;
@@ -66,7 +68,7 @@
 	</head>
 	
 <body>
-	<center>
+	<div class="mainContainer">
 		<noscript>You must enable JavaScript</noscript>
 
 		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
@@ -143,8 +145,8 @@
 					<table class="tablefixed">
 						<thead id="statusdivheader" tbodyid="status">
 							<tr class="headerRow">
-								<th class="thlename">Server<div id="statusCountdown" style="padding-right:0.5rem;float: right;">10</div></th>
-								<th class="thledate">Status</th>
+								<th class="thstname">Server<div id="statusCountdown" style="padding-right:0.5rem;float: right;">10</div></th>
+								<th class="thststatus">Status</th>
 							</tr>
 						</thead>
 						<tbody id="status">
@@ -188,7 +190,12 @@
 						<div class="chartbutton ratio" style="background-color: var(--color-bg-ratio);">RATIO</div>
 						<div class="chartbutton all" style="background-color: var(--color-bg-all);">ALL</div>
 					</div>
-					<div class="chartinputcontainer"><div id="tgstatspanel"></div><div class="chartinput"><input type="search" id="tgstats" name="tgstats" maxlength="7" placeholder="&nbsp;Enter TG"></div></div>
+					<div class="chartinputcontainer">
+						<div id="tgstatspanel">
+							<div class="chartinput"><input type="search" id="tgstats" name="tgstats" maxlength="7" placeholder="&nbsp;Enter TG"></div>
+							<div id="tgstatspaneltext"></div>
+						</div>
+					</div>
 				</div>
 
 				<div id="insertPoint"></div>
@@ -243,7 +250,7 @@
 			</div> 
 			<!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
 		</div>
-	</center>
+	</div>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1556,7 +1563,7 @@ function dragElement(elmnt) {
 
     mainChart.update()
 
-		document.getElementById('tgstatspanel').innerText = (parseInt(specialtg) > 0) ? `TG${specialtg} specific stats`:''
+		document.getElementById('tgstatspaneltext').innerText = (parseInt(specialtg) > 0) ? `TG${specialtg} specific stats`:''
   }
 
 	function frequentationStats(record) {
@@ -1938,8 +1945,16 @@ function dragElement(elmnt) {
 		}
 	}
 
+
+	const resizeOps = () => {
+    document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
+  };
+
 	$(document).ready(function () {
 		TIME_INTERVALS = 24
+
+		resizeOps();
+  	window.addEventListener("resize", resizeOps);
 		
 		// document ready occurs before windows.onLoad
 		if (getConfigFromLocalStorage != null) {
@@ -2119,7 +2134,8 @@ function dragElement(elmnt) {
 
 		if (mobileDevice)	{
 			var r = document.querySelector(':root');
-			r.style.setProperty('--table-width', '100%');
+			r.style.setProperty('--margin-top-mobile', '5rem');
+			r.style.setProperty('--table-width', '36rem');
 			r.style.setProperty('--color-fz-html', '20pt');
 
 			$("#sysoptables").css("display", "none");

@@ -1,11 +1,12 @@
 /* --Buttons HTML code-- */
 #siteHeader {
+  display: none;
   margin: auto;
   width: var(--table-width);
 }
 
 .mobilesiteHeader {
-    width: 100%;
+   width: 100%;
 }
 
 #infoLine {
@@ -162,10 +163,6 @@ h1 {
 
 #siteLogo {
     height: 6rem;
-}
-
-#siteHeader {
-	display: none;
 }
 
 .vertical-center {
