@@ -1,5 +1,5 @@
 devices = [    
-    { name: "Ailunce HD1", value: "HD1", code: 1 },
+    { name: "Ailunce HD1, HD2", value: "HD1", code: 1 },
     { name: "Motorola DGP-6150+", value: "MOTO", code: 2 },
     { name: "Retevis RT52", value: "RT52", code: 3 },
     { name: "Retevis RT3S / RT90 / RT84 / RT82", value: "RT3S", code: 4 },
