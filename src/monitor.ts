@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.0.0"
+export let __version__: string          = "2.1.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -175,8 +175,9 @@ export class Monitor {
       var isIpad = !!req.headers['user-agent'].match(/iPad/);
       var isAndroid = !!req.headers['user-agent'].match(/Android/);
 
-      if (__mobilePhone__ = (isIpad || isAndroid) && config.__loginfo__)
-        logger.info(`mobile phone connection ${req.headers['user-agent']}`)
+      if (__mobilePhone__ = (isIpad || isAndroid))
+        if (config.__loginfo__)
+          logger.info(`mobile phone connection ${req.headers['user-agent']}`)
     }
     catch(e) {
       __mobilePhone__ = false
@@ -963,8 +964,22 @@ export class Monitor {
                       ws.send(JSON.stringify({ 'SUBSCRIBERS': {} }))
                   }
                   else
-                  if (_command['request'] === 'loglast')
-                    ws.send(JSON.stringify({ 'LOGLAST': this.createLogTableJson() }))
+                  if (_command['request'] === 'loglast') {
+                    var loglast = this.createLogTableJson()
+
+                    if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+                      for(let i=0; i<loglast.length; i++) {
+                        let record = loglast[i]
+                        
+                        let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
+                        
+                        record['TGIMG'] = networkData['TGIMG']
+                        record['ALIAS'] = networkData['ALIAS']
+                      }
+                    }
+      
+                    ws.send(JSON.stringify({ 'LOGLAST': loglast }))
+                  }
                 }
                 else {
                   if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
