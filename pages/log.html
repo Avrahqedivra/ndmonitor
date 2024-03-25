@@ -225,13 +225,6 @@
     $("#menubar").show();
     $("#siteHeader").show();
   };
-
-  window.onunload = () => {
-    tgfilter = new Set("__TGID_FILTER__".split(','));
-
-    if (socket != null && socket != {})
-      socket.disconnect();
-  }
 </script>
 
 </html>
