@@ -47,12 +47,6 @@ table, td, th {
   background: var(--color-bg-odd)
 }
 
-#insertPoint {
-  margin-top: 2rem;
-  height: calc(100vh - 10rem);
-  overflow-y: scroll;
-}
-
 @supports (-moz-appearance:none) {
   div[name="hbtables"] {
     overflow-y: scroll;

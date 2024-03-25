@@ -965,11 +965,14 @@ export class Monitor {
                   }
                   else
                   if (_command['request'] === 'loglast') {
-                    var loglast = this.createLogTableJson()
+                    let loglastList = this.createLogTableJson()
 
+                    /**
+                     * add tgid image field to lastheard
+                     */
                     if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-                      for(let i=0; i<loglast.length; i++) {
-                        let record = loglast[i]
+                      for(let i=0; i<loglastList.length; i++) {
+                        let record = loglastList[i]
                         
                         let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
                         
@@ -977,8 +980,8 @@ export class Monitor {
                         record['ALIAS'] = networkData['ALIAS']
                       }
                     }
-      
-                    ws.send(JSON.stringify({ 'LOGLAST': loglast }))
+
+                    ws.send(JSON.stringify({ 'LOGLAST': loglastList }))
                   }
                 }
                 else {
