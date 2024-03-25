@@ -477,22 +477,29 @@ function dragElement(elmnt) {
 
 				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
+				cnxTime = record["STATS"]["CONNECTED"]
+				cnxState = ''
+
+				if (parsedTime = parseElapsedTime(cnxTime)) {
+					if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
+						cnxState = 'msCnxOnline'
+					else
+						cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
+				}
+
 				content += "<tr><td class='msMasters' rowspan='3'>" + peer
 					+ "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td></tr>"
 
-					+ '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">' + record["CALLSIGN"] + '</div>'
+					+ '<tr><td rowspan="2"><div class="tooltip">'
+					+ '<img class="msflag" src="' + getTgFlag(record["RADIO_ID"]) + '"/>'
+					+ '<div class="msCallsign">' + record["CALLSIGN"] + '</div>'
 					+ '<span class="msNetID">&nbsp;(Id: ' + record["RADIO_ID"] + ')</span>'
 					+ '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
 					+ '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>' + record["SLOTS"]
 					+ '</span></span></div><br><div class="msLocation">' + record["LOCATION"] + '</div></td>'
 
-					+ '<td class="' + peState + '" rowspan="2">'
-					+ record["STATS"]["CONNECTED"] 
-					+ '<br><div style="font: 8pt arial, sans-serif">'
-					+ record["STATS"]["PINGS_SENT"] 
-					+ " / " + record["STATS"]["PINGS_ACKD"] 
-					+ " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) 
-					+ "</div></td>"
+					+ '<td class="tdGradient" rowspan="2"><div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + cnxTime + '</div><br>'
+					+ '<div class="msPings">' + record["STATS"]["PINGS_SENT"] + ' / ' + record["STATS"]["PINGS_ACKD"] + ' / ' + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + '</div></td>'
 
 					+ '<td class="' + ts1 + '">TS1</td>'
 					+ '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>'
@@ -1237,7 +1244,6 @@ function dragElement(elmnt) {
 					var flagSecond = "";
 
 					// add tg network picture
-					// var tgImg = (record.TGIMG == undefined || tgImg64[record.TGIMG] == undefined) ? '' : `<img class='tgImg' src='${tgImg64[record.TGIMG]}'/>`
 					var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])
 
 					if (flagUrl == "")
@@ -1817,9 +1823,9 @@ function dragElement(elmnt) {
 					if ($('#hblink' + record.TGID + ' >tr div[dmrid=' + record.DMRID + ']').length == 0) {
 						/* deal with content if < displaylines */
 						if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
-							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
+							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);						
 							if (flagUrl == "")
-								flagUrl = flag64["shield"]; // "shield.png";
+								flagUrl = flag64["shield"]
 
 							// add tg network picture
 							var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])

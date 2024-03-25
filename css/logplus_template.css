@@ -5,8 +5,8 @@ table, td, th {
 }
 
 #insertPoint {
-  scrollbar-width: thin;
-  max-height: 52rem;
+  margin-top: 2rem;
+  height: calc(100vh - 10rem);
   overflow-y: scroll;
 }
 
@@ -45,4 +45,19 @@ table, td, th {
 
 #tableLog tr:nth-child(odd) {
   background: var(--color-bg-odd)
+}
+
+#insertPoint {
+  margin-top: 2rem;
+  height: calc(100vh - 10rem);
+  overflow-y: scroll;
+}
+
+@supports (-moz-appearance:none) {
+  div[name="hbtables"] {
+    overflow-y: scroll;
+    width: fit-content;
+    margin-top: 0.5rem;
+    scrollbar-color: #569cd6 #404040;
+  }
 }

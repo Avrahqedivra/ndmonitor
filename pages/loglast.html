@@ -23,8 +23,7 @@
         #insertPoint {
             margin-top: 2rem;
             width: var(--table-width);
-            /* scrollbar-width: thin; */
-            height: calc(100vh - 31.5rem);
+            height: calc(100vh - 10rem);
             overflow-y: scroll;
         }
     
@@ -182,19 +181,19 @@
                     /* check if table already exists */
                     if (document.getElementById(tgName) == null) {
                         /* build the missing table */
-                        var emptyTable = '<table id=tb' + tgName + ' class="tables lastheard tablefixed" style="width:fit-content;">' +
+                        var emptyTable = '<table id=tb' + tgName + ' class="tables lastheard tablefixed">' +
                             '<thead id="' + tgName + '">' +
                             '<tr class="headerRow">' +
                             '<th class="thledate">Date</th>' +
-                            '<th class="thletime">Heure</th>' +
+                            '<th class="thletime">Time</th>' +
                             '<th class="thleslot">Slot</th>' +
-                            '<th class="thletx">TX Connectés</th>' +
+                            '<th class="thletx">TX Connect</th>' +
                             '<th class="thlename">Name</th>' +
                             '<th class="thletg">TG#</th>' +
-                            '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Cliquez ICI) </a></th>' +
+                            '<th class="thlelog"><a target="_self" href="loglast.html">LOG+ (Lastheard) </a></th>' +
                             '<th class="thledelay"TX(s)</th>' +
                             '<th class="thlenetid">NetID</th>' +
-                            '<th class="thlemaster">Master Infra</th>' +
+                            '<th class="thlemaster">Master</th>' +
                             '</tr>' +
                             '</thead>' +
                             '<tbody id="hblink"></tbody></table>';
@@ -232,17 +231,18 @@
 
                     var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
                     if (flagUrl == "")
-                        flagUrl = flag64["shield"];
+                        flagUrl = flag64["shield"]
 
                     /* deal with content if < displaylines */
                     content = '<tr class=' + bgClass + '>';
                     content += "<td class='tdDate'>" + record.DATE + "</td>";
                     content += "<td class='tdTime'>" + record.TIME + "</td>";
                     content += "<td class='slot'>" + record.TS + "</td>";
-                    content += "<td class='callsign ellipsis'>";
-                    content += "<img class='tgflag' src='" + flagUrl + "'/>"
-                    content += "<a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>";
-                    content += "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
+
+                    // they both depend on TX connected
+                    content += "<td class='callsign ellipsis'><img class='tgflag' src='" + flagUrl + "'/><a target='_blank' href='https://qrz.com/db/" + callsign + "'>" + callsign + "</a>"
+                            + "<div dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</div></td>";
+                    
                     if (record.NAME.toUpperCase() == callsign)
                         content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
                     else

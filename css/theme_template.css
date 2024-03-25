@@ -1613,6 +1613,7 @@ select {
 .freqstatsdiv {
   float: left;
   width: calc(100% - 7rem);
+  height: 12rem;
   border: 0.5px solid var(--color-table-border);  
   background-color:var(--color-trbg);
 }
