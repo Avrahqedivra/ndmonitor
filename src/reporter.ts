@@ -58,6 +58,7 @@ const MAXTRIES: number = 5
 
 // https://cs.lmu.edu/~ray/notes/jsnetexamples/
 export class Reporter {
+  private legalMasters = new Set(config.__legal_masters__)
   private opbNotAllowed = null
   private monitor = null
   private dashboardServer = null
@@ -185,7 +186,7 @@ export class Reporter {
           }
 
           if (!found) {
-            __listeners__.push({ 'CALLSIGN': 'N\\A', 'IP': hostip, 'PORT': config.__monitor_webserver_port__, 'NETID': 'N\\A' })
+            __listeners__.push({ 'CALLSIGN': 'n/a', 'IP': hostip, 'PORT': config.__monitor_webserver_port__, 'NETID': 'n/a' })
           }
         })
       }
@@ -193,6 +194,40 @@ export class Reporter {
         __listeners__ = []
       }
     }
+  }
+
+  /**
+   * check if legal master
+   */
+  isLegalMaster(id: string): any {
+    if (config.__legal_masters__.length < 2)
+      return [ true, '' ]
+
+    let negate: boolean = false
+    let pattern: string = null
+    let index: number = -1
+    let i: number = 0
+    
+    for(i=0; i < config.__legal_masters__.length; i++) {
+      pattern = config.__legal_masters__[i].id
+
+      // if negate note nagation, and get interval
+      if (negate = pattern.startsWith('~'))
+        pattern = pattern.substring(1)
+
+      if (pattern == id)
+        return [ !negate, config.__legal_masters__[i].class ]
+
+      if ((index = pattern.indexOf('*')) != -1 && id.startsWith(pattern.substring(0, index)))
+        return [ !negate, config.__legal_masters__[i].class ]
+
+      if ((index = pattern.indexOf('..')) != -1) {
+        if (parseInt(pattern.substring(0, index)) <= parseInt(id) && parseInt(id) <= parseInt(pattern.substring(index+2)))
+          return [ !negate, config.__legal_masters__[i].class ]
+      }
+    }
+
+    return [ false, 'msAlien' ]
   }
 
   /**
@@ -216,14 +251,14 @@ export class Reporter {
     // (9 char, but we are just software)  see https://wiki.brandmeister.network/index.php/Homebrew/example/php2
   
     if (_peer_conf['TX_FREQ'] == null || _peer_conf['RX_FREQ'] == null) {
-      _ctable_peer['TX_FREQ'] = 'N/A'
-      _ctable_peer['RX_FREQ'] = 'N/A'
+      _ctable_peer['TX_FREQ'] = 'n/a'
+      _ctable_peer['RX_FREQ'] = 'n/a'
     }
     else {
       if (Number.isInteger(_peer_conf['TX_FREQ'].trim()) && Number.isInteger(_peer_conf['RX_FREQ'].trim())) {
         if (_peer_conf['TX_FREQ'].substr(0,3) === '000' || _peer_conf['RX_FREQ'].substr(0,3) === '000') {
-            _ctable_peer['TX_FREQ'] = 'N/A'
-            _ctable_peer['RX_FREQ'] = 'N/A'
+            _ctable_peer['TX_FREQ'] = 'n/a'
+            _ctable_peer['RX_FREQ'] = 'n/a'
         } else {
             _ctable_peer['TX_FREQ'] = _peer_conf['TX_FREQ'].substr(0,3) + '.' + _peer_conf['TX_FREQ'].substr(3, 7) + ' MHz'
             _ctable_peer['RX_FREQ'] = _peer_conf['RX_FREQ'].substr(0,3) + '.' + _peer_conf['RX_FREQ'].substr(3,7) + ' MHz'
@@ -242,19 +277,23 @@ export class Reporter {
       default:  _ctable_peer['SLOTS'] = 'Simplex'; break;
     }
   
-    // Simple translation items
-    _ctable_peer['PACKAGE_ID']  = _peer_conf['PACKAGE_ID']
-    _ctable_peer['SOFTWARE_ID'] = _peer_conf['SOFTWARE_ID']
-    _ctable_peer['LOCATION']    = _peer_conf['LOCATION'].trim()
-    _ctable_peer['CALLSIGN']    = _peer_conf['CALLSIGN'].trim()
-    _ctable_peer['COLORCODE']   = _peer_conf['COLORCODE']
-    _ctable_peer['CALLSIGN']    = _peer_conf['CALLSIGN'].trim()
-    _ctable_peer['CONNECTION']  = _peer_conf['CONNECTION']
-    _ctable_peer['CONNECTED']   = this.since(_peer_conf['CONNECTED'])
-    // _ctable_peer['ONLINE']   = str(_peer_conf['CONNECTED'])
-    _ctable_peer['IP']          = _peer_conf['IP']
-    _ctable_peer['PORT']        = _peer_conf['PORT']
-    // _ctable_peer['LAST_PING'] = _peer_conf['LAST_PING']
+    let color = ''
+
+    // assign tuple
+    _ctable_peer['LEGAL'] = this.isLegalMaster(peer)[0]
+    _ctable_peer['CLASS'] = this.isLegalMaster(peer)[1]
+
+    _ctable_peer['PACKAGE_ID']    = _peer_conf['PACKAGE_ID'].trim()
+    _ctable_peer['SOFTWARE_ID']   = _peer_conf['SOFTWARE_ID'].trim()
+    _ctable_peer['LOCATION']      = _peer_conf['LOCATION'].trim()
+    _ctable_peer['CALLSIGN']      = _peer_conf['CALLSIGN'].trim()
+    _ctable_peer['COLORCODE']     = _peer_conf['COLORCODE']
+    _ctable_peer['CONNECTION']    = _peer_conf['CONNECTION']
+    _ctable_peer['CONNECTED']     = this.since(_peer_conf['CONNECTED'])
+    // _ctable_peer['ONLINE']     = str(_peer_conf['CONNECTED'])
+    _ctable_peer['IP']            = _peer_conf['IP']
+    _ctable_peer['PORT']          = _peer_conf['PORT']
+    // _ctable_peer['LAST_PING']  = _peer_conf['LAST_PING']
   
     // SLOT 1&2 - for real-time montior: make the structure for later use
     for (let ts=1; ts < 3; ts++)
@@ -268,7 +307,7 @@ export class Reporter {
     let timeout = Date.now() / 1000     // timeout in seconds
     let ctabdata: any = null
 
-    for(let system in __ctable__['MASTERS']) {            
+    for(let system in __ctable__['MASTERS']) {
       for(let peer in __ctable__['MASTERS'][system]['PEERS']) {
         for(let timeS=1; timeS < 3; timeS++) {
           
@@ -563,7 +602,7 @@ export class Reporter {
         } 
         else 
         {
-          exptime = 'N/A'
+          exptime = 'n/a'
           to_action = 'None'
         }
 
@@ -658,7 +697,6 @@ export class Reporter {
           ctabdata['SUB']       = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
           ctabdata['DEST']      = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
           ctabdata['TGID']      = destination
-
 
           let networkData = utils.getNetWorkPicture(ctabdata['TGID'], ctabdata['DEST'])
           ctabdata['TGIMG'] = networkData['TGIMG']

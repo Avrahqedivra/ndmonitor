@@ -27,6 +27,8 @@ export const __extra_settings__ = { "masters": { "padding": { "days": 3, "hours"
 export const __opb_filter__ = []
 // allowed Backend OBP, if specified, precise all allowed SRC_ID, for example { "OBP-GLOBAL1": [ "208xx", "208yy" ], "OBP-GLOBAL2": [ "208ww", "208zz" ] }
 export const __opb_backend__: any       = {}
+// legal masters example : [ { id: '149*', class: 'msFriend' }, { id: '101*', class: 'msLocal' }, { id: '208*', class: 'msCnxOnline' }, { id: '~*', class: 'msAlien' } ]
+export const __legal_masters__: any[]  = [ { id: '*', class: 'msCnxOnline' } ]
 // tg1, tg2 etc to be excluded, for example "800,801,802,3339"
 export const __tgFilter__: string       = ""
 // tgid associated pictures. Item format is { "list of picture names from tgImg64[] of localstorage.js": 'list of tgids sharing same picture', ext: 'list of pattern to be removed in DEST string' }
