@@ -811,6 +811,9 @@ color: #569cd6;
 .msCnxStarting {
   background-color: orange;
 }
+.msCnxNotLegal {
+  background-color: red;
+}
 /* PEERS STYLE CLASSES */
 .thpemaster { 
   width: 12rem;
@@ -1225,7 +1228,8 @@ select {
 }
 
 .alarm {
-  border: 2px  solid var(--color-tgRed) !important;
+  border: 2px solid var(--color-tgRed) !important;
+  border-radius: 6px;
 }
 
 .statusLabel {

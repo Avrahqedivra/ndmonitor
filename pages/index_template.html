@@ -730,11 +730,11 @@ function dragElement(elmnt) {
 
 									msSlots = (record["SLOTS"].startsWith("VOIP")) ? '"msPoc">' : (record["SLOTS"].toLowerCase() === 'simplex') ? '"msSimplex">':'"msDuplex">'
 
-									cnxState = ''
+									cnxState = 'msCnxNotLegal'
 
-									if (parsedTime = parseElapsedTime(cnxTime)) {
+									if (record["LEGAL"] == true && (parsedTime = parseElapsedTime(cnxTime))) {
 										if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
-											cnxState = 'msCnxOnline'
+											cnxState = (record["CLASS"] != null && record["CLASS"] != '') ? record["CLASS"] : 'msCnxOnline'
 										else
 											cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
 									}

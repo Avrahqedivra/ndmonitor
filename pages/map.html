@@ -758,10 +758,6 @@
                 socket = new WSConnection().connect(wsuri);
             }, 500)
         };
-
-        window.onunload = () => {
-            socket = null;
-        }
 </script>
 
 <!-- 
