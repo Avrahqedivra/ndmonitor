@@ -277,18 +277,18 @@ export class Reporter {
       default:  _ctable_peer['SLOTS'] = 'Simplex'; break;
     }
   
-    let color = ''
-
-    // assign tuple
-    _ctable_peer['LEGAL'] = this.isLegalMaster(peer)[0]
-    _ctable_peer['CLASS'] = this.isLegalMaster(peer)[1]
-
     _ctable_peer['PACKAGE_ID']    = _peer_conf['PACKAGE_ID'].trim()
     _ctable_peer['SOFTWARE_ID']   = _peer_conf['SOFTWARE_ID'].trim()
     _ctable_peer['LOCATION']      = _peer_conf['LOCATION'].trim()
     _ctable_peer['CALLSIGN']      = _peer_conf['CALLSIGN'].trim()
     _ctable_peer['COLORCODE']     = _peer_conf['COLORCODE']
     _ctable_peer['CONNECTION']    = _peer_conf['CONNECTION']
+
+    // assign tuple
+    let legalResult = this.isLegalMaster(peer)
+    _ctable_peer['LEGAL'] = legalResult[0]
+    _ctable_peer['CLASS'] = legalResult[1]
+
     _ctable_peer['CONNECTED']     = this.since(_peer_conf['CONNECTED'])
     // _ctable_peer['ONLINE']     = str(_peer_conf['CONNECTED'])
     _ctable_peer['IP']            = _peer_conf['IP']
@@ -417,6 +417,11 @@ export class Reporter {
           }
 
           var element = _stats_table['PEERS'][_hbp]
+
+
+          let legalResult = this.isLegalMaster(Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString())
+          element['LEGAL'] = legalResult[0]
+          element['CLASS'] = legalResult[1]
 
           if (element['MODE'] === 'XLXPEER') {
               element['STATS']['CONNECTION'] = _hbp_data['XLXSTATS']['CONNECTION']

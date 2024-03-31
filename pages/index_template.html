@@ -478,11 +478,12 @@ function dragElement(elmnt) {
 				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
 				cnxTime = record["STATS"]["CONNECTED"]
-				cnxState = ''
 
-				if (parsedTime = parseElapsedTime(cnxTime)) {
+				cnxState = 'cnxStateNotLegal'
+
+				if (record["LEGAL"] == true && (parsedTime = parseElapsedTime(cnxTime))) {
 					if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
-						cnxState = 'msCnxOnline'
+						cnxState = (record["CLASS"] != null && record["CLASS"] != '') ? record["CLASS"] : 'cnxStateOnline'
 					else
 						cnxState = (parsedTime.minutes && parsedTime.minutes > 1) ? 'msCnxWarming' : 'msCnxStarting'
 				}
@@ -1952,16 +1953,9 @@ function dragElement(elmnt) {
 	}
 
 
-	const resizeOps = () => {
-    document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
-  };
-
 	$(document).ready(function () {
 		TIME_INTERVALS = 24
 
-		resizeOps();
-  	window.addEventListener("resize", resizeOps);
-		
 		// document ready occurs before windows.onLoad
 		if (getConfigFromLocalStorage != null) {
 			getConfigFromLocalStorage();
