@@ -592,7 +592,11 @@ thead {
   color: var(--color-alias);
   text-align: left;
   padding-left: 0.5rem;
-}            
+}
+.txtAlias {
+  display: inline-block;
+  width: 13rem;
+}
 .callsign {
   text-align: left;
   padding-left: 0.15rem;

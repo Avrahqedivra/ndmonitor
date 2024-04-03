@@ -1254,13 +1254,13 @@ function dragElement(elmnt) {
 
 					var tgf = getTgFlag(record.TGID);
 					if (typeof tgf === 'string' || tgf instanceof String) {
-						alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
+						alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '"><div class="txtAlias ellipsis">' + alias + '</div>';
 					}
 					else {
 						flagFirst = tgf[0];
 						flagSecond = tgf[1];
 
-						alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
+						alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '"><div class="txtAlias ellipsis">' + alias + '</div>';
 					}
 
 					alias += tgImg
@@ -1288,7 +1288,7 @@ function dragElement(elmnt) {
 							content += "<td class='percentage'><div id='p"+record.TGID +"' class='progressBar'><div class='redBar'>&nbsp;</div><div class='greenBar'>&nbsp;</div><div class='percentageText'>"+percentage+"%</div></div></div></td>";
 					}
 
-					content += "<td class='alias ellipsis clickable" + ((showColumns.charAt(6) == '-') ? " visible'":"'") + " onclick='scrollIntoViewFromId(" + link + ")'>" + alias + "</td>";
+					content += "<td class='alias clickable" + ((showColumns.charAt(6) == '-') ? " visible'":"'") + " onclick='scrollIntoViewFromId(" + link + ")'>" + alias + "</td>";
 
 					if (record.PACKET == "START") {
 						addTicker(record);
@@ -1689,22 +1689,6 @@ function dragElement(elmnt) {
 
 					var alias = record.ALIAS; 
 
-					/**
-					 *  if you want to add flags to single tgs uncomment change false to true
-					 */
-					if (false) {
-						var tgf = getTgFlag(record.TGID);
-						if (typeof tgf === 'string' || tgf instanceof String) {
-							alias = '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">' + alias;
-						}
-						else {
-							flagFirst = tgf[0];
-							flagSecond = tgf[1];
-
-							alias = '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">' + alias;
-						}
-					}
-
 					/* check if table already exists */
 					if (document.getElementById(tgName) == null) {
 
@@ -1846,7 +1830,25 @@ function dragElement(elmnt) {
 								content += "<td class='alink firstname ellipsis"+ ((showColumns.charAt(4) == '-') ? " visible'":"'") + " onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
 
 							content += "<td class='talkgroup"+ ((showColumns.charAt(5) == '-') ? " visible'":"'") + ">" + tgid + "</td>"
-								+ "<td class='alias ellipsis"+ ((showColumns.charAt(6) == '-') ? " visible'":"'") + ">" + alias + tgImg + "</td>";
+								+ "<td class='alias "+ ((showColumns.charAt(6) == '-') ? " visible'":"'") + '>'
+									
+							/**
+							 *  if you want to add flags to single tgs uncomment change false to true
+							 */
+							if (true) {
+								var tgf = getTgFlag(record.TGID);
+								if (typeof tgf === 'string' || tgf instanceof String) {
+									content += '<img class="tgflag" src="' + getTgFlag(record.TGID) + '">';
+								}
+								else {
+									flagFirst = tgf[0];
+									flagSecond = tgf[1];
+
+									content += '<img class="tgflag" src="' + flagFirst + '">' + '<img class="tgflag" src="' + flagSecond + '">';
+								}
+							}
+
+							content += '<div class="txtAlias ellipsis">' + alias + '</div>' + tgImg + "</td>";
 
 							if (record.PACKET === "START")
 								content += "<td class='online"+ ((showColumns.charAt(7) == '-') ? " visible'":"'") + "><div class='ticker" + record.TGID + "'>00:00</div></td>";
