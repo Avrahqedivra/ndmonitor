@@ -4,12 +4,12 @@
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
         <meta charset="UTF-8">
         <meta http-equiv="refresh" content="20000"/>
-	    <meta name="description" content="Copyright (c) 2021, 2023 jmc - F4JDN. All rights reserved."/>
+	    <meta name="description" content="Copyright (c) 2021-24 jmc - F4JDN. All rights reserved."/>
         <title>NDMonitor</title>
 
         <link rel="stylesheet" href="theme_template.css"/>
         <link rel="stylesheet" href="mysite_template.css"/>        
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="crossorigin=""/>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" crossorigin=""/>
     </head>
 
 	<body>
@@ -58,7 +58,7 @@
                 </div>
             
                 <div id="footer">
-                    <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN </a>2021-2023.</span>
+                    <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN </a>2021-2024.</span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
             </div>                
@@ -186,10 +186,10 @@
                 callers.forEach(lastCaller => {
                     var callsign = lastCaller.packet.CALLSIGN == "" ? "-----" : lastCaller.packet.CALLSIGN;
                     content +=  "<div class='callerbox'>"
-                                + "Indicatif : " + callsign + " - TG" + lastCaller.packet.TGID + "<br/>"
-                                + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
-                                + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
-                                + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
+                                + "Callsign : " + callsign + " - TG" + lastCaller.packet.TGID + "<br/>"
+                                + "DmrID: " + lastCaller.packet.DMRID + "<br/>"
+                                + "Firstname: " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
+                                + "Online: " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
 
                     content += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + (((lastCaller.user.country != null && lastCaller.user.country.toLowerCase() == "france") ? (" (" + lastCaller.dept) + ")" : ""))) : "");
                     content += "</div>";
@@ -763,8 +763,8 @@
 <!-- 
     france, dom, belgique, suisse geojson 
 -->
-<script type="application/javascript" src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="crossorigin=""></script>
-<script type="application/javascript" src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
+<script type="application/javascript" src="https://unpkg.com/leaflet/dist/leaflet.js" crossorigin=""></script>
+<script type="application/javascript" src="https://unpkg.com/@joergdietrich/leaflet.terminatorL.Terminator.js"></script>
 <script type="application/javascript" src="mapssvg.js"></script>
 
 </html>
