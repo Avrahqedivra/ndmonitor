@@ -28,6 +28,8 @@ a::-webkit-scrollbar, select::-webkit-scrollbar {
 }
 
 :root {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
   --table-width: 83rem;
   --margin-top-mobile: 3.3rem;
 }

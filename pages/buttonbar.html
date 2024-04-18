@@ -35,13 +35,19 @@
             <li><a target="_blank" href="https://t.me/f4jdn/"><i class="submenuicon fa-brands fa-telegram"></i>Telegram</a></li>
       </ul>
     </li>	
+    <li><a href="#" title="Aprs"><i class="fa fa-map-marker" style="color: green"></i></a>
+      <ul>
+        <li><a target="_self" href="aprs.html">APRS.Local</a></li>
+        <li><a target="_blank" href="https://aprs.fi/#!lat=47.0781336&amp;lng=0.340375">APRS.FI</a></li>
+      </ul>
+    </li>    
     <li><a href="#" title="Statistics" onclick="javascript:stats();"><i class="fa fa-bar-chart"></i></a></li>
     
     <li><a target="_self" href="subscribers.html" title="Local Subscribers"><i class="fa fa-users"></i></a></li>
     
     <li><a target="_self" href="logbook.html" title="Logbook"><i class="fa fa-book"></i></a></li>
 
-    <li><a target="_self" href="ccs7manager.html" title="Ccs7mng"><i class="fa fa-file"></i></a></li>
+    <li><a target="_self" href="ccs7wizard.html" title="Ccs7Wizard"><i class="fa fa-file"></i></a></li>
 
     <li><a href="#" title="Log+"><i class="fa fa-list-ul"></i></a>
       <ul>
@@ -69,14 +75,13 @@
       <li><a href="#" title="Font bigger" onclick="zoom(1)" style="width:1.5rem;padding:0 0.5rem 0 0.25rem;">A+</a></li>
     </div>
 
-    <li id="listenersmenu"><a title="Dashboard users" style="width:3rem;"><i class="fa fa-eye"></i><div id="btnlisteners" style="display: inline-block;">1</div></a></li>
+    <li id="listenersmenu"><a title="Dashboard users" style="width:3rem;"><i class="fa fa-eye"></i><div id="btnlisteners" style="display: inline-block;padding-left:0.25rem;">1</div></a></li>
       
     <li><a href="#" title="Theme"><i class="fas fa-moon"></i></a>
       <ul>
-        <li><a href="#" onclick="javascript:document.documentElement.className = 'theme-dark';">Dark</a></li>
-        <li><a href="#" onclick="javascript:document.documentElement.className = 'theme-light';">Light</a></li>
-        <li><a href="#" onclick="javascript:themeSettings='auto';adjustTheme()">Auto</a></li>
-        <li><a href="#" onclick="javascript:saveSettings()">Save</a></li>
+        <li><a href="#" onclick="javascript:document.documentElement.className = 'theme-dark';javascript:saveSettings();">Dark</a></li>
+        <li><a href="#" onclick="javascript:document.documentElement.className = 'theme-light';javascript:saveSettings();">Light</a></li>
+        <li><a href="#" onclick="javascript:themeSettings='auto';adjustTheme();javascript:saveSettings();">Auto</a></li>
       </ul>
     </li>
       

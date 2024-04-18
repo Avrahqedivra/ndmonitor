@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="mysite_template.css">
 
     <style>
+      ::-webkit-scrollbar {
+          display: none;
+      }
+
       .tables, #tbsubscribers {
         margin-top: 0;
       }
@@ -23,7 +27,6 @@
       #insertPoint {
         margin-top: 2rem;
         width: var(--table-width);
-        scrollbar-width: thin;
         height: calc(100vh - 10rem);
         overflow-y: scroll;
       }

@@ -1,0 +1,189 @@
+.caption {
+  background-color: var(--color-bg-headerRow);
+  color: var(--color-fg-headerRow);
+  margin: 0;
+  height: 2.7rem;
+  font-size: 1.2rem;
+  font-weight: normal;
+}
+
+.title {
+  padding-left: 1rem;
+  padding-top: 8px;
+  display: inline-block;
+}
+
+.close_ccs7 {
+  padding-top: 0.4rem;
+  float: right;
+  color: #fff;
+  width: 4rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.modal-content_ccs7 {
+  text-align: left;
+  background-color: var(--color-trbg);
+  color: var(--color-table-fg);
+  width: 59rem;
+  height: 37rem;
+  margin: auto;
+  border: .5px solid var(--color-table-border);
+}
+
+.wiztable {
+  height: 100%;
+  margin-bottom: 2rem;
+}
+.wizpage {
+  width: 100%;
+}
+.wizard-container {
+  display: inline-block;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+.wizard {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+.wizard-panel {
+  h2 {
+    margin-top: 0.5rem;
+  }
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  width: 100%;
+  height: 30rem;
+  flex: 0 0 100%;
+  box-sizing: border-box;
+}
+.wiz-buttons {
+  text-align: right;
+  padding: 1.5rem 1.5rem;
+  vertical-align: middle;
+
+  button {
+    margin-right: 0.25rem; width: 9rem;
+  }
+}
+
+#database-mgr {
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  #database-list {
+    border: 1px solid rgb(175, 175, 175);
+    text-align: left;
+    width: 18.5rem;
+  }  
+}
+
+#country-mgr {
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  #country-list {
+    border: 1px solid rgb(175, 175, 175);
+    text-align: left;
+    width: 24rem;
+  }  
+}
+
+#device-mgr {
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  #device-list {
+    border: 1px solid rgb(175, 175, 175);
+    text-align: left;
+    width: 24rem;
+  }  
+
+  button {
+    color: var(--color-fg-headerRow);
+    margin-right: 0.25rem; width: 8rem;
+  }
+}
+
+button:disabled {
+  color: #c0c0c0;
+}
+
+.footer_ccs7 {
+  margin-top: 0.5rem;
+  width: 100%;
+  bottom: 0;
+  text-align: left;
+  border-top: .5px solid var(--color-table-border);
+  font-family: "Segoe UI";
+  font-size: 13pt;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.static {
+  float: inline-start;
+  margin: 0.25rem 0 0.25rem 0.25rem;
+}
+
+.status {
+  color: #00C000;
+  float: inline-start;
+  margin: 0.25rem 0 0.25rem 0.25rem;
+}
+
+.wiz-state {
+  border-radius: 8px;
+  display: inline-block;
+  width: 12rem;
+  height: 100%;
+  color: var(--color-fg-headerRow);
+  background-color: var(--color-bg-headerRow);
+
+  ul li {
+    line-height: 4rem;
+    font-size: 1.4rem;
+  }  
+
+  ul li::marker {    
+    font-size: 1.5em;
+    vertical-align: middle;
+  }
+
+}
+
+/* will later replace marker by before... */
+/* https://stackoverflow.com/questions/69874236/how-can-i-vertically-align-a-list-item-marker */
+
+.wiz-databases {
+  ul li:nth-child(1)::marker {
+    color: red;
+  }
+}  
+.wiz-countries {
+  ul li:nth-child(2)::marker {
+    color: red;
+  }
+}  
+.wiz-devices {
+  ul li:nth-child(3)::marker {
+    color: red;
+  }
+}  
+.wiz-content {
+  display: inline-block;
+  left: 1.0rem;
+  position: relative;
+  vertical-align: top;
+}
+.navigable {
+  cursor:pointer;
+}

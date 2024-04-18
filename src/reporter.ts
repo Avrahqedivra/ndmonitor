@@ -283,6 +283,9 @@ export class Reporter {
     _ctable_peer['CALLSIGN']      = _peer_conf['CALLSIGN'].trim()
     _ctable_peer['COLORCODE']     = _peer_conf['COLORCODE']
     _ctable_peer['CONNECTION']    = _peer_conf['CONNECTION']
+    _ctable_peer['LATITUDE']      = _peer_conf['LATITUDE'] || '0.0'
+    _ctable_peer['LONGITUDE']     = _peer_conf['LONGITUDE'] || '0.0'
+    _ctable_peer['HEIGHT']        = _peer_conf['HEIGHT'] || '0'
 
     // assign tuple
     let legalResult = this.isLegalMaster(peer)
@@ -406,22 +409,23 @@ export class Reporter {
         } // Proccess Peer Systems
         else 
         if ((_hbp_data['MODE'] === 'PEER' || _hbp_data['MODE'] === 'XLXPEER') && config.__homebrew_inc__) {
-          _stats_table['PEERS'][_hbp] = { 
+          let element = _stats_table['PEERS'][_hbp]
+          let legalResult = this.isLegalMaster(Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString())
+
+          element = { 
             'MODE':         _hbp_data['MODE'], 
             'LOCATION':     _hbp_data['LOCATION'],
             'CALLSIGN':     _hbp_data['CALLSIGN'],
             'RADIO_ID':     Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString(),
             'MASTER_IP':    _hbp_data['MASTER_IP'],
             'MASTER_PORT':  _hbp_data['MASTER_PORT'],
+            'LEGAL':        legalResult[0],
+            'CLASS':        legalResult[1],
+            'LATITUDE':     _hbp_data['LATITUDE'] || '0.0',
+            'LONGITUDE':    _hbp_data['LONGITUDE'] || '0.0',
+            'HEIGHT':       _hbp_data['HEIGHT'] || '0',
             'STATS':        {}
           }
-
-          var element = _stats_table['PEERS'][_hbp]
-
-
-          let legalResult = this.isLegalMaster(Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString())
-          element['LEGAL'] = legalResult[0]
-          element['CLASS'] = legalResult[1]
 
           if (element['MODE'] === 'XLXPEER') {
               element['STATS']['CONNECTION'] = _hbp_data['XLXSTATS']['CONNECTION']
@@ -646,7 +650,7 @@ export class Reporter {
       this.dashboardServer.clients.forEach((ws: any) => {
         if (ws.fromPage) {
           if (ws.page !== 'logbook') {
-            if (ws.page === 'dashboard')
+            if (ws.page === 'dashboard' || ws.page === 'aprs')
               ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
             else
               ws.send(JSON.stringify({ 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))

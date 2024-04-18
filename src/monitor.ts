@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.2.0"
+export let __version__: string          = "2.5.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -104,6 +104,8 @@ const replaceSystemStrings = (data: string): string => {
                 .replace('__BANNER_DELAY__',  `${config.__bannerDelay__}`)
                 .replace('__TGID_BEACONS__',  config.__tgid_beacons__)
                 .replace('__MOBILE__',  `${__mobilePhone__}`)
+                .replace('__TGID_APRS__',  config.__tgid_aprs__)
+                .replace('__APRS_LOCATION_FILE__', config.__aprs_location_file__)
                 .replace('__TRAFFIC_LAST_N_DAYS__',  `${config.__traffic_last_N_days__}`)
   }
   
@@ -238,11 +240,15 @@ export class Monitor {
       return
     }
 
-    if (req.url.toString().endsWith('.json') || req.url.toString().endsWith('.zip') || req.url.toString().endsWith('.rar')) {
+    if (req.url.toString().endsWith('.txt') || req.url.toString().endsWith('.json') || req.url.toString().endsWith('.zip') || req.url.toString().endsWith('.rar')) {
       let fileurl:string = req.url.toString()
       let filename: string = fileurl.substring(fileurl.lastIndexOf('/') + 1, fileurl.length)
 
       let filepath = `${config.__path__}assets/${filename}`
+
+      // if aprs file, accept full path
+      if (fileurl.lastIndexOf('/') != -1 &&  fileurl == config.__aprs_location_file__)
+        filepath = fileurl
 
       try {
         const gpcValue = req.header('Sec-GPC')
@@ -262,7 +268,17 @@ export class Monitor {
         return
       }
 
-      res.setHeader('Content-Type', 'application/json')
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+
+      if (filepath.endsWith('.txt'))
+        res.setHeader('Content-Type', 'text/plain')
+      else if (filepath.endsWith('.json'))
+        res.setHeader('Content-Type', 'application/json')
+      else if (filepath.endsWith('.zip'))
+        res.setHeader('Content-Type', 'application/zip')
+      else if (filepath.endsWith('.rar'))
+        res.setHeader('Content-Type', 'application/rar')
+
       res.setHeader('Content-Length', fs.statSync(filepath).size);
 
       const fileStream = fs.createReadStream(filepath)
@@ -318,7 +334,9 @@ export class Monitor {
       case '/subscribers.html':
       case '/index_tabs.html':
       case '/ccs7manager.html':
+      case '/ccs7wizard.html':
       case '/logbook.html':
+      case '/aprs.html':
         // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
@@ -864,7 +882,10 @@ export class Monitor {
                 _message['CTABLE'] = rep.__ctable__
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
               }
-              
+
+              if (ws.page === 'aprs') 
+                _message['APRS_SYMBOLS'] = config.__aprs_suffix_symbols__
+
               _message['BIGEARS'] = this.dashboardServer.clients.size.toString()
               _message['LISTENERS'] = rep.__listeners__
 
@@ -914,8 +935,6 @@ export class Monitor {
                * add tgid image field to lastheard
                */
               if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-                const def = Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0]
-
                 for(let i=0; i<initialList.length; i++) {
                   let record = initialList[i]
                   
