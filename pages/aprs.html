@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html class="__THEME__" id="htmlmap">
+
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="20000" />
+    <meta name="description" content="Copyright (c) 2021, 2024 jmc - F4JDN. All rights reserved." />
+    <title>NDMonitor</title>
+
+    <link rel="stylesheet" href="theme_template.css" />
+    <link rel="stylesheet" href="mysite_template.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+
+<body>
+    <center>
+        <noscript>You must enable JavaScript</noscript>
+
+        <div style="display: none"><img id="aprs_symbols" src="aprs-symbols-64-droid.png"></div></div>
+
+        <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+
+        __BUTTON_BAR__
+
+        <div id="siteHeader" style="display:none">
+            <!-- The Modal -->
+            <div id="listenersModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <table class="tables tablefixed">
+                        <thead id="theadListeners" tbodyid="listeners">
+                            <tr class="headerRow">
+                                <th class="thlscallsign">Callsign</th>
+                                <th class="thlsip">IP</th>
+                                <th class="thlsport">Port</th>
+                                <th class="thlsnetid">NetID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listeners">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div name="hbtables" id="hbtables">
+                <div id="insertPoint">
+                    <div id="lastcallercontainer" style="text-align: left;">
+                        <div id="callerinfo">
+                        </div>
+                    </div>
+                    <div id="legendcontainer" style="text-align: left;">
+                        <div id="legendinfo">
+                        </div>
+                    </div>
+                    <div id="mapfrance">
+                        <div id="map" class="tabContent" style="display: block;">
+                            <div id="mapid" style="height: 1000px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer">
+                    <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN </a>2021-24.</span>
+                    <br>
+                    <span>Symbols by courtesy of <a href='https://github.com/hessu/aprs-symbols/'>hessu</a></span>
+                </div>
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+    </center>
+</body>
+
+<style>
+    #insertPoint {
+        background-color: #202020;
+    }
+
+    .map {
+        margin-top: 1rem;
+    }
+
+    .department {
+        fill: #2e2e2e;
+        stroke: #505050;
+        stroke-width: .5px;
+    }
+
+    #lastcallercontainer {
+        display: none;
+    }
+
+    .callerbox {
+        padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+        margin: 0;
+        border-radius: 8px;
+        border: 1px solid #ffffffa6;
+        color: black;
+        background-color: #ffffff;
+        font-weight: 100;
+    }                
+
+    .callerbox:after {
+        content:'';
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        width: 0;
+        height: 0;
+        border-top: 14px solid #ffffff;
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+    }
+
+    #callerinfo {
+        display: hidden;
+        margin: 6rem 0 0 0.5rem;
+        position: absolute;
+        color: white;
+        text-align: left;
+        padding: 0.5rem;
+        z-index: 650;
+    }
+
+    #legendinfo {
+        width: 8rem;
+        margin: 4rem 0rem 4rem 75rem;
+        position: absolute;
+        color: white;
+        text-align: left;
+        padding: 0.5rem;
+        /* background-color: rgba(78, 78, 78, 0.6);
+            border-radius: 8px; */
+        z-index: 650;
+    }
+
+    .legendbox {
+        padding: 1rem 0.5rem 1rem 0.5rem;
+        margin: 0.5rem 0 0 0;
+        border-radius: 8px;
+        border: 1px solid #ffffffa6;
+        background-color: rgba(78, 78, 78, 0.6);
+    }
+
+    .legendIndicator {
+        float: right;
+        width: 1.0rem;
+        height: 1.0rem;
+        color: var(--color-fg-marquee);
+        background-color: var(--color-page);
+        margin-left: 1rem;
+        text-align: center;
+        cursor: default;
+    }
+
+    .leaflet-tooltip-left:before {
+        right: 0;
+        margin-right: -12px;
+        border-left-color: #4e4e4e;
+    }
+
+    .leaflet-tooltip-right:before {
+        left: 0;
+        margin-left: -12px;
+        border-right-color: #4e4e4e;
+    }
+
+    .leaflet-tooltip-own {
+        position: absolute;
+        padding: 4px;
+        text-align: left;
+        background-color: #4e4e4e;
+        border: 0;
+        color: #ffffff;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        pointer-events: none;
+        border-radius: 8px;
+    }
+
+    .svgicon {
+        height: 1.4rem;
+        filter: brightness(118%) contrast(119%);
+        stroke: white;
+    }
+
+    .leaflet-popup-content {
+        margin: 0;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+        background-color: transparent;
+        box-shadow: none;
+        color: white;
+    }
+    .nametip {
+        width: fit-content;
+        padding: 0 4px 0 4px;
+        font-size:8pt;
+        font-weight: 100;
+        opacity: 0.55;
+    }
+</style>
+
+<script type="text/javascript">
+    let lastheardOpen = true
+    let traffic = []
+    let sock = null
+    let displayLines = parseInt("__DISPLAY_LINES__")
+    let tgfilter = new Set("__TGID_FILTER__".split(','))
+
+    hide_dmrid = new Set("__HIDE_DMRID__".split(','))
+
+    function initMap() {
+        let centerFrance = [47.0781336, 0.340375]       // France
+        let centerBelgium = [50.65794, 4.52714]         // Belgium
+        let centerGermany = [50.984015, 11.02426]       // Germany
+
+        let centerMap = centerFrance
+
+        map = L.map('map',
+            {
+                zoomDelta: 0.25,
+                zoomSnap: 0,
+                minZoom: 3
+            }).setView(centerMap, currentZoom)
+
+        L.control.scale().addTo(map)
+
+        // night and day layer
+        let terminator = L.terminator().setStyle({ "fillOpacity": 0.2 }).addTo(map)
+
+        let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            className: 'map-tiles'
+        }).addTo(map)
+
+        // night layer refresh timer
+        setInterval(() => {
+            terminator.setTime();
+        }, 5000)
+
+        map.on('zoomend', function () {
+            currentZoom = map.getZoom()
+        })
+    }
+
+    function log(msg) {
+        console.log(msg)
+    }
+
+    function convertToDecimal(coord) {
+        let degreesLength = (coord.length === 8 || coord.length === 7) ? 2 : 3
+        let degrees = parseInt(coord.substring(0, degreesLength), 10)
+        let minutes = parseFloat(coord.substring(degreesLength, coord.length - 1))
+        let direction = coord.slice(-1)
+        let decimal = degrees + minutes / 60 
+
+        if (direction === 'S' || direction === 'W')
+            decimal *= -1;
+
+        return decimal;
+    }
+
+    function convertToTime(timestamp) {
+        // because comes from python -> convert s to ms
+        let date = new Date(timestamp * 1000)
+        
+        return date.toLocaleString('fr-FR', 
+            {
+                timeZone: 'Europe/Paris',
+                hour12: false,
+                hour:   '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                year:   'numeric',
+                month:  '2-digit',
+                day:    '2-digit'
+            }
+        )
+    }
+
+    function asciiToIndex(c) {
+        if (c == null || c < '!' || c > '~')
+            c = "["
+
+        return c.charCodeAt(0) - 0x21
+    }
+
+    function getSymbolOffset(icon_table, icon_icon) {
+        let offset = -1
+
+        if (icon_table && icon_icon) {
+            let coeff = 0
+
+            switch(icon_table) {
+                case '/': coeff = 0; break
+                case '\\': coeff = 1; break
+                default: 
+/*                        
+                    if (item.icon_table >= '0' && item.icon_table <= "9") {
+                        coeff = 2 + (item.icon_table.charCodeAt(0) - 0x48) * 96
+                        break
+                    }
+
+                    if (item.icon_table >= 'A' && item.icon_table <= "J") {
+                        coeff = 13 + (item.icon_table.charCodeAt(0) - 0x65) * 96
+                        break
+                    }
+*/                            
+                    break
+            }
+
+            offset = 96 * coeff + asciiToIndex(icon_icon)
+        }
+
+        return offset
+    }
+
+    function displayGPSData(data) {
+        let stations = new Set()
+        let offset = -1  // offset of '['
+
+        for(let index in data) {
+            let item = data[index]
+            let call = item.call;
+
+            /**
+             * skip station already registered
+             */
+            if (stations.has(call))
+                continue
+
+            /** 
+             * check for valid lat/lon
+             */
+            let lat = item.lat
+            let lon = item.lon
+
+            // in case lat/long are not decimal, convert
+            if ("NSEW".indexOf(item.lat.slice(-1)) != -1) {
+                lat = convertToDecimal(item.lat)
+                lon = convertToDecimal(item.lon)
+            }
+
+            // skip lat/long == 0 or too far in atlantic
+            if (lat == 0 || lon == 0)
+                continue
+
+            /**
+             * build record for new callsign
+             */    
+
+            // get the good icon in the middle of the APRS tables
+            offset = getSymbolOffset(item.icon_table, item.icon_icon)
+
+            let idx = -1
+            let dmrid = ''
+            let suffix = '-'
+            let symbol = 12
+            let symbolfg = "black"
+            let symbolbg = "white"
+            let callsign = item.call == "" ? "-----" : item.call
+            let comment = item.comment
+
+            if (offset != -1) {
+                symbol = offset
+            } else {
+                if ((idx = callsign != "D-APRS" && callsign.indexOf("-")) != -1) {
+                    suffix = callsign.substring(idx)
+                    if (suffix >= "-A" && suffix <= "-Z")
+                        suffix = "A..Z"
+
+                    for(let entry of aprs_symbols_mapping) {
+                        if (Object.keys(entry) == suffix) {
+                            if (Object.values(entry)[0].table) {
+                                let item = Object.values(entry)[0]
+                                symbol = getSymbolOffset(item.table, item.symbol)
+                                symbolbg = item.bg
+                                symbolfg = item.fg
+                            }
+                            break
+                        }
+                    }
+                }
+            }
+
+            stations.add(call)
+
+            var label = L.marker([lat, lon], {
+                icon: L.divIcon({
+                className: 'Label',
+                html: `<div class="nametip" style="background-color:${symbolbg};color:${symbolfg}">${call}</div>`,
+                iconSize: [100, 25],
+                iconAnchor: [16, -2]
+                })
+            }).addTo(map)
+
+            // Load the image and create a marker with a portion of it
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = 64
+            canvas.height = 64
+
+            let oy = Math.trunc(symbol / 16)
+            let ox = symbol - oy*16
+
+            context.drawImage(aprs_symbols, 64*ox, 64*oy, 64, 64, 0, 0, 64, 64)
+
+            let marker = L.marker([lat, lon])
+
+            marker.setIcon(L.icon({
+                iconUrl: canvas.toDataURL(),
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],       // Anchor point of the full image
+                popupAnchor: [0, -12]       // Popup anchor point
+            })).addTo(map)
+
+            if ((idx = item.comment.indexOf('DMR ID')) != -1) {
+                comment = item.comment.substring(0, idx)
+                dmrid = item.comment.substring(idx + 7)
+            }
+
+            // popup
+            let content = "<div class='callerbox'>" + "<div style='font-weight:bold;'>" + callsign + ((dmrid != '') ? " (" + dmrid.trim() + ")</div>" : "</div>")
+            content += "<div style='width:100%;height:1px;background-color:#ff0000;'></div>"
+            if (item.time)
+                content += "<div style='display: inline-block;'>" + convertToTime(item.time) + "&nbsp;&nbsp;<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
+            else
+                content += "<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
+
+            content += "<div>" + comment + "</div>"
+
+            marker.bindPopup(content)
+        }
+    }
+
+    function refreshMap() {
+        $.ajax({
+            url: "__APRS_LOCATION_FILE__",
+            dataType: "text",
+            success: (data) => {
+                let correctedData = data.trim().replace(/'/g, '"')
+                let gpsData
+
+                try {
+                    gpsData = JSON.parse(correctedData)
+                } catch (e) {
+                    console.error("Bad json gps data: ", e)
+                    return;
+                }
+
+                displayGPSData(gpsData)
+            },
+            error: function (xhr, status, error) {
+                console.error("Unable to load D-APRS data: ", status, error);
+            }
+        });
+    }
+
+	// https://gist.github.com/umidjons/9614157
+	function sortMastersPeersByOnlineTime(peers) {
+		var peersArray = [];
+
+		// convert to array
+		for (var key in peers) {
+			peersArray.push([key, peers[key]]);
+		}
+
+		// convert online time to seconds
+		let len = peersArray.length;
+		for (let i = 0; i < len; i++) {
+			var t = peersArray[i]["1"]["CONNECTED"].split(" ");
+
+			switch (t.length) {
+				case 3:
+					peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
+					break;
+
+				case 2:
+					chr = t[0].slice(-1)
+
+					if (chr == 'd')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600)
+					else
+					if (chr == 'h')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60)
+					else
+					if (chr == 'm')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]))
+					break
+
+				case 1:
+					peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0])
+					break
+
+				default:
+					peersArray[i]["1"]["ONLINE"] = "0"
+					break
+			}
+		}
+
+		// sort peers array
+		peersArray.sort((a, b) => {
+			y = parseInt(a[1]["ONLINE"])
+			x = parseInt(b[1]["ONLINE"])
+
+			return x < y ? -1 : x > y ? 1 : 0
+		})
+
+		return peersArray
+	}
+
+    function updateMasters(masters) {
+        if (masters != null) {
+            let gpsData = []
+
+            for (let entry in masters) {
+                done = false
+
+                if (!done) {
+                    // skip empty peers
+                    if (!Object.keys(masters[entry]["PEERS"]).length)
+                        continue
+
+                    done = true
+                }
+
+                var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"])
+                let peersLength = peers.length
+
+                if (peersLength != 0) {
+                    try {
+                        let lat = 0
+                        let lon = 0
+
+                        for (let i = 0; i < peersLength; i++) {
+                            record = peers[i][1]
+
+                            if ((lat = record['LATITUDE']) == null || record['LATITUDE'] == 0)
+                                continue
+
+                            if ((lon = record['LONGITUDE']) == null || record['LONGITUDE'] == 0)
+                                continue
+
+                            netID = peers[i][0]
+                            cnxTime = record["CONNECTED"]
+
+                            ts1rx = record["1"]["TXRX"]
+                            ts2rx = record["2"]["TXRX"]
+
+                            ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"))
+                            ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"))
+
+                            cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX")
+                            cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX")
+
+                            hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+
+                            if (record["SLOTS"].startsWith("Slot"))
+                                record["SLOTS"] = 'VOIP'
+
+                            mscallsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a'
+                            mslocation = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a'
+
+                            /**
+                                'H' stands for Hotspot as the lat/lon comes from Pi-Star settings and won't change
+                            */
+                            gpsData.push({
+                                "icon_table": "/",
+                                "icon_icon": "-",
+                                "call": mscallsign,
+                                "lat": lat, 
+                                "lon": lon, 
+                                "time": Date.now() / 1000, 
+                                "comment": `${window.location.origin} DMR ID: ${netID}`,
+                                "loc": mslocation 
+                            })
+                        }
+                    }
+                    catch (error) {
+                    }
+                }
+            }
+
+            if (gpsData.length > 0)
+                displayGPSData(gpsData)
+        }
+	}
+
+	function treatTables(CTable) {
+		if (CTable != null) {
+			updateMasters(CTable["MASTERS"])
+		}
+	}
+
+    function doTraffic(t) {
+        if (t != null) {
+            startPackets = new Set()
+
+            if (Array.isArray(t))
+                traffic = t;
+            else
+                traffic.unshift(t);
+
+            let trafficLength = traffic.length;
+
+            if (trafficLength > 0) {
+                for(let i=0; i<trafficLength; i++) {
+			        let record = traffic[i];
+
+                    if (record.PACKET === "START" && record.TGID == '__TGID_APRS__') {
+                        refreshMap()
+
+						let tt = new Date(record.DATE + " " + record.TIME);
+
+						// if START gone past TOT change to end
+						if ((Date.now() - tt.getTime()) / 1000 > startTot) {
+                            record.PACKET = "END";
+                            record.DELAY = startTot;
+						}
+                    }
+                }
+            }
+        }
+    }
+
+    $(document).ready(() => {
+        // document ready occurs before windows.onLoad
+        if (getConfigFromLocalStorage != null) {
+            getConfigFromLocalStorage();
+
+            if (document.documentElement.className != settings[0].config.theme)
+                document.documentElement.className = settings[0].config.theme;
+        }
+
+        initMenubar();
+    })
+
+    window.onload = () => {
+        aprs_symbols = new Image()
+        aprs_symbols.src = "aprs-symbols-64-droid.png"
+        aprs_symbols_mapping = null
+
+        startTot = parseInt("__START_TOT__")
+        if (startTot == 0) startTot = 240
+
+        currentZoom = settings[1].map.zoom
+
+        let wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=aprs"
+
+        $("#menubar").show()
+        $("#siteHeader").show()
+
+        initMap()
+
+        if (isNaN(displayLines))
+            displayLines = 10;
+
+        function WSConnection() {
+            'use strict'
+            this.socket = {}
+        }
+
+        WSConnection.prototype.connect = (url) => {
+            'use strict'
+
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url)
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url)
+                else {
+                    log("Browser does not support WebSocket!")
+                    resolve()
+                }
+
+                this.socket.onopen = () => {
+                    log("Connected to " + url)
+                    resolve()
+                }
+
+                this.socket.onmessage = (e) => {
+                    let data = null
+
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
+
+                        if (data = JSON.parse(e.data)) {
+                            if (data.CONFIG) {
+                                if (data.CONFIG.APRS_SYMBOLS) {
+                                    aprs_symbols_mapping = data.CONFIG.APRS_SYMBOLS
+
+                                    refreshMap()
+                                }
+                            }
+                            else {
+                                if (data.TRAFFIC)
+                                    doTraffic(data.TRAFFIC)
+
+                                if (data.CTABLE)
+                                    treatTables(data.CTABLE)
+                            }
+                        }
+                    } catch (error) {
+                        log(error)
+                    }
+                }
+
+                socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error)
+                    reject(error)
+                };
+
+                socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')")
+                    this.sock = null
+                }
+            })
+        }
+
+        WSConnection.prototype.disconnect = () => {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        }
+
+        setTimeout(() => {
+            socket = new WSConnection().connect(wsuri)
+        }, 500)
+    }
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script type="application/javascript" src="https://unpkg.com/@joergdietrich/leaflet.terminator/L.Terminator.js"></script>
+</html>
