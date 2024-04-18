@@ -16,7 +16,25 @@ export const __displayLines__: number           = 20                            
 export const __client_timeout__: number         = 0                                           // Clients are timed out after this many seconds, 0 to disable
 export const __start_tot__: number              = 240                                         // TOT
 
-export const __loginfo__: boolean               = false                                       // verbose log
+// export APRS dedicated TGID
+export const __tgid_aprs__                      = '900999'
+export const __aprs_location_file__             = 'gps_data_user_loc.txt'
+
+// http://www.aprs.org/aprs11/SSIDs.txt
+// https://github.com/hessu/aprs-symbols hires picture
+// http://www.aprs.net/vm/DOS/SYMBOLS.HTM
+export const __aprs_suffix_symbols__            = [
+                                                    { "-" :   { "table": "/", "symbol": "-", bg: "white", fg: "black" } }, { "-0" :  { "table": "/", "symbol": "-", bg: "white", fg: "black" } }, 
+                                                    { "-1" :  { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, { "-2" :  { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, 
+                                                    { "-3" :  { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, { "-4" :  { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, 
+                                                    { "-5" :  { "table": "/", "symbol": "",  bg: "white", fg: "black" } }, { "-6" :  { "table": "/", "symbol": "",  bg: "white", fg: "black" } }, 
+                                                    { "-7" :  { "table": "/", "symbol": "[", bg: "white", fg: "black" } }, { "-8" :  { "table": "/", "symbol": "",  bg: "white", fg: "black" } }, 
+                                                    { "-9" :  { "table": "/", "symbol": "(", bg: "white", fg: "black" } }, { "-10" : { "table": "/", "symbol": "",  bg: "white", fg: "black" } }, 
+                                                    { "-11" : { "table": "/", "symbol": "O", bg: "white", fg: "black" } }, { "-12" : { "table": "/", "symbol": "",  bg: "white", fg: "black" } }, 
+                                                    { "-13" : { "table": "/", "symbol": "_", bg: "white", fg: "black" } }, { "-14" : { "table": "/", "symbol": "u", bg: "white", fg: "black" } }, 
+                                                    { "-15" : { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, { "-tt" : { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, 
+                                                    { "-ID" : { "table": "/", "symbol": "#", bg: "white", fg: "black" } }, { "A..Z" :{ "table": "/", "symbol": "#", bg: "white", fg: "black" } }
+                                                  ]
 
 // how long the sitelogo should appear for the dashboard page
 export const __bannerDelay__: number            = 0                                           // banner display time, 0 = no banner
