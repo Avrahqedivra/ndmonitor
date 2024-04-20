@@ -63,7 +63,42 @@
 				border-bottom: 10px solid transparent;
 
 				border-top: 10px solid var(--color-note-triangle);
-		}
+			}
+
+			/* Styling for the custom context menu */
+			#customContextMenu {
+					border: 1px solid var(--color-dropdown-foreground);
+					font-family: var(--color-font-html);
+					font-weight: 100;
+					position: absolute;
+					display: none;
+					padding: 0.25rem;
+					z-index: 10000;
+					
+					border-radius: var(--app-border-radius);
+
+					ul {
+						list-style-type: none;
+
+						li {
+							color: var(--color-dropdown-foreground);
+							background-color: var(--color-dropdown-content);
+						}
+					}
+			}
+			
+			/* Style the context menu items */
+			#customContextMenu a {
+					display: block;
+					text-decoration: none;
+					padding: 0.25rem;
+					color: var(--color-menubar-foreground);
+			}
+
+			/* Add hover effect for menu items */
+			#customContextMenu a:hover {
+				background-color: var(--color-dropdown-hover);
+			}
 		</style>
 	</head>
 	
@@ -75,6 +110,13 @@
 
 		__BUTTON_BAR__
 		
+		<!-- Custom context menu -->
+		<div id="customContextMenu">
+			<ul>
+				<li><a onclick="javascript:copyTableToClipboard(selectedTable)">Copy to clipboard</a></li>
+			</ul>
+		</div>
+
 		<div id="modals">
 			<!-- The Followup -->
 			<div id="followUpModal" class="modal">
@@ -355,6 +397,63 @@ function dragElement(elmnt) {
 		last_active_size = 1000
 	else
 		last_active_size = tgorder.size;
+
+	// Function to show the custom context menu
+	function showContextMenu(event, table) {
+		if (selectedTable = table) {
+			// Calculate the position of the custom menu based on the mouse click coordinates
+			contextMenu.style.top = event.pageY + 'px'
+			contextMenu.style.left = (event.pageX - 40) + 'px'
+			// Display the custom menu
+			contextMenu.style.display = 'block'
+		} else {
+			contextMenu.style.display = 'none'
+		}
+	}
+
+	// Function to hide the custom context menu
+	function hideContextMenu() {
+		contextMenu.style.display = 'none'
+	}
+
+	function copyTableToClipboard(table) {
+		contextMenu.style.display = 'none'
+
+    if (!table || !table.rows) {
+        console.error("No suitable table found")
+        return
+    }
+    
+    // Initialize a string to store the table content
+    let tableContent = ''
+    
+    // Loop through each row in the table
+    for (let row of table.rows) {
+        // Create an array to store the row data
+        let rowData = [];
+        
+        // Loop through each cell in the row
+        for (let cell of row.cells) {
+            // Get the cell text content and add it to the row data array
+            rowData.push(cell.textContent.trim());
+        }
+        
+        // Join the row data array with a separator (e.g., comma) and add it to the table content
+        // Change the separator as needed (e.g., tab for TSV)
+        tableContent += rowData.join(',') + '\n';
+    }
+    
+    // Use the writeText method to copy the table content to the clipboard
+    navigator.clipboard.writeText(tableContent)
+        .then(() => {
+            // Success handling
+            console.log('Table content copied to clipboard')
+        })
+        .catch((error) => {
+            // Error handling
+            console.error('Failed to copy table content to clipboard:', error)
+        })
+	}
 
 	//   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
 	function uniqByKeepFirst(a, key) {
@@ -1954,7 +2053,6 @@ function dragElement(elmnt) {
 		}
 	}
 
-
 	$(document).ready(function () {
 		TIME_INTERVALS = 24
 
@@ -1970,20 +2068,16 @@ function dragElement(elmnt) {
 
 		initMenubar(__PAGE_MENU_STATE__);
 
-		$(window).click(function (event) {
+		$(window).click((event) => {
 			if (event.target == document.getElementById("statusdiv"))
 				$("#statusdiv").hide();
-		});
 
-		$(window).click(function (event) {
 			if (event.target == document.getElementById("listenersModal"))
 				$("#listenersModal").hide();
-		});
 
-		$(window).click(function (event) {
 			if (event.target == document.getElementById("statisticsModal"))
 				$("#statisticsModal").hide();
-		});
+		})
 
 		$(document).on("click", "#lastActive thead", function () {
 			if (hideAllTG = !hideAllTG)
@@ -1992,9 +2086,9 @@ function dragElement(elmnt) {
 				$("#insertPoint").show();
 
 			saveSettings();
-		});
+		})
 
-		$(document).on("click", ".lastheard thead", function () {
+		$(document).on("click", ".lastheard thead", (event) => {
 			var hblink = "#hblink" + $(this).attr('tgid');
 			$(hblink).toggle(100);
 
@@ -2084,7 +2178,25 @@ function dragElement(elmnt) {
 			specialtg = event.currentTarget.value
 			doTraffic(traffic)
 		})
+
+		// Get references to the custom context menu and container
+		selectedTable = null
+		contextMenu = document.getElementById('customContextMenu')
 	})
+
+	function initContextMenu() {
+		if (document.addEventListener) {
+  		document.addEventListener('contextmenu', (event) => {
+    		event.preventDefault()
+				showContextMenu(event, event.target.closest("table"))
+  		}, false)
+		} else {
+			document.attachEvent('oncontextmenu', (event) => {
+				window.event.returnValue = false
+				showContextMenu(event, event.target.closest("table"))
+			})
+		}				
+	}
 
 	/**
 	 * speaker flahing  management
@@ -2254,33 +2366,35 @@ function dragElement(elmnt) {
 									// will be done only once
 									showEmptyTables();
 
-									doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+									doTraffic(data.CONFIG.PACKETS.TRAFFIC)
+
+									initContextMenu()
 								}
 
 								if (data.CONFIG.CTABLE)
-									treatTables(data.CONFIG.CTABLE, data.CONFIG.EMPTY_MASTERS);
+									treatTables(data.CONFIG.CTABLE, data.CONFIG.EMPTY_MASTERS)
 
 								if (data.CONFIG.DIAGNOSTICS) {
 									statusCountdown = 10
-									diagStatus = data.CONFIG.DIAGNOSTICS;
-									updateStatus(false);
+									diagStatus = data.CONFIG.DIAGNOSTICS
+									updateStatus(false)
 								}
 
 								if (data.CONFIG.BIGEARS)
-									$("#btnlisteners").text(data.CONFIG.BIGEARS);
+									$("#btnlisteners").text(data.CONFIG.BIGEARS)
 
 								if (data.CONFIG.LISTENERS)
-									listenerList = data.CONFIG.LISTENERS;
+									listenerList = data.CONFIG.LISTENERS
 							} else {
 								if (data.TRAFFIC)
-									doTraffic(data.TRAFFIC);
+									doTraffic(data.TRAFFIC)
 
 								if (!mobileDevice) {
 									if (data.CTABLE)
-										treatTables(data.CTABLE, data.EMPTY_MASTERS);
+										treatTables(data.CTABLE, data.EMPTY_MASTERS)
 
 									if (data.BRIDGES)
-										updateBridges(data.BRIDGES);
+										updateBridges(data.BRIDGES)
 								}
 
 								if (data.BIGEARS)

@@ -1319,7 +1319,7 @@ select {
   --color-tooltip-fg: #000000;
 
   /* dropdown */
-  --color-dropdown-hover: #525252;
+  --color-dropdown-hover: #e6e5e5;
   --color-dropdown-btn: #356244;
   --color-dropdown-content: #f1f1f1;
 
@@ -1458,7 +1458,7 @@ select {
   --color-fg-h1: #fefefe;
 
   /* map */
-  --map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  /* --map-tiles-filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7); */
   --normal-fillcolor: black;
   --normal-fillopacity: 0.15;
 
