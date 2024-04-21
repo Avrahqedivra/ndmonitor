@@ -2185,7 +2185,7 @@ function dragElement(elmnt) {
 	})
 
 	function initContextMenu() {
-		if (document.addEventListener) {
+		if (document.addEventListener && navigator.clipboard) {
   		document.addEventListener('contextmenu', (event) => {
     		event.preventDefault()
 				showContextMenu(event, event.target.closest("table"))
