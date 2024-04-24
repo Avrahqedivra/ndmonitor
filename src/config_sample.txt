@@ -150,7 +150,7 @@ export const __web_auth__: boolean              = false
 export const __web_secret_key__: string[]         = ["SECRETKEY"]
 
 // blacklisted callsigns or codes example: export const __blacklist__: string[] = ["F1XXX", "F4XXX", "123456"]
-export const __blacklisted_calls__: string[] = ["123456", "F4XXX]
+export const __blacklisted_calls__: string[] = ["123456", "F4XXX"]
 
 // do not log listeners ip maps (useless ?)
 export const __do_ipmap__: boolean              = true
