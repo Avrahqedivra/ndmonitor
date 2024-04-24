@@ -29,7 +29,9 @@ export let crc16: Crc16 = new Crc16()
 
 class GenCode {
   private callsign: string = ''
-  private options: string = ''
+  private params: string[] = []
+  private options: any = null
+  private index: number = 0
 
   constructor(argv: string[]) {
     if (argv.length < 1) {
@@ -38,16 +40,27 @@ class GenCode {
     }
 
     for (let i=0; i<argv.length; i++) {
+      if (argv[i].startsWith('-s') && argv[i].length > 2) {
+        this.index = parseInt(argv[i].substring(2))
+        if (this.index + 1 > config.__web_secret_key__.length) {
+          console.log(`bad ${argv[i]} parameter` )
+          this.usage()
+          throw(abort)
+        }
+      }
+      else
       if (argv[i].startsWith('-'))
-        this.options = argv[i].trim()
+        this.params.push(argv[i].substring(1).trim())
       else
         this.callsign = argv[i].trim()
     }
+
+    this.options = new Set(this.params)
   
-    if (this.options === '-c' || this.options === '-u' )
+    if (this.options.has('c') || this.options.has('u'))
       this.callsign = this.callsign.toUpperCase()
     
-    if (this.options === '-m' || this.options === '-l')
+    if (this.options.has('m') || this.options.has('l'))
       this.callsign = this.callsign.toLowerCase()
 
     if (this.callsign === '') {
@@ -57,11 +70,13 @@ class GenCode {
   }
 
   usage(): void {
-    console.log("\nusage: node ./dist/gencode.js [-c] callsign\n\toptional -c will uppercase the callsign\n\toptional -m will lowercase the callsign\n")
+    console.log("\nusage: node ./dist/gencode[.js] [-c] callsign [-sX]\n \
+      \toptional -sX, X is the index of the secret key starting at 0\n \
+      \toptional -c will uppercase the callsign\n\toptional -m will lowercase the callsign\n")
   }
 
   compute(): [ string, string ] {
-    let code = crc16.compute(this.callsign, config.__web_secret_key__).toString()
+    let code = crc16.compute(this.callsign, config.__web_secret_key__[this.index]).toString()
     return [ this.callsign, code ]
   }
 }
@@ -70,7 +85,7 @@ try {
   let gencode = new GenCode(process.argv.slice(2))
 
   let [ callsign, code ] = gencode.compute()
-  console.log("\nLogin/Passcode generator for NDMonitor v1.7.0\nCopyright (c) 2023 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>\n")
+  console.log("\nLogin/Passcode generator for NDMonitor v2.0.0\nCopyright (c) 2024 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>\n")
   console.log(callsign + " passcode is " + code + "\n")
 } 
 catch(e) {

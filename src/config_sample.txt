@@ -147,7 +147,10 @@ export const admin_user__: string               = 'admin'
 export const __web_auth__: boolean              = false
 
 // secret salt key for passcode generator
-export const __web_secret_key__: string         = "SECRETKEY"
+export const __web_secret_key__: string[]         = ["SECRETKEY"]
+
+// blacklisted callsigns example: export const __blacklist__: string[] = ["F1xxx", "F4xxx"]
+export const __blacklisted_calls__: string[] = []
 
 // do not log listeners ip maps (useless ?)
 export const __do_ipmap__: boolean              = true

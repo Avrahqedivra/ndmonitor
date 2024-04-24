@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.5.0"
+export let __version__: string          = "2.6.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -201,12 +201,23 @@ export class Monitor {
         let decodedData = Buffer.from(authHeader.split(' ')[1], 'base64').toString()
         let [username, password] = decodedData.split(':')
 
-        if (crc16.compute(username, config.__web_secret_key__).toString() != password) {
+        let valid = false
+
+        if (!new Set(config.__blacklisted_calls__).has(username)) {
+          for(let i=0; i<config.__web_secret_key__.length; i++) {
+            if (valid = (crc16.compute(username, config.__web_secret_key__[i]).toString() == password))
+              break
+          }
+        }
+        else {
+          logger.info(`${globals.__RED__}User ${username} tried to log in${globals.__RESET__}`)
+        }
+
+        if (!valid) {
           res.writeHead(401, {
-            'WWW-Authenticate': 'Basic realm="ndmonitor"',
             "Content-Type": 'text/html'
           })
-          res.end()
+          res.end(loadTemplate(`${config.__path__}pages/error401.html`))
           return
         }
         
