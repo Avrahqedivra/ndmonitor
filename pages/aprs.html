@@ -2,741 +2,1056 @@
 <html class="__THEME__" id="htmlmap">
 
 <head>
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="20000" />
-    <meta name="description" content="Copyright (c) 2021, 2024 jmc - F4JDN. All rights reserved." />
-    <title>NDMonitor</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="20000" />
+  <meta name="description" content="Copyright (c) 2021, 2024 jmc - F4JDN. All rights reserved." />
+  <title>NDMonitor</title>
 
-    <link rel="stylesheet" href="theme_template.css" />
-    <link rel="stylesheet" href="mysite_template.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="theme_template.css" />
+  <link rel="stylesheet" href="mysite_template.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- for date picker -->
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 </head>
 
 <body>
-    <center>
-        <noscript>You must enable JavaScript</noscript>
+  <center>
+    <noscript>You must enable JavaScript</noscript>
 
-        <div style="display: none"><img id="aprs_symbols" src="aprs-symbols-64-droid.png"></div></div>
+    <div style="display: none"><img id="aprs_symbols" src="aprs-symbols-64-droid.png"></div>
 
-        <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
+    <div id="sitelogo" style="display: none">__SITE_LOGO__</div>
 
-        __BUTTON_BAR__
+    __BUTTON_BAR__
 
-        <div id="siteHeader" style="display:none">
-            <!-- The Modal -->
-            <div id="listenersModal" class="modal">
-                <!-- Modal content -->
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <table class="tables tablefixed">
-                        <thead id="theadListeners" tbodyid="listeners">
-                            <tr class="headerRow">
-                                <th class="thlscallsign">Callsign</th>
-                                <th class="thlsip">IP</th>
-                                <th class="thlsport">Port</th>
-                                <th class="thlsnetid">NetID</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listeners">
-                        </tbody>
-                    </table>
-                </div>
+    <div id="siteHeader" style="display:none">
+      <!-- The Modal -->
+      <div id="listenersModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <table class="tables tablefixed">
+            <thead id="theadListeners" tbodyid="listeners">
+              <tr class="headerRow">
+                <th class="thlscallsign">Callsign</th>
+                <th class="thlsip">IP</th>
+                <th class="thlsport">Port</th>
+                <th class="thlsnetid">NetID</th>
+              </tr>
+            </thead>
+            <tbody id="listeners">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div name="hbtables" id="hbtables">
+        <div id="insertPoint">
+          <div id="lastcallercontainer" style="text-align: left;">
+            <div id="callerinfo">
             </div>
-
-            <div name="hbtables" id="hbtables">
-                <div id="insertPoint">
-                    <div id="lastcallercontainer" style="text-align: left;">
-                        <div id="callerinfo">
-                        </div>
-                    </div>
-                    <div id="legendcontainer" style="text-align: left;">
-                        <div id="legendinfo">
-                        </div>
-                    </div>
-                    <div id="mapfrance">
-                        <div id="map" class="tabContent" style="display: block;">
-                            <div id="mapid" style="height: 1000px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="footer">
-                    <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc - F4JDN </a>2021-24.</span>
-                    <br>
-                    <span>Symbols by courtesy of <a href='https://github.com/hessu/aprs-symbols/'>hessu</a></span>
-                </div>
-                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+          </div>
+          <div id="legendcontainer" style="text-align: left;">
+            <div id="legendinfo">
             </div>
-    </center>
+          </div>
+          <div id="mapfrance">
+            <div id="aprsmenu">
+              <div class="queryContainer">
+                <select id="trackCallsign">
+                  <option value="">CALLSIGN</option>
+                </select>
+
+                <input placeholder="DATE" type="text" id="datepicker">
+
+                <select id="timepicker">
+                  <option    value="">TIME</option>
+                  <option    value="0">00:00</option>
+                  <option    value="1">01:00</option>
+                  <option    value="2">02:00</option>
+                  <option    value="3">03:00</option>
+                  <option    value="4">04:00</option>
+                  <option    value="5">05:00</option>
+                  <option    value="6">06:00</option>
+                  <option    value="7">07:00</option>
+                  <option    value="8">08:00</option>
+                  <option    value="9">09:00</option>
+                  <option    value="10">10:00</option>
+                  <option    value="11">11:00</option>
+                  <option    value="12">12:00</option>
+                  <option    value="13">13:00</option>
+                  <option    value="14">14:00</option>
+                  <option    value="15">15:00</option>
+                  <option    value="16">16:00</option>
+                  <option    value="17">17:00</option>
+                  <option    value="18">18:00</option>
+                  <option    value="19">19:00</option>
+                  <option    value="20">20:00</option>
+                  <option    value="21">21:00</option>
+                  <option    value="22">22:00</option>
+                  <option    value="23">23:00</option>
+                </select>
+                <select id="spanpicker">
+                  <option    value="">SPAN</option>
+                  <option    value="15">15 minutes</option>
+                  <option    value="30">30 minutes</option>
+                  <option    value="60">1 hours</option>
+                  <option   value="180">3 hours</option>
+                  <option   value="360">6 hours</option>
+                  <option   value="720">12 hours</option>
+                  <option  value="1440">24 hours</option>
+                  <option  value="2880">2 days</option>
+                  <option  value="4320">3 days</option>
+                  <option  value="5760">4 days</option>
+                  <option  value="7200">5 days</option>
+                  <option  value="8640">6 days</option>
+                  <option value="10080">7 days</option>
+                </select>
+                <button onclick='doTracking()' style="width: 4rem;">RUN</button>
+              </div>
+            </div>
+            <div id="map" class="tabContent" style="display: block;">
+              <div id="mapid" style="height: 1000px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="footer">
+          <span>NDMonitor v__VERSION__ NodeJS by <a href='https://github.com/avrahqedivra/NDMonitor'>jmc -
+              F4JDN </a>2021-24.</span>
+          <br>
+          <span>Symbols by courtesy of <a href='https://github.com/hessu/aprs-symbols/'>hessu</a></span>
+        </div>
+        <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+      </div>
+  </center>
 </body>
 
 <style>
-    #insertPoint {
-        background-color: #202020;
-    }
+  #insertPoint {
+    background-color: #202020;
+  }
 
-    .map {
-        margin-top: 1rem;
-    }
+  .map {
+    margin-top: 1rem;
+  }
 
-    .department {
-        fill: #2e2e2e;
-        stroke: #505050;
-        stroke-width: .5px;
-    }
+  .department {
+    fill: #2e2e2e;
+    stroke: #505050;
+    stroke-width: .5px;
+  }
 
-    #lastcallercontainer {
-        display: none;
-    }
+  #lastcallercontainer {
+    display: none;
+  }
 
-    .callerbox {
-        padding: 0.25rem 0.5rem 0.25rem 0.5rem;
-        margin: 0;
-        border-radius: 8px;
-        border: 1px solid #ffffffa6;
-        color: black;
-        background-color: #ffffff;
-        font-weight: 100;
-    }                
+  .callerbox {
+    padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+    margin: 0;
+    border-radius: 8px;
+    border: 1px solid #ffffffa6;
+    color: black;
+    background-color: #ffffff;
+    font-weight: 100;
+  }
 
-    .callerbox:after {
-        content:'';
-        position: absolute;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        width: 0;
-        height: 0;
-        border-top: 14px solid #ffffff;
-        border-left: 14px solid transparent;
-        border-right: 14px solid transparent;
-    }
+  .callerbox:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-top: 14px solid #ffffff;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+  }
 
-    #callerinfo {
-        display: hidden;
-        margin: 6rem 0 0 0.5rem;
-        position: absolute;
-        color: white;
-        text-align: left;
-        padding: 0.5rem;
-        z-index: 650;
-    }
+  #callerinfo {
+    display: hidden;
+    margin: 6rem 0 0 0.5rem;
+    position: absolute;
+    color: white;
+    text-align: left;
+    padding: 0.5rem;
+    z-index: 650;
+  }
 
-    #legendinfo {
-        width: 8rem;
-        margin: 4rem 0rem 4rem 75rem;
-        position: absolute;
-        color: white;
-        text-align: left;
-        padding: 0.5rem;
-        /* background-color: rgba(78, 78, 78, 0.6);
+  #legendinfo {
+    width: 8rem;
+    margin: 4rem 0rem 4rem 75rem;
+    position: absolute;
+    color: white;
+    text-align: left;
+    padding: 0.5rem;
+    /* background-color: rgba(78, 78, 78, 0.6);
             border-radius: 8px; */
-        z-index: 650;
+    z-index: 650;
+  }
+
+  .legendbox {
+    padding: 1rem 0.5rem 1rem 0.5rem;
+    margin: 0.5rem 0 0 0;
+    border-radius: 8px;
+    border: 1px solid #ffffffa6;
+    background-color: rgba(78, 78, 78, 0.6);
+  }
+
+  .legendIndicator {
+    float: right;
+    width: 1.0rem;
+    height: 1.0rem;
+    color: var(--color-fg-marquee);
+    background-color: var(--color-page);
+    margin-left: 1rem;
+    text-align: center;
+    cursor: default;
+  }
+
+  .leaflet-tooltip-left:before {
+    right: 0;
+    margin-right: -12px;
+    border-left-color: #4e4e4e;
+  }
+
+  .leaflet-tooltip-right:before {
+    left: 0;
+    margin-left: -12px;
+    border-right-color: #4e4e4e;
+  }
+
+  .leaflet-tooltip-own {
+    position: absolute;
+    padding: 4px;
+    text-align: left;
+    background-color: #4e4e4e;
+    border: 0;
+    color: #ffffff;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    pointer-events: none;
+    border-radius: 8px;
+  }
+
+  .svgicon {
+    height: 1.4rem;
+    filter: brightness(118%) contrast(119%);
+    stroke: white;
+  }
+
+  .leaflet-popup-content {
+    margin: 0;
+  }
+
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background-color: transparent;
+    box-shadow: none;
+    color: white;
+  }
+
+  .nametip {
+    width: fit-content;
+    padding: 0 4px 0 4px;
+    font-size: 8pt;
+    font-weight: 100;
+    opacity: 0.55;
+  }
+
+  /* ui-datepicker https://stackoverflow.com/questions/25474378/how-to-style-jquery-datepicker-calendar */
+  .ui-datepicker-header {
+    background-color: var(--color-trbg);
+    color: var(--color-table-fg);
+    border: .5px solid var(--color-table-border);
+  }
+  
+  .ui-datepicker thead {
+    background-color: #f7f7f7;
+    /*border-bottom: 1px solid #bbb;*/
+  }
+
+  .ui-datepicker th {
+    background-color:#808080;
+    text-transform: uppercase;
+    font-size: 8pt;
+    color: white;
+    /*text-shadow: 1px 0px 0px #fff;*/
+    /*filter: dropshadow(color=#fff, offx=1, offy=0);*/
+  }
+
+  #aprsmenu {
+    text-align: left;
+    width: 100%;
+    background-color: transparent;
+    margin-bottom: 0.1rem;
+
+    .queryContainer {
+      display: inline-block;
+      select, input, button {
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      select {
+        width: 7rem;
+        color:#202020;
+        background-color: white;
+        border: 1px solid black;
+        padding: 0.07rem;
+      }
+
+      #datepicker, #timepicker {
+        width: 6rem;
+      }
     }
 
-    .legendbox {
-        padding: 1rem 0.5rem 1rem 0.5rem;
-        margin: 0.5rem 0 0 0;
-        border-radius: 8px;
-        border: 1px solid #ffffffa6;
-        background-color: rgba(78, 78, 78, 0.6);
+    a ui-corner-all {
+      font-family: var(--color-font-html);
+      font-size: 1rem;
+      font-weight: 100 !important;
     }
-
-    .legendIndicator {
-        float: right;
-        width: 1.0rem;
-        height: 1.0rem;
-        color: var(--color-fg-marquee);
-        background-color: var(--color-page);
-        margin-left: 1rem;
-        text-align: center;
-        cursor: default;
-    }
-
-    .leaflet-tooltip-left:before {
-        right: 0;
-        margin-right: -12px;
-        border-left-color: #4e4e4e;
-    }
-
-    .leaflet-tooltip-right:before {
-        left: 0;
-        margin-left: -12px;
-        border-right-color: #4e4e4e;
-    }
-
-    .leaflet-tooltip-own {
-        position: absolute;
-        padding: 4px;
-        text-align: left;
-        background-color: #4e4e4e;
-        border: 0;
-        color: #ffffff;
-        white-space: nowrap;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        pointer-events: none;
-        border-radius: 8px;
-    }
-
-    .svgicon {
-        height: 1.4rem;
-        filter: brightness(118%) contrast(119%);
-        stroke: white;
-    }
-
-    .leaflet-popup-content {
-        margin: 0;
-    }
-
-    .leaflet-popup-content-wrapper,
-    .leaflet-popup-tip {
-        background-color: transparent;
-        box-shadow: none;
-        color: white;
-    }
-    .nametip {
-        width: fit-content;
-        padding: 0 4px 0 4px;
-        font-size:8pt;
-        font-weight: 100;
-        opacity: 0.55;
-    }
+  }
 </style>
 
 <script type="text/javascript">
-    let lastheardOpen = true
-    let traffic = []
-    let sock = null
-    let displayLines = parseInt("__DISPLAY_LINES__")
-    let tgfilter = new Set("__TGID_FILTER__".split(','))
+  let lastheardOpen = true
+  let traffic = []
+  let aprsdata = { aprs: [], hotspots: [] }
+  let trackuser = ""
+  let trackdate = ""
+  let sock = null
+  let displayLines = parseInt("__DISPLAY_LINES__")
+  let tgfilter = new Set("__TGID_FILTER__".split(','))
 
-    hide_dmrid = new Set("__HIDE_DMRID__".split(','))
+  hide_dmrid = new Set("__HIDE_DMRID__".split(','))
 
-    function initMap() {
-        let centerFrance = [47.0781336, 0.340375]       // France
-        let centerBelgium = [50.65794, 4.52714]         // Belgium
-        let centerGermany = [50.984015, 11.02426]       // Germany
+  function initMap() {
+    let centerFrance = [47.0781336, 0.340375]       // France
+    let centerBelgium = [50.65794, 4.52714]         // Belgium
+    let centerGermany = [50.984015, 11.02426]       // Germany
 
-        let centerMap = centerFrance
+    let centerMap = centerFrance
 
-        map = L.map('map',
-            {
-                zoomDelta: 0.25,
-                zoomSnap: 0,
-                minZoom: 3
-            }).setView(centerMap, currentZoom)
+    map = L.map('map',
+      {
+        zoomDelta: 0.25,
+        zoomSnap: 0,
+        minZoom: 3
+      }).setView(centerMap, currentZoom)
 
-        L.control.scale().addTo(map)
+    L.control.scale().addTo(map)
 
-        // night and day layer
-        let terminator = L.terminator().setStyle({ "fillOpacity": 0.2 }).addTo(map)
+    // night and day layer
+    let terminator = L.terminator().setStyle({ "fillOpacity": 0.2 }).addTo(map)
 
-        let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            className: 'map-tiles'
-        }).addTo(map)
+    let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      className: 'map-tiles'
+    }).addTo(map)
 
-        // night layer refresh timer
-        setInterval(() => {
-            terminator.setTime();
-        }, 5000)
+    // night layer refresh timer
+    setInterval(() => {
+      terminator.setTime();
+    }, 5000)
 
-        map.on('zoomend', function () {
-            currentZoom = map.getZoom()
-        })
-    }
+    map.on('zoomend', function () {
+      currentZoom = map.getZoom()
+    })
+  }
 
-    function log(msg) {
-        console.log(msg)
-    }
+  function log(msg) {
+    console.log(msg)
+  }
 
-    function convertToDecimal(coord) {
-        let degreesLength = (coord.length === 8 || coord.length === 7) ? 2 : 3
-        let degrees = parseInt(coord.substring(0, degreesLength), 10)
-        let minutes = parseFloat(coord.substring(degreesLength, coord.length - 1))
-        let direction = coord.slice(-1)
-        let decimal = degrees + minutes / 60 
+  function convertToDecimal(coord) {
+    let degreesLength = (coord.length === 8 || coord.length === 7) ? 2 : 3
+    let degrees = parseInt(coord.substring(0, degreesLength), 10)
+    let minutes = parseFloat(coord.substring(degreesLength, coord.length - 1))
+    let direction = coord.slice(-1)
+    let decimal = degrees + minutes / 60
 
-        if (direction === 'S' || direction === 'W')
-            decimal *= -1;
+    if (direction === 'S' || direction === 'W')
+      decimal *= -1;
 
-        return decimal;
-    }
+    return decimal;
+  }
 
-    function convertToTime(timestamp) {
-        // because comes from python -> convert s to ms
-        let date = new Date(timestamp * 1000)
-        
-        return date.toLocaleString('fr-FR', 
-            {
-                timeZone: 'Europe/Paris',
-                hour12: false,
-                hour:   '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                year:   'numeric',
-                month:  '2-digit',
-                day:    '2-digit'
-            }
-        )
-    }
+  function convertToTime(timestamp) {
+    // because comes from python -> convert s to ms
+    let date = new Date(timestamp * 1000)
 
-    function asciiToIndex(c) {
-        if (c == null || c < '!' || c > '~')
-            c = "["
+    return date.toLocaleString('fr-FR',
+      {
+        timeZone: 'Europe/Paris',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }
+    )
+  }
 
-        return c.charCodeAt(0) - 0x21
-    }
+  function asciiToIndex(c) {
+    if (c == null || c < '!' || c > '~')
+      c = "["
 
-    function getSymbolOffset(icon_table, icon_icon) {
-        let offset = -1
+    return c.charCodeAt(0) - 0x21
+  }
 
-        if (icon_table && icon_icon) {
-            let coeff = 0
+  function getSymbolOffset(icon_table, icon_icon) {
+    let offset = -1
 
-            switch(icon_table) {
-                case '/': coeff = 0; break
-                case '\\': coeff = 1; break
-                default: 
-/*                        
-                    if (item.icon_table >= '0' && item.icon_table <= "9") {
-                        coeff = 2 + (item.icon_table.charCodeAt(0) - 0x48) * 96
-                        break
-                    }
+    if (icon_table && icon_icon) {
+      let coeff = 0
 
-                    if (item.icon_table >= 'A' && item.icon_table <= "J") {
-                        coeff = 13 + (item.icon_table.charCodeAt(0) - 0x65) * 96
-                        break
-                    }
-*/                            
-                    break
+      switch (icon_table) {
+        case '/': coeff = 0; break
+        case '\\': coeff = 1; break
+        default:
+          /*                        
+            if (item.icon_table >= '0' && item.icon_table <= "9") {
+                coeff = 2 + (item.icon_table.charCodeAt(0) - 0x48) * 96
+                break
             }
 
-            offset = 96 * coeff + asciiToIndex(icon_icon)
+            if (item.icon_table >= 'A' && item.icon_table <= "J") {
+                coeff = 13 + (item.icon_table.charCodeAt(0) - 0x65) * 96
+                break
+            }
+          */
+          break
+      }
+
+      offset = 96 * coeff + asciiToIndex(icon_icon)
+    }
+
+    return offset
+  }
+
+  function   haversineDistance(coords1, coords2, isMiles) {
+    function toRad(x) {
+      return x * Math.PI / 180;
+    }
+  
+    var lon1 = coords1[0];
+    var lat1 = coords1[1];
+  
+    var lon2 = coords2[0];
+    var lat2 = coords2[1];
+  
+    var R = 6371; // km
+  
+    var x1 = lat2 - lat1;
+    var dLat = toRad(x1);
+    var x2 = lon2 - lon1;
+    var dLon = toRad(x2)
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+  
+    if (isMiles) d /= 1.60934;
+  
+    return d;
+  }
+
+  function doTracking() {
+    trackdate = -1
+    tracktime = -1
+    trackspan = -1
+
+    // remove previous polylines if any
+    if (aprs_polylinesLayer)
+      map.removeLayer(aprs_polylinesLayer)
+    
+    trackUser = document.getElementById("trackCallsign").value.trim().toUpperCase()
+    
+    if ((date = document.getElementById("datepicker").value) != '')
+      trackdate = Date.parse(date) / 1000
+
+    if ((time = document.getElementById("timepicker").value) != '')
+      tracktime = parseInt(time)
+
+    if ((span = document.getElementById("spanpicker").value) != '')
+      trackspan = parseInt(span)
+
+    // make a copy of aprs array
+    let aprs = [...aprsdata.aprs]
+
+    // sort earlier time first
+    aprs.sort((a, b) => {
+      y = parseInt(a.time);
+      x = parseInt(b.time);
+
+      return x < y ? 1 : x > y ? -1 : 0;
+    })
+
+    for(let i=aprs.length-1; i>-1; i--) {
+      let om = aprs[i]
+
+      // deal with callsign
+      if (trackUser != "" && trackUser != om.call.trim()) {
+        aprs.splice(i, 1)
+        continue
+      }
+
+      // deal with date withing the same 24h window
+      if (trackdate != -1) {
+        let date1 = new Date(trackdate * 1000)
+        let date2 = new Date(om.time * 1000)
+
+        if (date1.getDay() != date2.getDay() || date1.getMonth() != date2.getMonth() || date1.getFullYear() != date2.getFullYear()) {
+          aprs.splice(i, 1)
+          continue
+        }
+      }
+
+      // deal with time
+      if (tracktime != -1) {
+        let date = new Date(om.time * 1000)
+
+        if (date.getHours() < tracktime) {
+          aprs.splice(i, 1)
+          continue
         }
 
-        return offset
+        if (trackspan != -1) {
+          let span = new Date(date)
+          span.setHours(tracktime)
+          span.setMinutes(0)
+          span.setSeconds(0)
+          
+          if (date.getTime() < span.getTime() + trackspan*60000) {
+            aprs.splice(i, 1)
+            continue
+          }
+        }
+      }
     }
 
-    function displayGPSData(data) {
-        let stations = new Set()
-        let offset = -1  // offset of '['
+    displayGPSData(aprs, (trackUser != "" || trackdate != -1 || tracktime != -1))
+  }
 
-        for(let index in data) {
-            let item = data[index]
-            let call = item.call;
+  function displayGPSData(data, trackmode) {
+    let pointCount = 0
+    let caller = null
+    let stations = []
+    let offset = -1  // offset of '['
+    let lastPoint = true
+    let aprs_polylines = []
 
-            /**
-             * skip station already registered
-             */
-            if (stations.has(call))
-                continue
+    for (let index in data) {
+      let item = data[index]
+      let call = item.call;
 
-            /** 
-             * check for valid lat/lon
-             */
-            let lat = item.lat
-            let lon = item.lon
+      /** 
+       * check for valid lat/lon
+       */
+      let lat = item.lat
+      let lon = item.lon
 
-            // in case lat/long are not decimal, convert
-            if ("NSEW".indexOf(item.lat.slice(-1)) != -1) {
-                lat = convertToDecimal(item.lat)
-                lon = convertToDecimal(item.lon)
+      // in case lat/long are not decimal, convert
+      if ("NSEW".indexOf(item.lat.slice(-1)) != -1) {
+        lat = convertToDecimal(item.lat)
+        lon = convertToDecimal(item.lon)
+      }
+
+      // skip lat/long == 0 or too far in atlantic
+      if (lat == 0 || lon == 0)
+        continue
+
+      /**
+       * build record for new callsign
+       */
+
+      // get the good icon in the middle of the APRS tables
+      offset = getSymbolOffset(item.icon_table, item.icon_icon)
+
+      let idx = -1
+      let dmrid = ''
+      let suffix = '-'
+      let symbol = 12
+      let symbolfg = "black"
+      let symbolbg = "white"
+      let distance = -1
+      let speed = -1
+      let callsign = item.call == "" ? "-----" : item.call
+      let comment = item.comment
+
+      if (offset != -1) {
+        symbol = offset
+      } else {
+        if ((idx = callsign != "D-APRS" && callsign.indexOf("-")) != -1) {
+          suffix = callsign.substring(idx)
+          if (suffix >= "-A" && suffix <= "-Z")
+            suffix = "A..Z"
+
+          for (let entry of aprs_symbols_mapping) {
+            if (Object.keys(entry) == suffix) {
+              if (Object.values(entry)[0].table) {
+                let item = Object.values(entry)[0]
+                symbol = getSymbolOffset(item.table, item.symbol)
+                symbolbg = item.bg
+                symbolfg = item.fg
+              }
+              break
             }
+          }
+        }
+      }
 
-            // skip lat/long == 0 or too far in atlantic
-            if (lat == 0 || lon == 0)
-                continue
+      /**
+       * skip station already registered
+       */
+      let entry = { lat: item.lat, lon: item.lon, time: item.time, comment: item.comment, table: item.icon_table || "/", icon: item.icon_icon || "[" }
 
-            /**
-             * build record for new callsign
-             */    
+      if (!stations[call]) {
+        lastPoint = true
+        stations[call] = { "markers": [entry] }
+      }
+      else {
+        lastPoint = false
+        stations[call]["markers"].push(entry)
+      }
 
-            // get the good icon in the middle of the APRS tables
-            offset = getSymbolOffset(item.icon_table, item.icon_icon)
+      if (trackmode) {
+          distance = -1
+          speed = -1
+          aprs_polylines.push({ coords: [lat, lon], time: entry.time })
+      }
 
-            let idx = -1
-            let dmrid = ''
-            let suffix = '-'
-            let symbol = 12
-            let symbolfg = "black"
-            let symbolbg = "white"
-            let callsign = item.call == "" ? "-----" : item.call
-            let comment = item.comment
+      if (lastPoint) {
+        var label = L.marker([lat, lon], {
+          icon: L.divIcon({
+            className: 'Label',
+            html: `<div class="nametip" style="background-color:${symbolbg};color:${symbolfg}">${call}</div>`,
+            iconSize: [100, 25],
+            iconAnchor: [16, -2]
+          })
+        }).addTo(map)
 
-            if (offset != -1) {
-                symbol = offset
-            } else {
-                if ((idx = callsign != "D-APRS" && callsign.indexOf("-")) != -1) {
-                    suffix = callsign.substring(idx)
-                    if (suffix >= "-A" && suffix <= "-Z")
-                        suffix = "A..Z"
+        // Load the image and create a marker with a portion of it
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        canvas.width = 64
+        canvas.height = 64
 
-                    for(let entry of aprs_symbols_mapping) {
-                        if (Object.keys(entry) == suffix) {
-                            if (Object.values(entry)[0].table) {
-                                let item = Object.values(entry)[0]
-                                symbol = getSymbolOffset(item.table, item.symbol)
-                                symbolbg = item.bg
-                                symbolfg = item.fg
-                            }
-                            break
-                        }
-                    }
-                }
-            }
+        let oy = Math.trunc(symbol / 16)
+        let ox = symbol - oy * 16
 
-            stations.add(call)
+        context.drawImage(aprs_symbols, 64 * ox, 64 * oy, 64, 64, 0, 0, 64, 64)
 
-            var label = L.marker([lat, lon], {
-                icon: L.divIcon({
-                className: 'Label',
-                html: `<div class="nametip" style="background-color:${symbolbg};color:${symbolfg}">${call}</div>`,
-                iconSize: [100, 25],
-                iconAnchor: [16, -2]
-                })
-            }).addTo(map)
+        let marker = L.marker([lat, lon])
 
-            // Load the image and create a marker with a portion of it
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = 64
-            canvas.height = 64
+        marker.setIcon(L.icon({
+          iconUrl: canvas.toDataURL(),
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],       // Anchor point of the full image
+          popupAnchor: [0, -12]       // Popup anchor point
+        })).addTo(map)
 
-            let oy = Math.trunc(symbol / 16)
-            let ox = symbol - oy*16
+        if ((idx = item.comment.indexOf('DMR ID')) != -1) {
+          comment = item.comment.substring(0, idx)
+          dmrid = item.comment.substring(idx + 7)
+        }
 
-            context.drawImage(aprs_symbols, 64*ox, 64*oy, 64, 64, 0, 0, 64, 64)
+        // popup
+        let content = "<div class='callerbox'>" + "<div style='font-weight:bold;'>" + callsign + ((dmrid != '') ? " (" + dmrid.trim() + ")</div>" : "</div>")
+        content += "<div style='width:100%;height:1px;background-color:#ff0000;'></div>"
+        if (item.time)
+          content += "<div style='display: inline-block;'>" + convertToTime(item.time) + "&nbsp;&nbsp;<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
+        else
+          content += "<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
 
-            let marker = L.marker([lat, lon])
+        content += "<div>" + comment + "</div>"
 
-            marker.setIcon(L.icon({
-                iconUrl: canvas.toDataURL(),
-                iconSize: [24, 24],
-                iconAnchor: [12, 12],       // Anchor point of the full image
-                popupAnchor: [0, -12]       // Popup anchor point
-            })).addTo(map)
+        marker.bindPopup(content)
+      }
+      else {
+        if (trackmode) {
+          let marker = L.marker([lat, lon])
 
-            if ((idx = item.comment.indexOf('DMR ID')) != -1) {
-                comment = item.comment.substring(0, idx)
-                dmrid = item.comment.substring(idx + 7)
+          marker.setIcon(L.icon({
+            iconUrl: 'marker-icon.png',
+            iconSize: [10, 10],
+            iconAnchor: [5, 8],       // Anchor point of the full image
+            popupAnchor: [0, 0]       // Popup anchor point
+          })).addTo(map)
+
+          // add a popup every 5 points
+          // if (pointCount = pointCount % 5) 
+          {
+            if (aprs_polylines.length > 1) {
+              distance = haversineDistance(aprs_polylines[aprs_polylines.length-1].coords, aprs_polylines[aprs_polylines.length-2].coords, false)
+              speed = distance / Math.abs(aprs_polylines[aprs_polylines.length-1].time, aprs_polylines[aprs_polylines.length-2].time) / 3600
             }
 
             // popup
             let content = "<div class='callerbox'>" + "<div style='font-weight:bold;'>" + callsign + ((dmrid != '') ? " (" + dmrid.trim() + ")</div>" : "</div>")
             content += "<div style='width:100%;height:1px;background-color:#ff0000;'></div>"
+            if (speed != -1)
+              content += "<div style='display: inline-block;'> speed: " + parseInt(speed) + " km/h</div><br>"
             if (item.time)
-                content += "<div style='display: inline-block;'>" + convertToTime(item.time) + "&nbsp;&nbsp;<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
+              content += "<div style='display: inline-block;'>" + convertToTime(item.time) + "&nbsp;&nbsp;<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
             else
-                content += "<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
+              content += "<b>Lat:</b> " + parseFloat(lat).toFixed(4) + "&nbsp;&nbsp;<b>Lng:</b> " + parseFloat(lon).toFixed(4) + "</div><br/>"
 
             content += "<div>" + comment + "</div>"
 
             marker.bindPopup(content)
+          }
+        }
+      }
+    }
+
+    if (trackmode && aprs_polylines.length > 0) {
+      let polylines = []
+      aprs_polylines.forEach((entry) => {
+        polylines.push(entry.coords)
+      })
+
+      aprs_polylinesLayer = L.polyline(polylines, { 'color': 'red', 'opacity': '0.3', 'weight': '7', 'linecap': 'round', 'linejoin': 'round' }).addTo(map)
+    }
+  }
+
+  function addOptionIfNotExists(selectElement, value, text) {
+    // Check if the option already exists in the select element
+    let optionExists = false
+
+    for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].value === value) {
+            optionExists = true
+            break
         }
     }
 
-    function refreshMap() {
-        $.ajax({
-            url: "__APRS_LOCATION_FILE__",
-            dataType: "text",
-            success: (data) => {
-                let correctedData = data.trim().replace(/'/g, '"')
-                let gpsData
+    // If the option does not exist, create a new option and add it
+    if (!optionExists)
+        selectElement.appendChild(new Option(text, value))
+  }
 
-                try {
-                    gpsData = JSON.parse(correctedData)
-                } catch (e) {
-                    console.error("Bad json gps data: ", e)
-                    return;
-                }
+  function updateCallsignList(gpsData) {
+    let callsignSelect = document.getElementById("trackCallsign")
 
-                displayGPSData(gpsData)
-            },
-            error: function (xhr, status, error) {
-                console.error("Unable to load D-APRS data: ", status, error);
-            }
-        });
+    addOptionIfNotExists(callsignSelect, "", "CALLSIGN")
+
+    for(let i=0; i<gpsData.length; i++)
+      addOptionIfNotExists(callsignSelect, gpsData[i].call, gpsData[i].call)
+  } 
+
+  function refreshMap() {
+    $.ajax({
+      url: "__APRS_LOCATION_FILE__",
+      dataType: "text",
+      success: (data) => {
+        let correctedData = data.trim().replace(/'/g, '"')
+        let gpsData
+
+        try {
+          gpsData = JSON.parse(correctedData)
+        } catch (e) {
+          console.error("Bad json gps data: ", e)
+          return;
+        }
+
+        updateCallsignList(gpsData)
+
+        displayGPSData(aprsdata.aprs = gpsData, false)
+      },
+      error: function (xhr, status, error) {
+        console.error("Unable to load D-APRS data: ", status, error)
+      }
+    });
+  }
+
+  // https://gist.github.com/umidjons/9614157
+  function sortMastersPeersByOnlineTime(peers) {
+    var peersArray = [];
+
+    // convert to array
+    for (var key in peers) {
+      peersArray.push([key, peers[key]]);
     }
 
-	// https://gist.github.com/umidjons/9614157
-	function sortMastersPeersByOnlineTime(peers) {
-		var peersArray = [];
+    // convert online time to seconds
+    let len = peersArray.length;
+    for (let i = 0; i < len; i++) {
+      var t = peersArray[i]["1"]["CONNECTED"].split(" ");
 
-		// convert to array
-		for (var key in peers) {
-			peersArray.push([key, peers[key]]);
-		}
+      switch (t.length) {
+        case 3:
+          peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
+          break;
 
-		// convert online time to seconds
-		let len = peersArray.length;
-		for (let i = 0; i < len; i++) {
-			var t = peersArray[i]["1"]["CONNECTED"].split(" ");
+        case 2:
+          chr = t[0].slice(-1)
 
-			switch (t.length) {
-				case 3:
-					peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
-					break;
-
-				case 2:
-					chr = t[0].slice(-1)
-
-					if (chr == 'd')
-						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600)
-					else
-					if (chr == 'h')
-						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60)
-					else
-					if (chr == 'm')
-						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]))
-					break
-
-				case 1:
-					peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0])
-					break
-
-				default:
-					peersArray[i]["1"]["ONLINE"] = "0"
-					break
-			}
-		}
-
-		// sort peers array
-		peersArray.sort((a, b) => {
-			y = parseInt(a[1]["ONLINE"])
-			x = parseInt(b[1]["ONLINE"])
-
-			return x < y ? -1 : x > y ? 1 : 0
-		})
-
-		return peersArray
-	}
-
-    function updateMasters(masters) {
-        if (masters != null) {
-            let gpsData = []
-
-            for (let entry in masters) {
-                done = false
-
-                if (!done) {
-                    // skip empty peers
-                    if (!Object.keys(masters[entry]["PEERS"]).length)
-                        continue
-
-                    done = true
-                }
-
-                var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"])
-                let peersLength = peers.length
-
-                if (peersLength != 0) {
-                    try {
-                        let lat = 0
-                        let lon = 0
-
-                        for (let i = 0; i < peersLength; i++) {
-                            record = peers[i][1]
-
-                            if ((lat = record['LATITUDE']) == null || record['LATITUDE'] == 0)
-                                continue
-
-                            if ((lon = record['LONGITUDE']) == null || record['LONGITUDE'] == 0)
-                                continue
-
-                            netID = peers[i][0]
-                            cnxTime = record["CONNECTED"]
-
-                            ts1rx = record["1"]["TXRX"]
-                            ts2rx = record["2"]["TXRX"]
-
-                            ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"))
-                            ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"))
-
-                            cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX")
-                            cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX")
-
-                            hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
-
-                            if (record["SLOTS"].startsWith("Slot"))
-                                record["SLOTS"] = 'VOIP'
-
-                            mscallsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a'
-                            mslocation = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a'
-
-                            /**
-                                'H' stands for Hotspot as the lat/lon comes from Pi-Star settings and won't change
-                            */
-                            gpsData.push({
-                                "icon_table": "/",
-                                "icon_icon": "-",
-                                "call": mscallsign,
-                                "lat": lat, 
-                                "lon": lon, 
-                                "time": Date.now() / 1000, 
-                                "comment": `${window.location.origin} DMR ID: ${netID}`,
-                                "loc": mslocation 
-                            })
-                        }
-                    }
-                    catch (error) {
-                    }
-                }
-            }
-
-            if (gpsData.length > 0)
-                displayGPSData(gpsData)
-        }
-	}
-
-	function treatTables(CTable) {
-		if (CTable != null) {
-			updateMasters(CTable["MASTERS"])
-		}
-	}
-
-    function doTraffic(t) {
-        if (t != null) {
-            startPackets = new Set()
-
-            if (Array.isArray(t))
-                traffic = t;
+          if (chr == 'd')
+            peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600)
+          else
+            if (chr == 'h')
+              peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60)
             else
-                traffic.unshift(t);
+              if (chr == 'm')
+                peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]))
+          break
 
-            let trafficLength = traffic.length;
+        case 1:
+          peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0])
+          break
 
-            if (trafficLength > 0) {
-                for(let i=0; i<trafficLength; i++) {
-			        let record = traffic[i];
-
-                    if (record.PACKET === "START" && record.TGID == '__TGID_APRS__') {
-                        refreshMap()
-
-						let tt = new Date(record.DATE + " " + record.TIME);
-
-						// if START gone past TOT change to end
-						if ((Date.now() - tt.getTime()) / 1000 > startTot) {
-                            record.PACKET = "END";
-                            record.DELAY = startTot;
-						}
-                    }
-                }
-            }
-        }
+        default:
+          peersArray[i]["1"]["ONLINE"] = "0"
+          break
+      }
     }
 
-    $(document).ready(() => {
-        // document ready occurs before windows.onLoad
-        if (getConfigFromLocalStorage != null) {
-            getConfigFromLocalStorage();
+    // sort peers array
+    peersArray.sort((a, b) => {
+      y = parseInt(a[1]["ONLINE"])
+      x = parseInt(b[1]["ONLINE"])
 
-            if (document.documentElement.className != settings[0].config.theme)
-                document.documentElement.className = settings[0].config.theme;
-        }
-
-        initMenubar();
+      return x < y ? -1 : x > y ? 1 : 0
     })
 
-    window.onload = () => {
-        aprs_symbols = new Image()
-        aprs_symbols.src = "aprs-symbols-64-droid.png"
-        aprs_symbols_mapping = null
+    return peersArray
+  }
 
-        startTot = parseInt("__START_TOT__")
-        if (startTot == 0) startTot = 240
+  function updateMasters(masters) {
+    if (masters != null) {
+      let gpsData = []
 
-        currentZoom = settings[1].map.zoom
+      for (let entry in masters) {
+        done = false
 
-        let wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=aprs"
+        if (!done) {
+          // skip empty peers
+          if (!Object.keys(masters[entry]["PEERS"]).length)
+            continue
 
-        $("#menubar").show()
-        $("#siteHeader").show()
-
-        initMap()
-
-        if (isNaN(displayLines))
-            displayLines = 10;
-
-        function WSConnection() {
-            'use strict'
-            this.socket = {}
+          done = true
         }
 
-        WSConnection.prototype.connect = (url) => {
-            'use strict'
+        var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"])
+        let peersLength = peers.length
 
-            return new Promise((resolve, reject) => {
-                if ("WebSocket" in window)
-                    this.socket = new WebSocket(url)
-                else if ("MozWebSocket" in window)
-                    this.socket = new MozWebSocket(url)
-                else {
-                    log("Browser does not support WebSocket!")
-                    resolve()
-                }
+        if (peersLength != 0) {
+          try {
+            let lat = 0
+            let lon = 0
 
-                this.socket.onopen = () => {
-                    log("Connected to " + url)
-                    resolve()
-                }
+            for (let i = 0; i < peersLength; i++) {
+              record = peers[i][1]
 
-                this.socket.onmessage = (e) => {
-                    let data = null
+              if ((lat = record['LATITUDE']) == null || record['LATITUDE'] == 0)
+                continue
 
-                    try {
-                        if (themeSettings == "auto")
-                            adjustTheme();
+              if ((lon = record['LONGITUDE']) == null || record['LONGITUDE'] == 0)
+                continue
 
-                        if (data = JSON.parse(e.data)) {
-                            if (data.CONFIG) {
-                                if (data.CONFIG.APRS_SYMBOLS) {
-                                    aprs_symbols_mapping = data.CONFIG.APRS_SYMBOLS
+              netID = peers[i][0]
+              cnxTime = record["CONNECTED"]
 
-                                    refreshMap()
-                                }
-                            }
-                            else {
-                                if (data.TRAFFIC)
-                                    doTraffic(data.TRAFFIC)
+              ts1rx = record["1"]["TXRX"]
+              ts2rx = record["2"]["TXRX"]
 
-                                if (data.CTABLE)
-                                    treatTables(data.CTABLE)
-                            }
-                        }
-                    } catch (error) {
-                        log(error)
-                    }
-                }
+              ts1 = ((ts1rx == "") ? "msTS1" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX"))
+              ts2 = ((ts2rx == "") ? "msTS2" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX"))
 
-                socket.onerror = function (error) {
-                    console.log('WebSocket error: ' + error)
-                    reject(error)
-                };
+              cnx1 = (ts1rx == "") ? "msTS" : ((ts1rx == "TX") ? "msTSTX" : "msTSRX")
+              cnx2 = (ts2rx == "") ? "msTS" : ((ts2rx == "TX") ? "msTSTX" : "msTSRX")
 
-                socket.onclose = function (e) {
-                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')")
-                    this.sock = null
-                }
-            })
+              hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+
+              if (record["SLOTS"].startsWith("Slot"))
+                record["SLOTS"] = 'VOIP'
+
+              mscallsign = (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"] : 'n/a'
+              mslocation = (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"] : 'n/a'
+
+              /**
+                  'H' stands for Hotspot as the lat/lon comes from Pi-Star settings and won't change
+              */
+              gpsData.push({
+                "icon_table": "/",
+                "icon_icon": "-",
+                "call": mscallsign,
+                "lat": lat,
+                "lon": lon,
+                "time": Date.now() / 1000,
+                "comment": `${window.location.origin} DMR ID: ${netID}`,
+                "loc": mslocation
+              })
+            }
+          }
+          catch (error) {
+          }
         }
+      }
 
-        WSConnection.prototype.disconnect = () => {
-            'use strict';
-            console.log("Disconnect request from local app layer");
-            this.socket.close();
-        }
-
-        setTimeout(() => {
-            socket = new WSConnection().connect(wsuri)
-        }, 500)
+      if (gpsData.length > 0)
+        displayGPSData(aprsdata.hotspots = gpsData, false)
     }
+  }
+
+  function treatTables(CTable) {
+    if (CTable != null) {
+      updateMasters(CTable["MASTERS"])
+    }
+  }
+
+  function doTraffic(t) {
+    if (t != null) {
+      startPackets = new Set()
+
+      if (Array.isArray(t))
+        traffic = t;
+      else
+        traffic.unshift(t);
+
+      let trafficLength = traffic.length;
+
+      if (trafficLength > 0) {
+        for (let i = 0; i < trafficLength; i++) {
+          let record = traffic[i];
+
+          if (record.PACKET === "START" && record.TGID == '__TGID_APRS__') {
+            refreshMap()
+
+            let tt = new Date(record.DATE + " " + record.TIME);
+
+            // if START gone past TOT change to end
+            if ((Date.now() - tt.getTime()) / 1000 > startTot) {
+              record.PACKET = "END";
+              record.DELAY = startTot;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  $(document).ready(() => {
+    // document ready occurs before windows.onLoad
+    if (getConfigFromLocalStorage != null) {
+      getConfigFromLocalStorage();
+
+      if (document.documentElement.className != settings[0].config.theme)
+        document.documentElement.className = settings[0].config.theme;
+    }
+
+    initMenubar();
+  })
+
+  window.onload = () => {
+    aprs_symbols = new Image()
+    aprs_symbols.src = "aprs-symbols-64-droid.png"
+    aprs_symbols_mapping = null
+    aprs_polylinesLayer = null
+
+    startTot = parseInt("__START_TOT__")
+    if (startTot == 0) startTot = 240
+
+    currentZoom = settings[1].map.zoom
+
+    let wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=aprs"
+
+    $("#menubar").show()
+    $("#siteHeader").show()
+
+    initMap()
+
+    if (isNaN(displayLines))
+      displayLines = 10;
+
+    function WSConnection() {
+      'use strict'
+      this.socket = {}
+    }
+
+    WSConnection.prototype.connect = (url) => {
+      'use strict'
+
+      return new Promise((resolve, reject) => {
+        if ("WebSocket" in window)
+          this.socket = new WebSocket(url)
+        else if ("MozWebSocket" in window)
+          this.socket = new MozWebSocket(url)
+        else {
+          log("Browser does not support WebSocket!")
+          resolve()
+        }
+
+        this.socket.onopen = () => {
+          log("Connected to " + url)
+          $("#datepicker").datepicker()
+          resolve()
+        }
+
+        this.socket.onmessage = (e) => {
+          let data = null
+
+          try {
+            if (themeSettings == "auto")
+              adjustTheme();
+
+            if (data = JSON.parse(e.data)) {
+              if (data.CONFIG) {
+                if (data.CONFIG.APRS_SYMBOLS) {
+                  aprs_symbols_mapping = data.CONFIG.APRS_SYMBOLS
+
+                  refreshMap()
+                }
+              }
+              else {
+                if (data.TRAFFIC)
+                  doTraffic(data.TRAFFIC)
+
+                if (data.CTABLE)
+                  treatTables(data.CTABLE)
+              }
+            }
+          } catch (error) {
+            log(error)
+          }
+        }
+
+        socket.onerror = function (error) {
+          console.log('WebSocket error: ' + error)
+          reject(error)
+        };
+
+        socket.onclose = function (e) {
+          log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')")
+          this.sock = null
+        }
+      })
+    }
+
+    WSConnection.prototype.disconnect = () => {
+      'use strict';
+      console.log("Disconnect request from local app layer");
+      this.socket.close();
+    }
+
+    setTimeout(() => {
+      socket = new WSConnection().connect(wsuri)
+    }, 500)
+  }
 </script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script type="application/javascript" src="https://unpkg.com/@joergdietrich/leaflet.terminator/L.Terminator.js"></script>
+<!-- for date picker -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 </html>
