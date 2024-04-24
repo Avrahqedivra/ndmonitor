@@ -202,8 +202,9 @@ export class Monitor {
         let [username, password] = decodedData.split(':')
 
         let valid = false
+        let blacklist = new Set(config.__blacklisted_calls__)
 
-        if (!new Set(config.__blacklisted_calls__).has(username)) {
+        if (!blacklist.has(username) && !blacklist.has(password)) {
           for(let i=0; i<config.__web_secret_key__.length; i++) {
             if (valid = (crc16.compute(username, config.__web_secret_key__[i]).toString() == password))
               break

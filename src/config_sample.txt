@@ -146,11 +146,11 @@ export const admin_user__: string               = 'admin'
 // Authorization of access to dashboard# as user
 export const __web_auth__: boolean              = false
 
-// secret salt key for passcode generator
+// secret salt key table for passcode generator
 export const __web_secret_key__: string[]         = ["SECRETKEY"]
 
-// blacklisted callsigns example: export const __blacklist__: string[] = ["F1xxx", "F4xxx"]
-export const __blacklisted_calls__: string[] = []
+// blacklisted callsigns or codes example: export const __blacklist__: string[] = ["F1XXX", "F4XXX", "123456"]
+export const __blacklisted_calls__: string[] = ["123456", "F4XXX]
 
 // do not log listeners ip maps (useless ?)
 export const __do_ipmap__: boolean              = true
