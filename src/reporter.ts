@@ -409,10 +409,9 @@ export class Reporter {
         } // Proccess Peer Systems
         else 
         if ((_hbp_data['MODE'] === 'PEER' || _hbp_data['MODE'] === 'XLXPEER') && config.__homebrew_inc__) {
-          let element = _stats_table['PEERS'][_hbp]
           let legalResult = this.isLegalMaster(Buffer.from(_hbp_data['RADIO_ID'], 'latin1').readUInt32BE().toString())
 
-          element = { 
+          _stats_table['PEERS'][_hbp] = { 
             'MODE':         _hbp_data['MODE'], 
             'LOCATION':     _hbp_data['LOCATION'],
             'CALLSIGN':     _hbp_data['CALLSIGN'],
@@ -426,6 +425,8 @@ export class Reporter {
             'HEIGHT':       _hbp_data['HEIGHT'] || '0',
             'STATS':        {}
           }
+
+          let element = _stats_table['PEERS'][_hbp]
 
           if (element['MODE'] === 'XLXPEER') {
               element['STATS']['CONNECTION'] = _hbp_data['XLXSTATS']['CONNECTION']
