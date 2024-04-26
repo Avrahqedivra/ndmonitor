@@ -390,9 +390,6 @@ export class Monitor {
         let mimetype: string = filetype.mimetype;
         let filename: string = req.url.toString()
   
-        if (req.url.substr(dotOffset) == ".svg")
-          console.log("svg")
-
         // any icon from old apple device
         if (filename.indexOf('apple-touch-icon') != -1)
           filename = "/apple-touch-icon.png"
@@ -962,6 +959,7 @@ export class Monitor {
                   case 'tginfo':
                   case 'bridges':
                   case 'loglast':
+                  case 'ccs7':
                     break
 
                   case 'logbook':
@@ -990,9 +988,9 @@ export class Monitor {
                 if (_command.hasOwnProperty('request')) {
                   if (_command['request'] === 'subscribers') {
                     if (fs.existsSync(config.__local_subscriber_file__))
-                      ws.send(JSON.stringify({ 'SUBSCRIBERS': JSON.parse(loadTemplate(config.__local_subscriber_file__)).results }))
+                      ws.send(JSON.stringify({ 'SUBSCRIBERS': JSON.parse(loadTemplate(config.__local_subscriber_file__)).results, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
                     else
-                      ws.send(JSON.stringify({ 'SUBSCRIBERS': {} }))
+                      ws.send(JSON.stringify({ 'SUBSCRIBERS': {}, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
                   }
                   else
                   if (_command['request'] === 'loglast') {
@@ -1017,10 +1015,10 @@ export class Monitor {
                 }
                 else {
                   if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
-                    let fileurl = _command['fileurl']                    
+                    let fileurl = _command['fileurl']
                     if (fileurl != '') {
                       logger.info(`requesting: ${fileurl}`)
-                
+
                       let filename = fileurl.substring(fileurl.lastIndexOf('/') + 1, fileurl.length)
                       let filepath = `${config.__path__}assets/${filename}`
                 
