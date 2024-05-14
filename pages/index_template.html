@@ -38,6 +38,11 @@
 				left: -0.15rem;
 			}
 
+			.trOnline {
+				border-right: 5px solid red;
+				border-radius: 4px;
+			}
+
 			@supports (-moz-appearance:none) {
 				div[name="hbtables"] { 
 						overflow-y: scroll;
@@ -1385,7 +1390,7 @@ function dragElement(elmnt) {
 
 					alias += tgImg
 
-					content = '<tr class=' + bgClass + '>'
+					content = '<tr class="' + bgClass + (record.PACKET == "START" ? ' trOnline">':'">')
 						+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
 						+ "<td class='tdTime"+ ((showColumns.charAt(1) == '-') ? " visible'":"'") + ">" +record.TIME + "</td>"
 						+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
@@ -1935,7 +1940,7 @@ function dragElement(elmnt) {
 							// add tg network picture
 							var tgImg = (record["TGIMG"] == undefined) ? '' : buildImages(record["TGIMG"])
 
-							content = '<tr class=' + bgClass + '>'
+							content = '<tr class="' + bgClass + (record.PACKET == "START" ? ' trOnline">':'">')
 									+ "<td class='tdDate"+ ((showColumns.charAt(0) == '-') ? " visible'":"'") + ">" + record.DATE + "</td>"
 									+ "<td class='tdTime"+ ((showColumns.charAt(1) == '-') ? " visible'":"'") + ">" +record.TIME + "</td>"
 									+ "<td class='slot"+ ((showColumns.charAt(2) == '-') ? " visible'":"'") + ">" + record.TS + "</td>"
