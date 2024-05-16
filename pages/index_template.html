@@ -440,7 +440,7 @@ function dragElement(elmnt) {
         // Loop through each cell in the row
         for (let cell of row.cells) {
             // Get the cell text content and add it to the row data array
-            rowData.push(cell.textContent.trim());
+            rowData.push(cell.textContent.trim().replaceHtmlEntites());
         }
         
         // Join the row data array with a separator (e.g., comma) and add it to the table content
@@ -2318,6 +2318,19 @@ function dragElement(elmnt) {
 		function WSConnection() {
 			'use strict';
 			this.socket = {};
+		}
+
+		/**
+		 * https://stackoverflow.com/questions/1495822/replacing-nbsp-from-javascript-dom-text-node
+		 */
+		String.prototype.replaceHtmlEntites = function() {
+			let translate = {"nbsp": " ","amp" : "&","quot": "\"","lt"  : "<","gt"  : ">"}
+			let translate_re = /&(nbsp|amp|quot|lt|gt);/g
+			let s = this
+			
+			return (s.replace(translate_re, function(match, entity) {
+					return translate[entity]
+			}))
 		}
 
 		WSConnection.prototype.connect = (url) => {
