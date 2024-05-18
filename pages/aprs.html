@@ -336,7 +336,7 @@
     let centerBelgium = [50.65794, 4.52714]         // Belgium
     let centerGermany = [50.984015, 11.02426]       // Germany
 
-    let centerMap = centerFrance
+    let centerMap = centerGermany
 
     map = L.map('map',
       {
@@ -473,17 +473,28 @@
     // remove previous polylines if any
     if (aprs_polylinesLayer)
       map.removeLayer(aprs_polylinesLayer)
-    
+
+    if (aprs_markersGroupLayer)
+      map.removeLayer(aprs_markersGroupLayer)
+
+    aprs_markersGroupLayer = L.layerGroup()
+
     trackUser = document.getElementById("trackCallsign").value.trim().toUpperCase()
     
-    if ((date = document.getElementById("datepicker").value) != '')
-      trackdate = Date.parse(date) / 1000
+    if ((date = document.getElementById("datepicker").value) != '') {
+      let d = date.split("-")
+      trackdate = Date.parse(`${d[1]}-${d[0]}-${d[2]}`) / 1000
+    } else {
+      trackdate = Date.now() / 1000
+    }
 
     if ((time = document.getElementById("timepicker").value) != '')
       tracktime = parseInt(time)
 
     if ((span = document.getElementById("spanpicker").value) != '')
       trackspan = parseInt(span)
+    else
+      trackspan = 0
 
     // make a copy of aprs array
     let aprs = [...aprsdata.aprs]
@@ -505,41 +516,22 @@
         continue
       }
 
-      // deal with date withing the same 24h window
-      if (trackdate != -1) {
-        let date1 = new Date(trackdate * 1000)
-        let date2 = new Date(om.time * 1000)
-
-        if (date1.getDay() != date2.getDay() || date1.getMonth() != date2.getMonth() || date1.getFullYear() != date2.getFullYear()) {
-          aprs.splice(i, 1)
-          continue
-        }
-      }
-
-      // deal with time
       if (tracktime != -1) {
-        let date = new Date(om.time * 1000)
+        let date = new Date(trackdate * 1000)
+        date.setHours(tracktime)
+        date.setMinutes(0)
+        date.setSeconds(0)
 
-        if (date.getHours() < tracktime) {
+        let omdate = new Date(om.time * 1000)
+
+        if (date.getTime() > omdate.getTime() || (trackspan > 0 && omdate.getTime() > date.getTime() + trackspan*60000)) {
           aprs.splice(i, 1)
           continue
-        }
-
-        if (trackspan != -1) {
-          let span = new Date(date)
-          span.setHours(tracktime)
-          span.setMinutes(0)
-          span.setSeconds(0)
-          
-          if (date.getTime() < span.getTime() + trackspan*60000) {
-            aprs.splice(i, 1)
-            continue
-          }
         }
       }
     }
 
-    displayGPSData(aprs, (trackUser != "" || trackdate != -1 || tracktime != -1))
+    displayGPSData(aprs, trackUser != "")
   }
 
   function displayGPSData(data, trackmode) {
@@ -688,6 +680,8 @@
             popupAnchor: [0, 0]       // Popup anchor point
           })).addTo(map)
 
+          marker.addTo(aprs_markersGroupLayer)
+
           // add a popup every 5 points
           // if (pointCount = pointCount % 5) 
           {
@@ -721,6 +715,7 @@
       })
 
       aprs_polylinesLayer = L.polyline(polylines, { 'color': 'red', 'opacity': '0.3', 'weight': '7', 'linecap': 'round', 'linejoin': 'round' }).addTo(map)
+      aprs_markersGroupLayer.addTo(map)
     }
   }
 
@@ -958,6 +953,7 @@
     aprs_symbols.src = "aprs-symbols-64-droid.png"
     aprs_symbols_mapping = null
     aprs_polylinesLayer = null
+    aprs_markersGroupLayer = null
 
     startTot = parseInt("__START_TOT__")
     if (startTot == 0) startTot = 240
@@ -994,6 +990,25 @@
 
         this.socket.onopen = () => {
           log("Connected to " + url)
+
+          $.datepicker.setDefaults({
+            closeText: "Close",
+            prevText: "Prev",
+            nextText: "Next",
+            currentText: "Today",
+            monthNames: [ "January","February","March","April","May","June","July","August","September","October","November","December" ],
+            monthNamesShort: [ "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" ],
+            dayNames: [ "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday" ],
+            dayNamesShort: [ "Sun","Mon","Tue","Wed","Thu","Fri","Sat" ],
+            dayNamesMin: [ "S","M","T","W","T","F","S" ],
+            weekHeader: "Week",
+            dateFormat: "dd-mm-yy",
+            firstDay: 1,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: ""
+          });
+
           $("#datepicker").datepicker()
           resolve()
         }
