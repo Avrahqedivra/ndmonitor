@@ -441,7 +441,7 @@ export class Monitor {
       for(let i=0; i<__peers_ids__.length; i++) {
         if (__peers_ids__[i][dmrid]) {
           let r = __peers_ids__[i][dmrid]
-          return { 'CALLSIGN': r.CALLSIGN, 'NAME': r.TRUSTEE, 'DMRID': dmrid }
+          return { 'CALLSIGN': r['CALLSIGN'], 'NAME': r["NETWORK"], 'DMRID': dmrid }
         }
       }
     }
@@ -482,10 +482,6 @@ export class Monitor {
             let callsign = row[11].trim()
             let name = row[12].trim()
             let dmrid = row[10].trim()
-
-            if (dmrid.length < 7) {
-              console.log(dmrid)
-            }
 
             if (!callsign.length || !name.length) {
               let record = this.completeMissingData(row[11].trim(), row[12].trim(), row[10].trim())

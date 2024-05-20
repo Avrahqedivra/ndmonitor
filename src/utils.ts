@@ -77,7 +77,7 @@ export class Utils {
   peer_only(_id: string, _dict: any): [string, string] {
     for(let i=0; i<_dict.length; i++) {
       if (_dict[i][_id] != null)
-        return([_dict[i][_id]["CALLSIGN"], _dict[i][_id]["TRUSTEE"]])
+        return([_dict[i][_id]["CALLSIGN"], _dict[i][_id]["NETWORK"]])
     }
 
     return ["", ""]
