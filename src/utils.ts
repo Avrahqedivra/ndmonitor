@@ -74,6 +74,15 @@ export class Utils {
     return ["", ""]
   }
 
+  peer_only(_id: string, _dict: any): [string, string] {
+    for(let i=0; i<_dict.length; i++) {
+      if (_dict[i][_id] != null)
+        return([_dict[i][_id]["CALLSIGN"], _dict[i][_id]["TRUSTEE"]])
+    }
+
+    return ["", ""]
+  }
+
   alias_tgid(_id: string, _dict: any): string {
     for(let i=0; i<_dict.length; i++) {
       if (_dict[i][_id] != null)
@@ -110,6 +119,9 @@ export class Utils {
         let records: any = JSON.parse(fs.readFileSync(_path+_file, { encoding: 'utf8', flag: 'r' }))
 
         if (_type === 'peer') {
+          if (records.hasOwnProperty('rptrs'))
+            records = records.rptrs
+          else
             records = records[Object.keys(records)[0]]
 
             for(let i=0; i<records.length; i++) {

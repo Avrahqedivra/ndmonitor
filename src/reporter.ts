@@ -24,7 +24,7 @@
 import fs from "fs"
 import netsocket from "net"
 
-import { logger, __subscriber_ids__, __talkgroup_ids__, utils } from "./monitor.js"
+import { logger, __subscriber_ids__, __talkgroup_ids__, __peers_ids__, utils } from "./monitor.js"
 import { NetStringReceiver } from "./lib/netstrings.js"
 import { PickleParser } from "./lib/pickleparser.js"
 import { Monitor } from "./monitor.js"
@@ -960,7 +960,7 @@ export class Reporter {
               var REPORT_TS       = p[7]
   
               var REPORT_ALIAS    = utils.alias_tgid(REPORT_TGID, __talkgroup_ids__)
-              var callfname       = utils.alias_only(REPORT_DMRID,  __subscriber_ids__)
+              var callfname       = REPORT_DMRID.length < 7 ? utils.peer_only(REPORT_DMRID,  __peers_ids__): utils.alias_only(REPORT_DMRID,  __subscriber_ids__)
               var REPORT_CALLSIGN = callfname[0].trim()
               var REPORT_FNAME    = callfname[1].trim()
               var REPORT_BOTH     = utils.alias_short(REPORT_DMRID,  __subscriber_ids__)

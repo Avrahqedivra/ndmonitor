@@ -72,6 +72,7 @@ export let __version__: string          = "2.6.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
+export let __peers_ids__                = null 
 export let __mobilePhone__: boolean     = false
 export let __currentPageMenuState__     = null
 
@@ -113,9 +114,9 @@ const replaceSystemStrings = (data: string): string => {
 }
 
 export class Monitor {
-  private __peer_ids__ = null 
   private __local_subscriber_ids__ = null
   private __local_talkgroup_ids__ = null
+  private __local_peers_ids__ = null
   private __contacts__ids__ = null
   private __traffic__ = []
 
@@ -436,6 +437,13 @@ export class Monitor {
         if (__subscriber_ids__[i][dmrid])
           return __subscriber_ids__[i][dmrid]
       }
+    } else {
+      for(let i=0; i<__peers_ids__.length; i++) {
+        if (__peers_ids__[i][dmrid]) {
+          let r = __peers_ids__[i][dmrid]
+          return { 'CALLSIGN': r.CALLSIGN, 'NAME': r.TRUSTEE, 'DMRID': dmrid }
+        }
+      }
     }
     
     return { 'CALLSIGN': callsign, 'NAME': name, 'DMRID': dmrid }
@@ -473,6 +481,11 @@ export class Monitor {
 
             let callsign = row[11].trim()
             let name = row[12].trim()
+            let dmrid = row[10].trim()
+
+            if (dmrid.length < 7) {
+              console.log(dmrid)
+            }
 
             if (!callsign.length || !name.length) {
               let record = this.completeMissingData(row[11].trim(), row[12].trim(), row[10].trim())
@@ -701,9 +714,23 @@ export class Monitor {
         logger.info(`\nBuilding dictionaries`)
 
         // making peers dictionary
-        this.__peer_ids__ = utils.mk_full_id_dict(config.__path__, config.__peer_file__, 'peer')
-        if (this.__peer_ids__)
+        __peers_ids__ = utils.mk_full_id_dict(config.__path__, config.__peer_file__, 'peer')
+        if (__peers_ids__)
           logger.info('ID ALIAS MAPPER: peer_ids dictionary is available')
+
+        // making local talkgroups dictionary
+        this.__local_peers_ids__ = utils.mk_full_id_dict(config.__path__, config.__local_peer_file__, 'peer')
+        if (this.__local_peers_ids__) {
+          logger.info('ID ALIAS MAPPER: local_peer_ids dictionary is available')
+    
+          /**
+           * Merge peers global & local
+           */
+          if (__peers_ids__) {
+            __peers_ids__ = __peers_ids__.concat(this.__local_peers_ids__)
+            logger.info('ID ALIAS MAPPER: local_peers_ids merged to peers_ids dictionary')
+          }
+        }
 
         // making subscribers dictionary
         __subscriber_ids__  = utils.mk_full_id_dict(config.__path__, config.__subscriber_file__, 'subscriber')
@@ -738,7 +765,7 @@ export class Monitor {
           if (__talkgroup_ids__) {
             __talkgroup_ids__ = __talkgroup_ids__.concat(this.__local_talkgroup_ids__)
             logger.info('ID ALIAS MAPPER: local_talkgroup_ids merged to talkgroup_ids dictionary')
-          }          
+          }
         }
 
         if (fs.existsSync(`${config.__log_path__}contacts_fr_dept.json`)) {
