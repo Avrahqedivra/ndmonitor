@@ -111,6 +111,15 @@ export class Utils {
     return alias
   }
 
+  peer_call(_id: string, _dict: any): string {
+    let alias = this.peer_only(_id, _dict)[0]
+
+    if (alias.length == 0)
+      return _id
+
+    return alias
+  }
+
   // LONG VERSION - MAKES A FULL DICTIONARY OF INFORMATION BASED ON TYPE OF ALIAS FILE
   // BASED ON DOWNLOADS FROM RADIOID.NET      
   mk_full_id_dict(_path: string, _file: string, _type: string) {

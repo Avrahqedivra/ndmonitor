@@ -731,7 +731,7 @@ export class Reporter {
 
     if (__ctable__['OPENBRIDGES'][system]) {
       if (action === 'START')
-        __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId] = [trx, utils.alias_call(sourceSub, __subscriber_ids__), `TG${destination}`, timeout]
+        __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId] = [trx, sourceSub.length < 7 ? utils.peer_call(sourceSub, __peers_ids__) : utils.alias_call(sourceSub, __subscriber_ids__), `TG${destination}`, timeout]
       else
       if (action === 'END' && __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId])
         delete __ctable__['OPENBRIDGES'][system]['STREAMS'][streamId]
@@ -744,7 +744,7 @@ export class Reporter {
       if (action === 'START') {
         ctabdata['TIMEOUT']     = timeout
         ctabdata['TS']          = true
-        ctabdata['SUB']         = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
+        ctabdata['SUB']         = `${ sourceSub.length < 7 ? utils.alias_short(sourceSub, __peers_ids__) : utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
         ctabdata['SRC']         = sourcePeer
         ctabdata['DEST']        = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
         ctabdata['TGID']        = destination
