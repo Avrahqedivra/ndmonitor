@@ -704,7 +704,7 @@ export class Reporter {
 
           ctabdata['TYPE']      = callType
           ctabdata['SRC']       = peer
-          ctabdata['SUB']       = `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
+          ctabdata['SUB']       = sourceSub.length < 7 ? `${utils.peer_short(sourceSub, __peers_ids__)} (${sourceSub})` : `${utils.alias_short(sourceSub, __subscriber_ids__)} (${sourceSub})`
           ctabdata['DEST']      = `${utils.alias_tgid(destination, __talkgroup_ids__)} (${destination})`
           ctabdata['TGID']      = destination
 

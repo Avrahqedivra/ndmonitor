@@ -97,6 +97,11 @@ export class Utils {
     return `${alias[0]}, ${alias[1]}`
   }
 
+  peer_short(_id: string, _dict: any): string {
+    var alias = this.peer_only(_id, _dict)
+    return `${alias[0]}, ${alias[1]}`
+  }
+
   alias_call(_id: string, _dict: any): string {
     let alias = this.alias_only(_id, _dict)[0]
 
