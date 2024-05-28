@@ -596,6 +596,7 @@ export class Reporter {
     let _stats_table: any = {}
     let _now = Date.now() / 1000
 		let tgbridges: any = null
+    let hideSystems = new Set(config.__bridges_params__.hide)
 
     for(let bridge in _bridges) {
       _stats_table[bridge] = {}
@@ -603,6 +604,11 @@ export class Reporter {
 
       for(let currentTgName in tgbridges) {
         let system: string = tgbridges[currentTgName]
+
+        // skip system to hide
+        if (hideSystems.has(system["SYSTEM"]))
+          continue
+
         let to_action: string = ''
         let exptime: string = ''
 
@@ -615,6 +621,9 @@ export class Reporter {
           exptime = 'n/a'
           to_action = 'None'
         }
+
+        if (!config.__bridges_params__.showDisconnected && system['ACTIVE'] == false)
+          continue
 
         let active: string = (system['ACTIVE'] == true) ? 'Connected' : 'Disconnected'
 
@@ -633,7 +642,12 @@ export class Reporter {
           trigOff += Buffer.from(system['OFF'][j], 'latin1').readUIntBE(0, system['OFF'][j].length)
         }
 
-        _stats_table[bridge][system['SYSTEM']] = { 'TGID': Buffer.from(system['TGID'], 'latin1').readIntBE(0, system['TGID'].length), 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff }
+        let tgid = Buffer.from(system['TGID'], 'latin1').readIntBE(0, system['TGID'].length)
+
+        if (config.__bridges_params__.alias[tgid])
+          tgid = parseInt(config.__bridges_params__.alias[tgid])
+
+        _stats_table[bridge][system['SYSTEM']] = { 'TGID': tgid, 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff }
       }
     }
 
@@ -654,7 +668,7 @@ export class Reporter {
             if (ws.page === 'dashboard' || ws.page === 'aprs')
               ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
             else
-              ws.send(JSON.stringify({ 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
+              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
           } else {
             ws.send(JSON.stringify({ 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
           }

@@ -18,6 +18,13 @@ export const __start_tot__: number              = 240                           
 
 export const __loginfo__: boolean               = false                                       // more log
 
+// bridges
+export const __bridges_params__                 = {
+                                                  "showDisconnected": false,
+                                                  "alias": { [-1]: 16777215 },
+                                                  "hide": [ "Live-RIS" ]
+                                                }
+
 // export APRS dedicated TGID
 export const __tgid_aprs__                      = '900999'
 // location of 'gps_data_user_loc.txt', you can add the relative path '/tmp/gps_data_user_loc.txt'

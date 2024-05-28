@@ -350,6 +350,8 @@ export class Monitor {
       case '/ccs7wizard.html':
       case '/logbook.html':
       case '/aprs.html':
+      case '/aprsnew.html':
+      case '/bridgesnew.html':
         // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
@@ -912,6 +914,12 @@ export class Monitor {
             if (ws.fromPage) {
               if (ws.page === 'dashboard') {
                 _message['CTABLE'] = rep.__ctable__
+                _message['EMPTY_MASTERS'] = config.__empty_masters__
+              }
+
+              if (ws.page === 'bridges') {
+                _message['CTABLE'] = rep.__ctable__
+                _message['BTABLE'] = { 'BRIDGES': rep.__btable__['BRIDGES'] }
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
               }
 
