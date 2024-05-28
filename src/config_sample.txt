@@ -16,6 +16,8 @@ export const __displayLines__: number           = 20                            
 export const __client_timeout__: number         = 0                                           // Clients are timed out after this many seconds, 0 to disable
 export const __start_tot__: number              = 240                                         // TOT
 
+export const __loginfo__: boolean               = false                                       // more log
+
 // export APRS dedicated TGID
 export const __tgid_aprs__                      = '900999'
 // location of 'gps_data_user_loc.txt', you can add the relative path '/tmp/gps_data_user_loc.txt'
