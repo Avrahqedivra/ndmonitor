@@ -61,6 +61,36 @@
     var displayLines = parseInt("__DISPLAY_LINES__");
     var tgfilter = new Set("__TGID_FILTER__".split(','));
 
+
+    function parseElapsedTime(seconds) {
+        // Calculate days
+        const days = Math.floor(seconds / (24 * 60 * 60));
+        // Remaining seconds after calculating days
+        seconds %= (24 * 60 * 60);
+
+        // Calculate hours
+        const hours = Math.floor(seconds / (60 * 60));
+        // Remaining seconds after calculating hours
+        seconds %= (60 * 60);
+
+        // Calculate minutes
+        const minutes = Math.floor(seconds / 60);
+        // Remaining seconds after calculating minutes
+        const remainingSeconds = seconds % 60;
+
+        // Return the result as an object or formatted string
+        return {
+            days: days,
+            hours: hours,
+            minutes: minutes,
+            seconds: Math.round(remainingSeconds)
+        };
+    }
+
+    function isNumeric(str){
+        return !isNaN(str)
+    }
+
     function doBridges(t) {
         if (t != null)  {
             bridges = t;
@@ -118,12 +148,22 @@
                         online = "connected";
                     else
                         online = "disconnected";
-  
+
+                    let elapsedTime = b.EXP_TIME
+
+                    if (isNumeric(b.EXP_TIME)) {
+                        let res = parseElapsedTime(parseFloat(b.EXP_TIME))
+                        if (res.days > 0)
+                            elapsedTime = `${res.days.toString()}d ${res.hours.toString().padStart(2, "0")}h ${res.minutes.toString().padStart(2, "0")}m`
+                        else
+                            elapsedTime = `${res.hours.toString()}h ${res.minutes.toString().padStart(2, "0")}m ${res.seconds.toString().padStart(2, "0")}s`
+                    }
+
                     content = "<tr class='" + bgClass + "'>";
                         content += "<td>" + item + "</td>";
                         content += "<td>" + b.TS + "</td>";
                         content += "<td>" + b.TGID + "</td>";
-                        content += "<td>" + b.EXP_TIME + "</td>";
+                        content += "<td>" + elapsedTime + "</td>";
                         content += "<td>" + b.TO_ACTION + "</td>";
                         content += "<td class='"+ online +"'>" + b.ACTIVE + "</td>";
 
