@@ -9,9 +9,8 @@
 
   <link rel="stylesheet" href="theme_template.css">
   <link rel="stylesheet" href="mysite_template.css">
-
-  <meta name="description"
-    content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629), HBJSON (c) JMC 2021" />
+  
+  <meta name="description" content="Copyright (c) 2024. F4JDN - Jean-Michel Cohen. All rights reserved." />
 
   <style>
     div[name="hbtables"] {
@@ -60,6 +59,12 @@
     .divtgid2 {
       color: var(--color-bg-msTS2);
       background-color: var(--color-fg-msTS2);
+    }
+
+    .scrollable {
+      overflow-x: auto;     /* Enable horizontal scrolling */
+      white-space: nowrap;  /* Prevent text from wrapping */
+      scrollbar-width: none;
     }
   </style>
 </head>
@@ -331,8 +336,8 @@
         let str2 = ""
         for(let i=0; i<ts2.length; i++) { if (str2 != "") str2 += " "; str2 += `<div class='divtgid2'>${ts2[i]}</div>` }
 
-        content += "<tr><td rowspan=2>"+(blob ? blob : master)+"</td><td class='tdGradient' rowspan=2>" +(blob2 ? blob2 : "N/A")+ "</td><td class='msTS1'>TS1</td><td class='msTS'>"+str1+"</td><td class='tgunik'>"+dest1+"</td></tr>"
-        content += "<tr><td class='msTS2'>TS2</td><td class='msTS'>"+str2+"</td><td class='tgunik'>"+dest2+"</td></tr>"
+        content += "<tr><td rowspan=2>"+(blob ? blob : master)+"</td><td class='tdGradient' rowspan=2>" +(blob2 ? blob2 : "N/A")+ "</td><td class='msTS1'>TS1</td><td class='msTS scrollable'>"+str1+"</td><td class='tgunik'>"+dest1+"</td></tr>"
+        content += "<tr><td class='msTS2'>TS2</td><td class='msTS scrollable'>"+str2+"</td><td class='tgunik'>"+dest2+"</td></tr>"
       }
 
       $("#bridge").empty().append(content)
