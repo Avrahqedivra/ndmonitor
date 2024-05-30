@@ -597,6 +597,7 @@ export class Reporter {
     let _now = Date.now() / 1000
 		let tgbridges: any = null
     let hideSystems = new Set(config.__bridges_params__.hide)
+    let wf = false
 
     for(let bridge in _bridges) {
       _stats_table[bridge] = {}
@@ -609,48 +610,52 @@ export class Reporter {
         if (hideSystems.has(system["SYSTEM"]))
           continue
 
-        let to_action: string = ''
-        let exptime: string = ''
+        if (system['ACTIVE'] == true || config.__bridges_params__.showDisconnected) {
+          let to_action: string = ''
+          let exptime: string = ''
 
-        if (system['TO_TYPE'] === 'ON' || system['TO_TYPE'] === 'OFF') {
-          exptime = (system['TIMER'] > _now) ? (system['TIMER'] - _now).toString() : 'Expired'
-          to_action = (system['TO_TYPE'] === 'ON') ? 'Disconnect' : 'Connect'
-        } 
-        else 
-        {
-          exptime = 'n/a'
-          to_action = 'None'
-        }
+          if (system['TO_TYPE'] === 'ON' || system['TO_TYPE'] === 'OFF') {
+            exptime = (system['TIMER'] > _now) ? (system['TIMER'] - _now).toString() : 'Expired'
+            to_action = (system['TO_TYPE'] === 'ON') ? 'Disconnect' : 'Connect'
+          } 
+          else 
+          {
+            exptime = 'n/a'
+            to_action = 'None'
+          }
 
-        if (!config.__bridges_params__.showDisconnected && system['ACTIVE'] == false)
-          continue
+          let active: string = (system['ACTIVE'] == true) ? 'Connected' : 'Disconnected'
 
-        let active: string = (system['ACTIVE'] == true) ? 'Connected' : 'Disconnected'
+          let trigOn: string = ''
+          let trigOff: string = ''
 
-        let trigOn: string = ''
-        let trigOff: string = ''
+          for(let j=0; j<system['ON'].length; j++) {
+            if (j > 0)
+              trigOn += ',' 
 
-        for(let j=0; j<system['ON'].length; j++) {
-          if (j > 0)
-            trigOn += ',' 
-          trigOn += Buffer.from(system['ON'][j], 'latin1').readUIntBE(0, system['ON'][j].length)
-        }
+            trigOn += Buffer.from(system['ON'][j], 'latin1').readUIntBE(0, system['ON'][j].length)
+          }
 
-        for(let j=0; j<system['OFF'].length; j++) {
-          if (j > 0)
-            trigOff += ',' 
-          trigOff += Buffer.from(system['OFF'][j], 'latin1').readUIntBE(0, system['OFF'][j].length)
-        }
+          for(let j=0; j<system['OFF'].length; j++) {
+            if (j > 0)
+              trigOff += ','
 
-        let tgid = Buffer.from(system['TGID'], 'latin1').readIntBE(0, system['TGID'].length)
+            trigOff += Buffer.from(system['OFF'][j], 'latin1').readUIntBE(0, system['OFF'][j].length)
+          }
 
-        if (config.__bridges_params__.alias[tgid])
-          tgid = parseInt(config.__bridges_params__.alias[tgid])
+          let tgid = Buffer.from(system['TGID'], 'latin1').readIntBE(0, system['TGID'].length)
 
-        _stats_table[bridge][system['SYSTEM']] = { 'TGID': tgid, 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff }
+          if (config.__bridges_params__.alias[tgid])
+            tgid = parseInt(config.__bridges_params__.alias[tgid])
+
+          if (_stats_table[bridge][system['SYSTEM']])
+            _stats_table[bridge][system['SYSTEM']].push({ 'TGID': tgid, 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff })
+          else
+            _stats_table[bridge][system['SYSTEM']] = [{ 'TGID': tgid, 'TS': system['TS'], 'EXP_TIME': exptime, 'TO_ACTION': to_action, 'ACTIVE': active, 'TRIG_ON': trigOn, 'TRIG_OFF': trigOff }]
+        }   
       }
     }
-
+  
     return _stats_table
   }
 

@@ -33,7 +33,7 @@
     }
 
     .thletg {
-      width: 20rem;
+      width: 28rem;
     }
 
     .tgflag {
@@ -45,10 +45,11 @@
       padding-left: 0.25rem;
     }
 
-    .divtgid1, .divtgid2 {
+    .divtgid1, .divtgid2, .divtgid1off, .divtgid2off {
       font-weight: bold;
       border-radius: 4px;
       padding: 0 0.24rem 0 0.25rem;
+      margin: 0 0.1rem 0 0.1rem;
       display: inline-block;
     }
     .divtgid1 {
@@ -61,10 +62,24 @@
       background-color: var(--color-fg-msTS2);
     }
 
+    .divtgid1off {
+      border: 1px solid var(--color-fg-msTS1);
+      color: white;
+    }
+
+    .divtgid2off {
+      border: 1px solid var(--color-fg-msTS2);
+      color: white;
+    }
+
     .scrollable {
       overflow-x: auto;     /* Enable horizontal scrolling */
       white-space: nowrap;  /* Prevent text from wrapping */
       scrollbar-width: none;
+    }
+
+    .msTS {
+      background-color: unset;
     }
   </style>
 </head>
@@ -107,6 +122,7 @@
 <script type="text/javascript">
   bridges = [];
   hideAllTG = false;
+  talkgroups_ids = {}
 
   var lastheardOpen = true;
   var sock = null;
@@ -274,14 +290,13 @@
                       + '<img class="msflag" src="' + getTgFlag(netID) + '"/>'
                       + '<div class="msCallsign">' + mscallsign + '</div>'
                       + '<span class="msNetID">&nbsp;(Id: ' + netID + ')</span>'
-                      + '<span class="tooltiptext">'
-                        + '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">'
+                      + '<span class="tooltiptext" style="font: 9pt arial,sans-serif;color:#FFFFFF;line-height: 1.4rem;">'
                         + '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>'
                         + '&nbsp;&nbsp;&nbsp;<b>IP address</b>: ' + record["IP"]
                         + '<br>&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"]
                         + '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"]
                         + '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"]
-                      + '</span></span></div><br>'
+                      + '</span></div><br>'
                       + '<div class="msLocation">' + mslocation + '</div>'
 
                 blob2 = '<div class="cnxState ' + cnxState + '"></div><div class="cnxTime">' + cnxTime + '</div><br> <div class=' + msSlots + record["SLOTS"] + '</div>'
@@ -298,7 +313,7 @@
                 dest1 += record["1"]["DEST"] + tgImg;
 
                 // --------------------------------------------------------------------------------------------
-                tgImg = ''                
+                tgImg = ''
                 dest2 = ''
 
                 if (record["2"]["DEST"] != "") {
@@ -317,24 +332,33 @@
         if (!found)
           continue
 
-        let records = Object.values(masters[master])[0]
-        let ts1 = []
-        let ts2 = []
+        if (master === "JMC-RAD")
+          console.log()
 
-        for(let record of records) {
+        let records = Object.values(masters[master])[0]
+        let str1 = ""
+        let str2 = ""
+
+        for(let entry of records) {
+          let record = entry[0]
+          
           if (record.ACTIVE === "Connected") {
-            if (record.TS == 1)
-              ts1.push(record.TGID)
-            else
-              ts2.push(record.TGID)
+            if (record.TS == 1) { 
+              str1 += `<div class="divtgid1">${record.TGID}</div>`
+            }
+            else { 
+              str2 += `<div class="divtgid2">${record.TGID}</div>`
+            }
+          } 
+          else {
+            if (record.TS == 1) { 
+              str1 += `<div class="divtgid1off">${record.TGID}</div>`
+            }
+            else { 
+              str2 += `<div class="divtgid2off">${record.TGID}</div>`
+            }
           }
         }
-
-        let str1 = ""
-        for(let i=0; i<ts1.length; i++) { if (str1 != "") str1 += " "; str1 += `<div class='divtgid1'>${ts1[i]}</div>` }
-
-        let str2 = ""
-        for(let i=0; i<ts2.length; i++) { if (str2 != "") str2 += " "; str2 += `<div class='divtgid2'>${ts2[i]}</div>` }
 
         content += "<tr><td rowspan=2>"+(blob ? blob : master)+"</td><td class='tdGradient' rowspan=2>" +(blob2 ? blob2 : "N/A")+ "</td><td class='msTS1'>TS1</td><td class='msTS scrollable'>"+str1+"</td><td class='tgunik'>"+dest1+"</td></tr>"
         content += "<tr><td class='msTS2'>TS2</td><td class='msTS scrollable'>"+str2+"</td><td class='tgunik'>"+dest2+"</td></tr>"
@@ -453,8 +477,15 @@
             // console.log(data);
             // console.log("");
 
-            if (data && data.CONFIG && data.CONFIG.CTABLE)
+            if (data && data.CONFIG && data.CONFIG.CTABLE) {
+                if (data.CONFIG.TALKGROUPS) {
+                  for(let i=0; i<data.CONFIG.TALKGROUPS.length; i++) {
+                    let record = data.CONFIG.TALKGROUPS[i]
+                    talkgroups_ids[Object.keys(record)] = Object.values(record)
+                  }
+                }
                 treatTables(data.CONFIG)
+            }
             else
             if (data && data.CTABLE)
               treatTables(data)
