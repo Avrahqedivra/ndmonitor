@@ -6,11 +6,14 @@ devices = [
     { name: "AnyTone / GD-88", value: "AnyTone", code: 5 },
     { name: "AnyTone (No index)", value: "AnyToneNX", code: 6 },
     { name: "Radioddity GD-77 / GD-88", value: "GD77", code: 7 },
+    { name: "Kydera CDR 300UV", value: "CDR300UV", code: 16 },
     { name: "TYT MD-380 / MD-2017 / MD-9600", value: "TYT", code: 8 },
     { name: "BOAFENG DM-1701", value: "BAOFENG", code: 9 },
     { name: "DVPi", value: "DVPI", code: 10 },
     { name: "PI-Star", value: "PISTAR", code: 11 },
     { name: "Nextion (stripped)", value: "NEXTION", code: 12 },
     { name: "BlueDV", value: "BLUEDV", code: 13 },
-    { name: "OpenGD77", value: "OpenGD77", code: 14 }
+    { name: "OpenGD77", value: "OpenGD77", code: 14 },
+    { name: "Abbree DM-F8", value: "DM-F8", code: 15 },
+    { name: "WPSD", value: "WPSD", code: 17 }
 ];

@@ -58,14 +58,18 @@
                 <div id="database-mgr">
                   <label for="database-list">Databases:</label>
                   <select id="database-list" size="6">
-                    <option idx="6" value="https://raw.githubusercontent.com/FreeDMR-Digital-Network/HBJson-HostFiles/main/local_subscriber_ids.json">FreeDMR Digital [Unlicenced]</option>
+                    <option idx="6"
+                      value="https://raw.githubusercontent.com/FreeDMR-Digital-Network/HBJson-HostFiles/main/local_subscriber_ids.json">
+                      FreeDMR Digital [Unlicenced]</option>
                     <option idx="2" value="https://database.radioid.net/static/users.json">RadioID [Licenced]</option>
                     <option idx="3" value="https://ham-digital.org/status/users.json">Ham Digital [Licenced]</option>
                     <option idx="4" value="https://www.radioid.net/static/rptrs.json">RadioID [Repeaters]</option>
 
                     <!-- DONT FORGET TO ADJUST THOSE FOLLOWING URLS AND LABELS TO YOUR WEBSITE -->
-                    <option idx="1" value="http://francophonie.link/local_subscriber_ids.json">Francophonie [Unlicenced]</option>
-                    <option idx="5" value="http://francophonie.link/active_subscriber_ids.json">Active subscribers</option>
+                    <option idx="1" value="http://francophonie.link/local_subscriber_ids.json">Francophonie [Unlicenced]
+                    </option>
+                    <option idx="5" value="http://francophonie.link/active_subscriber_ids.json">Active subscribers
+                    </option>
                   </select>
                 </div>
 
@@ -538,7 +542,7 @@
 
       switch (pRadio) {
         case "OpenGD77":
-          pattern = pNum + "," + callsign + "," + wholename + "," + radio_id + ",private,on,none,none";
+          pattern = pNum + "," + callsign + " " + name + "," + radio_id + ",private,on,none,none";
           break;
         case "AnyTone":
           pattern = pNum + "," + radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + "," + remarks + ",0,0,";
@@ -547,6 +551,9 @@
           pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + "," + remarks + ",0,0,";
           break;
         case "GD77":
+          pattern = radio_id + "," + callsign + "," + wholename + "," + "," + city + "," + state + "," + country + ",";
+          break;
+        case "CDR300UV":
           pattern = radio_id + "," + callsign + "," + wholename + "," + "," + city + "," + state + "," + country + ",";
           break;
         case "HD1":
@@ -574,10 +581,16 @@
           pattern = radio_id + "\t" + callsign + "\t" + fname;
           break;
         case "NEXTION":
-          pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country;
+          pattern = radio_id + "," + callsign + "," + name + "," + dept + " " + city + "," + state + "," + country;
           break;
         case "BLUEDV":
           pattern = radio_id + "," + callsign + "," + wholename + "," + city + "," + state + "," + country + ",DMR";
+          break;
+        case "DM-F8":
+          pattern = pNum + "," + callsign + "," + "Private Call" + "," + radio_id + "," + "none" + "," + "," + city + "," + state + "," + country + "," + remarks + ",";
+          break;
+        case "WPSD":
+          pattern = radio_id + "," + callsign + "," + name + "," + remarks + "," + dept + " " + city + "," + state + "," + country;
           break;
       }
       return pattern;
@@ -605,15 +618,18 @@
         case "AnyTone": content = "No.,Radio ID,Callsign,Name,City,State,Country,Remarks,Call Type,Call Alert\r\n"; break;
         case "AnyToneNX": content = "Radio ID,Callsign,Name,City,State,Country,Remarks,Call Type,Call Alert\r\n"; break;
         case "GD77": content = "Radio ID,Callsign,Name,NickName,City,State,Country,Remarks\r\n"; break;
+        case "CDR300UV": content = "Radio ID,Callsign,Name,NickName,City,State,Country,Remarks\r\n"; break;
         case "TYT": content = "Radio ID,Callsign,Name,NickName,City,State,Country\r\n"; break;
         case "BAOFENG": content = "Contact Name,Call Type,Call ID,Call Receive Tone\r\n"; break;
         case "NEXTION": content = "RADIO_ID,CALLSIGN,FIRST_NAME,LAST_NAME,CITY,STATE,COUNTRY\r\n"; break;
+        case "OpenGD77": content = "Number,Name,Call ID,Type,Ring Style,Call Receive Tone,Repeater Slot override\r\n"; break;
+        case "DM-F8": content = "No.,Call Alias,Call Type,Call ID,Call Alert,Repeater Number,City,State / Prov,Country,Remarks,\r\n"; break;
+        case "WPSD": content = "RADIO_ID,CALLSIGN,FIRST_NAME,LAST_NAME,CITY,STATE,COUNTRY\r\n"; break;
 
         case "PISTAR": ext = ".dat"; break;
 
         case "DVPI":
         case "BLUEDV":
-        case "OPENGD77":
         default:
           break;
       }
