@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.7.0"
+export let __version__: string          = "2.8.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -921,6 +921,7 @@ export class Monitor {
                 _message['CTABLE'] = rep.__ctable__
                 _message['BTABLE'] = { 'BRIDGES': rep.__btable__['BRIDGES'] }
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
+                _message['TALKGROUPS'] = __talkgroup_ids__
               }
 
               if (ws.page === 'aprs') 
