@@ -13,6 +13,10 @@
   <meta name="description" content="Copyright (c) 2024. F4JDN - Jean-Michel Cohen. All rights reserved." />
 
   <style>
+    :root {
+      --switch-size: 1.2rem;
+    }
+
     div[name="hbtables"] {
       width: fit-content;
       padding-top: 2rem;
@@ -89,6 +93,69 @@
     .msTS {
       background-color: unset;
     }
+
+    /* The switch - the box around the slider */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 2.8rem;
+      height: 1.4rem;
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    /* The slider */
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: var(--switch-size);
+      width:  var(--switch-size);
+      left: 4px;
+      bottom: 2px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+      -webkit-transform: translateX( var(--switch-size));
+      -ms-transform: translateX( var(--switch-size));
+      transform: translateX( var(--switch-size));
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 4rem;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }    
   </style>
 </head>
 
@@ -103,18 +170,23 @@
     <div id="siteHeader" style="display:none">
       <div name="hbtables" id="hbtables" class="tables bridges tablefixed">
           <div id="insertPoint">
-              <table class="tables bridges tablefixed" style="line-height: 1.5rem;">
-                <thead>
-                    <tr class="headerRow">
-                      <th class="thmsnetid">Bridge</th>
-                        <th class="thmstime">Online</th>
-                        <th class="thmsslot">Slot</th>
-                        <th class="thnbraction">Logged TG#</th>
-                        <th class="thletg">Active TG#</th>
-                    </tr>
-                </thead>
-                <tbody id="bridge"></tbody>
-              </table>
+            <table class="tables bridges tablefixed" style="line-height: 1.5rem;">
+              <thead>
+                  <tr class="headerRow">
+                    <th class="thmsnetid">Bridge</th>
+                      <th class="thmstime">Online</th>
+                      <th class="thmsslot">Slot</th>
+                      <th class="thnbraction">Logged TG#
+                          <div style="float:right;">
+                            <label class="switch"><input id="allbridges" type="checkbox" checked><span class="slider round"></span></label>
+                            <div style="display: inline-block; margin-left:0.5rem;">All</div>
+                          </div>
+                      </th>
+                      <th class="thletg">Active TG#</th>
+                  </tr>
+              </thead>
+              <tbody id="bridge"></tbody>
+            </table>
           </div>
       </div>
     
@@ -127,7 +199,7 @@
   </center>
 </body>
 
-<script type="text/javascript">
+<script type="text/javascript">  
   bridges = [];
   hideAllTG = false;
   talkgroups_ids = {}
@@ -359,11 +431,13 @@
             }
           } 
           else {
-            if (record.TS == 1) { 
-              str1 += `<div class="divtgid1off">${record.TGID}</div>`
-            }
-            else { 
-              str2 += `<div class="divtgid2off">${record.TGID}</div>`
+            if (document.getElementById("allbridges").checked) {
+              if (record.TS == 1) { 
+                str1 += `<div class="divtgid1off">${record.TGID}</div>`
+              }
+              else { 
+                str2 += `<div class="divtgid2off">${record.TGID}</div>`
+              }
             }
           }
         }
@@ -397,53 +471,21 @@
 
       if (document.documentElement.className != settings[0].config.theme)
         document.documentElement.className = settings[0].config.theme;
+        
+        document.getElementById("allbridges").checked = (allbridges = settings[0].config.allbridges)
     }
 
     initMenubar(__PAGE_MENU_STATE__);
 
-    // fills the select options on click
-    // as they are empty on init
-    document.addEventListener('click', function (e) {
-      var select = e.target;
-      var option = "";
-
-      if (hasClass(select, 'trigon')) {
-        $(select).empty().hide();
-
-        var items = bridges[select.getAttribute('bridge')];
-        var b = items[select.getAttribute('item')];
-        var trigon = b.TRIG_ON.split(",");
-
-        for (let i = 0; i < trigon.length; i++) {
-          option = new Option(trigon[i], trigon[i]);
-          if (i == 0)
-            $(option).prop('selected', true);
-          $(select).append(option);
-        }
-
-        $(select).change().show();
+    $("#allbridges").click((event) => {
+      if (allbridges != document.getElementById("allbridges").checked) {
+        allbridges = document.getElementById("allbridges").checked
+        saveSettings()        
       }
-      else
-        if (hasClass(select, 'trigoff')) {
-          $(select).empty().hide();
-
-          var items = bridges[select.getAttribute('bridge')];
-          var b = items[select.getAttribute('item')];
-          var trigoff = b.TRIG_OFF.split(",");
-
-          for (let i = 0; i < trigoff.length; i++) {
-            option = new Option(trigoff[i], trigoff[i]);
-            if (i == 0)
-              $(option).prop('selected', true);
-            $(select).append(option);
-          }
-
-          $(select).change().show();
-        }
-    }, false);
+    })
   })
 
-  window.onload = function () {
+  window.onload = function () {    
     var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=bridges";
 
     if (isNaN(displayLines))

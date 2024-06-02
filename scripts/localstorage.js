@@ -1,6 +1,7 @@
 cookieSettingsName = window.location.hostname+"_ndjson_settings"
 settingsValidity = 5	    // 5 days
-settings = [ { config: { "theme": "theme-dark", hidetg: false, "last": 0 } }, { "map": { "zoom" : 6.5 } }, { name: "openbridges", "open": true }, {"name": "masters", "open": true }, { "name": "peers", "open": true }];
+settings = [ { config: { "theme": "theme-dark", hidetg: false, "last": 0, "allbridges": true } }, { "map": { "zoom" : 6.5 } }, { name: "openbridges", "open": true }, {"name": "masters", "open": true }, { "name": "peers", "open": true }];
+allbridges = true
 
 // localStorage.setItem('theme', themeName)
 // localStorage.getItem('theme', themeName)
@@ -163,7 +164,7 @@ function saveSettings() {
         var pe = document.getElementById("peers").style.display != "none"
 
         settings = [
-            { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now() } },
+            { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now(), "allbridges": allbridges } },
             { "map": { "zoom" : (map != null) ? map.getZoom() : 6.5 } },
             { "name": "openbridges",    "open": ob, "colspan": $("#theadOpenbridges tr th").length }, 
             { "name": "masters",        "open": ma, "colspan": $("#theadMasters tr th").length }, 
@@ -181,7 +182,7 @@ function saveSettings() {
             });
         }
     } else {
-        settings[0]['config'] = { "theme": themeSettings, "hidetg": settings[0]['config']['hidetg'], "last": Date.now() }
+        settings[0]['config'] = { "theme": themeSettings, "hidetg": settings[0]['config']['hidetg'], "last": Date.now(), "allbridges": allbridges }
     }
     
     createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity)
