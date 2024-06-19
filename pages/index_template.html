@@ -104,6 +104,27 @@
 			#customContextMenu a:hover {
 				background-color: var(--color-dropdown-hover);
 			}
+
+			.banner {
+					display: none;
+					background-color: transparent; 
+					color: #c0c0c0; 
+					font-size: 1.7rem;
+
+					img {
+						border: none; 
+						background-color: transparent; 
+						height: auto;	
+					}
+
+					img.imgleft {
+							width: 6rem;
+						}
+
+					img.imgright {
+						width: 4rem;
+					}
+			}
 		</style>
 	</head>
 	
@@ -205,6 +226,11 @@
 		</div>
 
 		<div id="siteHeader" style="display:none">
+
+			<!-- comment out this div block to avoid display -->
+			<div id="banner" class="banner">
+				<img class="imgleft" src="sitelogo.png" alt="Image du réseau ADN SYSTEMS"> Welcome on this Dashboard  <img class="imgright" src="sitelogo.png" alt="sitelogo image comment">
+		 </div>
 
 			<div name="hbtables" id="hbtables">
 				<table id="lastActive" class="tables lastActive tablefixed" style="display: none;">
@@ -1148,7 +1174,7 @@ function dragElement(elmnt) {
 		var tgslength = tgs.length;
 		for (let i = 0; i < tgslength; i++) {
 			if (tgs[i].id == id)
-				return parseInt(((tgs[i].count / totalrecord) * 100) + 0.5);
+				return Math.floor(((tgs[i].count / totalrecord) * 100) + 0.5);
 		}
 
 		return 0;
@@ -2486,13 +2512,23 @@ function dragElement(elmnt) {
 
 		WSConnection.prototype.disconnect = () => {
 			'use strict';
-			console.log("Disconnect request from local app layer");
-			this.socket.close();
+			console.log("Disconnect request from local app layer")
+			this.socket.close()
 		}
 
 		setTimeout(() => {
-			socket = new WSConnection().connect(wsuri);
-		}, 250);
+			socket = new WSConnection().connect(wsuri)
+		}, 250)
+
+		if (document.getElementById('banner') && !sessionStorage.getItem('bannerShown')) {
+			sessionStorage.setItem('bannerShown', 'true');
+
+			document.getElementById('banner').style.display = 'block';
+
+			setTimeout(() => {
+				document.getElementById("banner").style.display = "none"
+			}, 10000) // 10000ms = 10s
+		}
 	}
 </script>
 
