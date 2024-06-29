@@ -1681,6 +1681,7 @@ canvas {
   --canvas-bg-individual: var(--color-bg-individual);
   --canvas-bg-ratio: var(--color-bg-ratio);
   --canvas-bg-all: var(--color-bg-all);
+  --canvas-bg-hotspots: var(--color-bg-hotspots);
 }
 
 .chartinputcontainer {
