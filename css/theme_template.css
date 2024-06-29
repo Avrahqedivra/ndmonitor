@@ -1440,8 +1440,8 @@ select {
   --color-sitelogo-posY: 45%;
   --color-sitelogo-height: 16rem;
 
-  --color-fg-hotspots: black;
-  --color-bg-hotspots: cyan;
+  --color-fg-hotspots: white;
+  --color-bg-hotspots: rgb(58, 182, 182);
   --color-bg-duration: orange;
   --color-bg-calls: rgb(114, 114, 231);
   --color-bg-individual: rgb(241, 101, 171);
@@ -1605,8 +1605,8 @@ select {
   --color-sitelogo-posY: 45%;
   --color-sitelogo-height: 16rem;
 
-  --color-fg-hotspots: black;
-  --color-bg-hotspots: cyan;
+  --color-fg-hotspots: white;
+  --color-bg-hotspots: rgb(58, 182, 182);
   --color-bg-duration: orange;
   --color-bg-calls: rgb(114, 114, 231);
   --color-bg-individual: rgb(241, 101, 171);
