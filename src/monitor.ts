@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.8.0"
+export let __version__: string          = "2.9.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
