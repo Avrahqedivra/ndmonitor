@@ -257,6 +257,7 @@
 						<canvas id="freqstatscanvas"></canvas>
 					</div>
 					<div class="chartbuttons">
+						<div class="chartbutton hotspots" style="background-color:  var(--color-bg-hotspots); color: var(--color-fg-hotspots);">HOTSPOTS</div>
 						<div class="chartbutton duration" style="background-color:  var(--color-bg-duration);">DURATION</div>
 						<div class="chartbutton calls chartSelected" style="background-color: var(--color-bg-calls);">CALLS</div>
 						<div class="chartbutton individual chartSelected" style="background-color: var(--color-bg-individual);">OMs</div>
@@ -1524,7 +1525,19 @@ function dragElement(elmnt) {
 					'pointHoverRadius': pointHoverRadius,
 					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-individual'),
           'yAxisID': 'yIndividual'
-        }
+        },
+				{
+          'label': `Hotspots`,
+          'data': Array.from({ length: curFreqStats.length }, (_, i) => (curFreqStats[i].onlinebyhour)),
+          'borderColor': computedStyle.getPropertyValue('--canvas-bg-hotspots'),
+          'fill': false,
+          'tension': 0.4,
+          'hidden': false,
+					'pointRadius': pointRadius,
+					'pointHoverRadius': pointHoverRadius,
+					'pointBackgroundColor': computedStyle.getPropertyValue('--canvas-bg-hotspots'),
+          'yAxisID': 'yHotspots',
+        },
       ]
     }
 
@@ -1533,67 +1546,94 @@ function dragElement(elmnt) {
         case 'count':
           mainChart.options.scales.yCount.ticks.callback = (value, index, values) => { return value + ' ptt' }
           data.datasets.splice(0, 2)
-					data.datasets.splice(1, 1)
+					data.datasets.splice(1, 2)
           mainChart.data = data
 
           mainChart.options.scales.yCount.display = true
 					mainChart.options.scales.yIndividual.display = false
 					mainChart.options.scales.yDuration.display = false
 					mainChart.options.scales.yRatio.display = false
+					mainChart.options.scales.yHotspots.display = false
 
           mainChart.options.scales.yCount.ticks.display = true
 					mainChart.options.scales.yIndividual.ticks.display = false
 					mainChart.options.scales.yDuration.ticks.display = false
 					mainChart.options.scales.yRatio.ticks.display = false
+					mainChart.options.scales.yHotspots.ticks.display = false
           break
 
 				case 'individual':
           mainChart.options.scales.yIndividual.ticks.callback = (value, index, values) => { return value + ' OM' }
           data.datasets.splice(0, 3)
+					data.datasets.splice(1, 1)
           mainChart.data = data
 
           mainChart.options.scales.yCount.display = false
 					mainChart.options.scales.yIndividual.display = true
 					mainChart.options.scales.yDuration.display = false
 					mainChart.options.scales.yRatio.display = false
+					mainChart.options.scales.yHotspots.display = false
 
 					mainChart.options.scales.yCount.ticks.display = false
           mainChart.options.scales.yIndividual.ticks.display = true
 					mainChart.options.scales.yDuration.ticks.display = false
 					mainChart.options.scales.yRatio.ticks.display = false
+					mainChart.options.scales.yHotspots.ticks.display = false
+          break
+
+				case 'hotspots':
+          mainChart.options.scales.yHotspots.ticks.callback = (value, index, values) => { return value }
+          data.datasets.splice(0, 4)
+          mainChart.data = data
+
+          mainChart.options.scales.yCount.display = false
+					mainChart.options.scales.yIndividual.display = false
+					mainChart.options.scales.yDuration.display = false
+					mainChart.options.scales.yRatio.display = false
+					mainChart.options.scales.yHotspots.display = true
+
+          mainChart.options.scales.yCount.ticks.display = false
+					mainChart.options.scales.yIndividual.ticks.display = false
+					mainChart.options.scales.yDuration.ticks.display = false
+					mainChart.options.scales.yRatio.ticks.display = false
+					mainChart.options.scales.yHotspots.ticks.display = true
           break
 
         case 'duration':
           mainChart.options.scales.yDuration.ticks.callback = (value, index, values) => { return value + ' min' }
-          data.datasets.splice(0, 1)
-          data.datasets.splice(1, 2)
+					data.datasets.splice(0, 1)
+          data.datasets.splice(1, 3)
           mainChart.data = data
 
           mainChart.options.scales.yCount.display = false
 					mainChart.options.scales.yIndividual.display = false
 					mainChart.options.scales.yDuration.display = true
 					mainChart.options.scales.yRatio.display = false
+					mainChart.options.scales.yHotspots.display = false
 
           mainChart.options.scales.yCount.ticks.display = false
 					mainChart.options.scales.yIndividual.ticks.display = false
 					mainChart.options.scales.yDuration.ticks.display = true
 					mainChart.options.scales.yRatio.ticks.display = false
+					mainChart.options.scales.yHotspots.ticks.display = false
           break
 
         case 'ratio':
           mainChart.options.scales.yRatio.ticks.callback = (value, index, values) => { return value + ' sec' }
-          data.datasets.splice(1, 3)
+          data.datasets.splice(1, 4)
           mainChart.data = data
 
           mainChart.options.scales.yCount.display = false
 					mainChart.options.scales.yIndividual.display = false
 					mainChart.options.scales.yDuration.display = false
 					mainChart.options.scales.yRatio.display = true
+					mainChart.options.scales.yHotspots.display = false
 
           mainChart.options.scales.yCount.ticks.display = false
 					mainChart.options.scales.yIndividual.ticks.display = false
 					mainChart.options.scales.yDuration.ticks.display = false
 					mainChart.options.scales.yRatio.ticks.display = true
+					mainChart.options.scales.yHotspots.ticks.display = false
           break
 
         case 'all':
@@ -1604,11 +1644,13 @@ function dragElement(elmnt) {
 					mainChart.options.scales.yIndividual.display = false
 					mainChart.options.scales.yDuration.display = false
 					mainChart.options.scales.yRatio.display = false
+					mainChart.options.scales.yHotspots.display = false
 
           mainChart.options.scales.yCount.ticks.display = false
 					mainChart.options.scales.yIndividual.ticks.display = false
 					mainChart.options.scales.yDuration.ticks.display = false
 					mainChart.options.scales.yRatio.ticks.display = false
+					mainChart.options.scales.yHotspots.ticks.display = false
           break
       }
     }
@@ -1669,6 +1711,17 @@ function dragElement(elmnt) {
             'yIndividual': {
               'ticks': { 
                 'color': computedStyle.getPropertyValue('--canvas-bg-individual'),
+                'beginAtZero': true,
+                'display': false
+              },
+              'grid': {
+                'display': false
+              },
+              'display': false
+            },
+            'yHotspots': {
+              'ticks': { 
+                'color': computedStyle.getPropertyValue('--color-bg-hotspots'),
                 'beginAtZero': true,
                 'display': false
               },
@@ -1777,7 +1830,7 @@ function dragElement(elmnt) {
 				curCumulatedDuration = 0
 
 				for(let i=0; i<=TIME_INTERVALS; i++)
-					curFreqStats[i] = {'count': 0, 'duration': 0, 'ratio': 0, 'individual': new Set() };
+					curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": (analytics ? analytics["masters"]["onlinebyhour"][i]:0), 'ratio': 0, 'individual': new Set() };
 
 				for (var i = 0; i < trafficLength; i++) {
 					var record = traffic[i];
@@ -2051,6 +2104,10 @@ function dragElement(elmnt) {
 
 	function treatTables(CTable, emaster) {
 		if (CTable != null) {
+
+			for(let i=0; i<=TIME_INTERVALS; i++)
+				curFreqStats[i]["onlinebyhour"] = (analytics ? analytics["masters"]["onlinebyhour"][i]:0)
+
 			updateOpenBridges(CTable["OPENBRIDGES"])
 			updateMasters(CTable["MASTERS"], emaster)
 			updatePeers(CTable["PEERS"])
@@ -2208,6 +2265,9 @@ function dragElement(elmnt) {
 
 		// freqstats
 		$(document).on("click", "div.chartbutton", (event) => {
+			if ($(event.target).hasClass('hotspots'))
+				statsType = 'hotspots'
+			else
 			if ($(event.target).hasClass('duration'))
 				statsType = 'duration'
 			else
@@ -2290,6 +2350,7 @@ function dragElement(elmnt) {
 		curIndividualRecords = new Set()
 		curCumulatedDuration = 0
 		curFreqStats = []
+		analytics = null
 		oldFreqStats = null
 		specialtg = ""
 		mainChart = null
@@ -2451,6 +2512,9 @@ function dragElement(elmnt) {
 								if (data.CONFIG.LISTENERS)
 									listenerList = data.CONFIG.LISTENERS
 							} else {
+								if (data.ANALYTICS)
+									analytics = data.ANALYTICS["analytics"]
+
 								if (data.TRAFFIC)
 									doTraffic(data.TRAFFIC)
 

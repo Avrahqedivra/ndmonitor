@@ -293,6 +293,7 @@ export class Reporter {
     _ctable_peer['CLASS'] = legalResult[1]
 
     _ctable_peer['CONNECTED']     = this.since(_peer_conf['CONNECTED'])
+    _ctable_peer['CONNECTEDMS']   = _peer_conf['CONNECTED'] * 1000
     // _ctable_peer['ONLINE']     = str(_peer_conf['CONNECTED'])
     _ctable_peer['IP']            = _peer_conf['IP']
     _ctable_peer['PORT']          = _peer_conf['PORT']
@@ -433,6 +434,7 @@ export class Reporter {
 
               if (_hbp_data['XLXSTATS']['CONNECTION'] === 'YES') {
                 element['STATS']['CONNECTED'] = this.since(_hbp_data['XLXSTATS']['CONNECTED'])
+                element['STATS']['CONNECTEDMS'] = _hbp_data['XLXSTATS']['CONNECTED'] * 1000
                 element['STATS']['PINGS_SENT'] = _hbp_data['XLXSTATS']['PINGS_SENT']
                 element['STATS']['PINGS_ACKD'] = _hbp_data['XLXSTATS']['PINGS_ACKD']
               } else {
@@ -445,6 +447,7 @@ export class Reporter {
 
               if (_hbp_data['STATS']['CONNECTION'] === 'YES') {
                 element['STATS']['CONNECTED'] = this.since(_hbp_data['STATS']['CONNECTED'])
+                element['STATS']['CONNECTEDMS'] = _hbp_data['STATS']['CONNECTED'] * 1000
                 element['STATS']['PINGS_SENT'] = _hbp_data['STATS']['PINGS_SENT']
                 element['STATS']['PINGS_ACKD'] = _hbp_data['STATS']['PINGS_ACKD']
               } else {
@@ -542,8 +545,10 @@ export class Reporter {
     for(let _hbp in _stats_table['MASTERS']) {
         for(let peer in _stats_table['MASTERS'][_hbp]['PEERS']) {
             let _peer = this.ReverseEndian(peer)
-            if (_config[_hbp]['PEERS'][_peer] != null)
+            if (_config[_hbp]['PEERS'][_peer] != null) {
               _stats_table['MASTERS'][_hbp]['PEERS'][peer]['CONNECTED'] = this.since(_config[_hbp]['PEERS'][_peer]['CONNECTED'])
+              _stats_table['MASTERS'][_hbp]['PEERS'][peer]['CONNECTEDMS'] = _config[_hbp]['PEERS'][_peer]['CONNECTED'] * 1000
+            }
         }
     }
 
@@ -554,6 +559,7 @@ export class Reporter {
       if (_stats_table['PEERS'][_hbp]['MODE'] === 'XLXPEER') {
           if (_config[_hbp]['XLXSTATS']['CONNECTION'] === "YES") {
               stabdata['CONNECTED']   = this.since(_config[_hbp]['XLXSTATS']['CONNECTED'])
+              stabdata['CONNECTEDMS'] = _config[_hbp]['XLXSTATS']['CONNECTED'] * 1000
               // stabdata['ONLINE']   = str(_config[_hbp]['XLXSTATS']['ONLINE'])
               stabdata['CONNECTION']  = _config[_hbp]['XLXSTATS']['CONNECTION']
               stabdata['PINGS_SENT']  = _config[_hbp]['XLXSTATS']['PINGS_SENT']
@@ -570,6 +576,7 @@ export class Reporter {
       else {
           if (_config[_hbp]['STATS']['CONNECTION'] === "YES") {
               stabdata['CONNECTED']   = this.since(_config[_hbp]['STATS']['CONNECTED'])
+              stabdata['CONNECTEDMS'] = _config[_hbp]['STATS']['CONNECTED'] * 1000
               // stabdata['ONLINE']   = str(_config[_hbp]['STATS']['ONLINE'])
               stabdata['CONNECTION']  = _config[_hbp]['STATS']['CONNECTION']
               stabdata['PINGS_SENT']  = _config[_hbp]['STATS']['PINGS_SENT']
@@ -598,6 +605,8 @@ export class Reporter {
 		let tgbridges: any = null
     let hideSystems = new Set(config.__bridges_params__.hide)
     let wf = false
+
+    // fs.writeFileSync(`${config.__log_path__}bridges.json`, JSON.stringify(_bridges, null, 2), { encoding:'utf-8', flag:'w' })
 
     for(let bridge in _bridges) {
       _stats_table[bridge] = {}
@@ -660,6 +669,198 @@ export class Reporter {
   }
 
   /**
+   * Hotspots stats
+   */
+	sortMastersPeersByOnlineTime(peers: any) {
+		var peersArray = [];
+
+		// convert to array
+		for (var key in peers) {
+			peersArray.push([key, peers[key]]);
+		}
+
+		// convert online time to seconds
+		let len = peersArray.length;
+		for (let i = 0; i < len; i++) {
+      let chr = ""
+			let t = peersArray[i]["1"]["CONNECTED"].split(" ");
+
+			switch (t.length) {
+				case 3:
+					peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
+					break;
+
+				case 2:
+					chr = t[0].slice(-1);
+					if (chr == 'd')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600);
+					else
+					if (chr == 'h')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60);
+					else
+					if (chr == 'm')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]));
+					break;
+
+				case 1:
+					peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0]);
+					break;
+
+				default:
+					peersArray[i]["1"]["ONLINE"] = "0";
+					break;
+			}
+		}
+
+		// sort peers array
+		peersArray.sort((a, b) => {
+			let y = parseInt(a[1]["ONLINE"]);
+			let x = parseInt(b[1]["ONLINE"]);
+
+			return x < y ? -1 : x > y ? 1 : 0;
+		});
+
+		return peersArray;
+	}
+/*
+  {
+    "analytics": {
+      masters: {
+        "onlinebyhour": [0, 0, 0, 0, 0 ... ],
+        "hotspots": [
+          {
+            "VRK-RPI": {
+              "name": "XXX-RPI",
+              "repeat": "repeat",
+              "callsign": "F4xxx",
+              "location": "Pte St Cloud,Paris",
+              "netid": "208xxxxxx",
+              "type": "Radio",
+              "ip": "x>x.xx.xxx.xxx",
+              "slot": "Duplex",
+              "version": "20210617_PS4",
+              "Hardware": "MMDVM_MMDVM_HS_Dual_Hat",
+              "legal": true,
+              "cnxTime": 1688907727501,
+              "parsedTime": {
+                "days": 355,
+                "hours": 18
+              },
+              "lastseen": 1719646648700,
+              "firstseen": 1719646648700
+            }
+          }
+        },
+      }
+    }  
+*/
+
+  buildAnalytics(): any {
+    let analytics = null
+
+    if (fs.existsSync(`${config.__log_path__}${config.__analytics__}`)) {
+      analytics = JSON.parse(fs.readFileSync(`${config.__log_path__}${config.__analytics__}`, 'utf-8'))
+      if (!analytics["analytics"])
+        analytics["analytics"] = { "masters": { "onlinebyhour": new Array(24).fill(0), "hotspots": [] } }
+      
+      if (!analytics["analytics"]["masters"])
+        analytics["analytics"]["masters"] = { "onlinebyhour": new Array(24).fill(0), "hotspots": [] }
+
+      if (!analytics["analytics"]["masters"]["hotspots"])
+        analytics["analytics"]["masters"]["hotspots"] = []
+
+      if (!analytics["analytics"]["masters"]["onlinebyhour"])
+        analytics["analytics"]["masters"]["onlinebyhour"] = new Array(24).fill(0)
+    }
+    else
+      analytics = { "analytics": { "masters": { "onlinebyhour": new Array(24).fill(0), "hotspots": [] } } }
+
+    let m = analytics["analytics"]["masters"]["hotspots"]
+
+    let masters = __ctable__["MASTERS"]
+
+    let onlineCount = 0
+
+    if (masters != null) {
+      let date = new Date()
+      let lastSeen = Date.now()
+
+      for (let entry in masters) {
+
+        let length = Object.keys(masters[entry]["PEERS"]).length
+        if (!length)
+            continue
+
+        let peers = this.sortMastersPeersByOnlineTime(masters[entry]["PEERS"])
+        let peersLength = peers.length
+
+        try {
+          if (peersLength != 0) {
+            let blob = null
+    
+            for (let i = 0; i < peersLength; i++) {
+              let netID = peers[i][0];
+              let record = peers[i][1];
+
+              let hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+  
+              if (record["SLOTS"].startsWith("Slot"))
+                record["SLOTS"] = 'VOIP'
+
+              let cnxTime = record["CONNECTED"]
+              let parsedTime = utils.parseElapsedTime(cnxTime)
+
+              if (parsedTime.days && parsedTime.days > 0 || parsedTime.hours &&  parsedTime.hours > 0 || parsedTime.minutes && parsedTime.minutes > 4)
+                onlineCount++
+
+              blob = {
+                "name":       entry,
+                "repeat":     masters[entry]["REPEAT"],
+                "callsign":   (record["CALLSIGN"] && record["CALLSIGN"].length > 0) ? record["CALLSIGN"]: 'n/a',
+                "location":   (record["LOCATION"] && record["LOCATION"].length > 0) ? record["LOCATION"]: 'n/a',
+                "netid":      netID,
+                "type":       hardwareType,
+                "ip":         record["IP"],
+                "slot":       record["SLOTS"],
+                "version":    record["SOFTWARE_ID"],
+                "Hardware":   record["PACKAGE_ID"],
+                "legal":      record["LEGAL"],
+                "cnxTime":    Math.floor(record["CONNECTEDMS"]),
+                "parsedTime": parsedTime,
+                "lastseen":   lastSeen
+              }
+
+              let found = false
+              for(let k=0; k<m.length; k++) {
+                if (found = (Object.keys(m[k])[0] == entry)) {
+                  break
+                }
+              }
+
+              if (!found) {
+                blob["firstseen"] = lastSeen
+                m.push( { [entry]: blob } )
+              }
+            }
+          }
+        }
+        catch (error) {
+        }
+      }
+
+      // don't start at onlinebyhour 0
+      if (analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] != 0)
+        analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] = (analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] + onlineCount) / 2
+      else
+        analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] = onlineCount
+
+      fs.writeFileSync(`${config.__log_path__}${config.__analytics__}`, JSON.stringify(analytics, null, 2), { encoding:'utf-8', flag:'w' })
+    }
+
+    return analytics
+  }
+
+  /**
    * build_stats
    */
   build_stats() {
@@ -667,11 +868,13 @@ export class Reporter {
 
     if (this.now > this.build_time + 500 && this.dashboardServer != null) {
 
-      this.dashboardServer.clients.forEach((ws: any) => {
+      let analytics = this.buildAnalytics()
+
+      this.dashboardServer.clients.forEach((ws: any) => {        
         if (ws.fromPage) {
           if (ws.page !== 'logbook') {
             if (ws.page === 'dashboard' || ws.page === 'aprs')
-              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
+              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'ANALYTICS': analytics, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
             else
               ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
           } else {

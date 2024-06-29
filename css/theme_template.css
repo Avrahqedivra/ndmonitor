@@ -1440,6 +1440,8 @@ select {
   --color-sitelogo-posY: 45%;
   --color-sitelogo-height: 16rem;
 
+  --color-fg-hotspots: black;
+  --color-bg-hotspots: cyan;
   --color-bg-duration: orange;
   --color-bg-calls: rgb(114, 114, 231);
   --color-bg-individual: rgb(241, 101, 171);
@@ -1603,6 +1605,8 @@ select {
   --color-sitelogo-posY: 45%;
   --color-sitelogo-height: 16rem;
 
+  --color-fg-hotspots: black;
+  --color-bg-hotspots: cyan;
   --color-bg-duration: orange;
   --color-bg-calls: rgb(114, 114, 231);
   --color-bg-individual: rgb(241, 101, 171);
@@ -1623,7 +1627,7 @@ select {
 .freqstatsdiv {
   float: left;
   width: calc(100% - 7rem);
-  height: 12rem;
+  height: 13rem;
   border: 0.5px solid var(--color-table-border);  
   background-color:var(--color-trbg);
 }

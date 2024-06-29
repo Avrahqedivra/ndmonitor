@@ -28,6 +28,45 @@ export class Utils {
   constructor() {
   }
 
+	parseElapsedTime(elapsedTimeStr: string) {
+		try { 
+			let match = null
+			
+			// check days hours
+			if (match = elapsedTimeStr.match(/(\d+)d (\d+)h/)) {
+				const days = parseInt(match[1], 10);
+				const hours = parseInt(match[2], 10);
+				return { days, hours }
+			}
+
+			// check hours minutes
+			if (match = elapsedTimeStr.match(/(\d+)h (\d+)m/)) {
+				const hours = parseInt(match[1], 10);
+				const minutes = parseInt(match[2], 10);
+				return { hours, minutes };
+			}
+
+			// check minutes seconds
+			if (match = elapsedTimeStr.match(/(\d+)m (\d+)s/)) {
+				const minutes = parseInt(match[1], 10);
+				const seconds = parseInt(match[2], 10);
+				return { minutes, seconds }
+			}
+
+			// check only seconds
+			if (match = elapsedTimeStr.match(/(\d+)s/)) {
+				const minutes = 0;
+				const seconds = parseInt(match[1], 10);
+				return { minutes, seconds }
+			}
+
+			return null
+		}
+		catch(e) {
+			return null
+		}
+	}
+
   /**
    * add tgid image field to lastheard
    */
