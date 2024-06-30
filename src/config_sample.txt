@@ -201,3 +201,5 @@ export const __file_reload__: number            = 7                             
 
 export const __path__: string                   = './'                            // MUST END WITH '/'
 export const __log_path__: string               = './log/'                        // MUST END WITH '/'
+
+export const __analytics__: string              = "analytics.json"
