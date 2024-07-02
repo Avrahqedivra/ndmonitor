@@ -914,6 +914,7 @@ export class Monitor {
             if (ws.fromPage) {
               if (ws.page === 'dashboard') {
                 _message['CTABLE'] = rep.__ctable__
+                _message['ANALYTICS'] = rep.__analytics__
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
               }
 

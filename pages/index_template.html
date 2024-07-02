@@ -1830,8 +1830,8 @@ function dragElement(elmnt) {
 				curCumulatedDuration = 0
 
 				for(let i=0; i<=TIME_INTERVALS; i++)
-					curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": (analytics ? analytics["masters"]["onlinebyhour"][i]:0), 'ratio': 0, 'individual': new Set() };
-
+					curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": (analytics ? analytics["masters"]["onlinebyhour"][i]:0), 'ratio': 0, 'individual': new Set() }
+				
 				for (var i = 0; i < trafficLength; i++) {
 					var record = traffic[i];
 
@@ -2102,11 +2102,15 @@ function dragElement(elmnt) {
 		console.log(msg)
 	}
 
+	function 	updateAnalytics() {
+		for(let i=0; i<=TIME_INTERVALS; i++)
+				curFreqStats[i]["onlinebyhour"] = (analytics ? analytics["masters"]["onlinebyhour"][i]:0)
+	}
+
 	function treatTables(CTable, emaster) {
 		if (CTable != null) {
 
-			for(let i=0; i<=TIME_INTERVALS; i++)
-				curFreqStats[i]["onlinebyhour"] = (analytics ? analytics["masters"]["onlinebyhour"][i]:0)
+			updateAnalytics()
 
 			updateOpenBridges(CTable["OPENBRIDGES"])
 			updateMasters(CTable["MASTERS"], emaster)
@@ -2497,6 +2501,9 @@ function dragElement(elmnt) {
 									// initContextMenu()
 								}
 
+								if (data.CONFIG.ANALYTICS)
+									analytics = data.CONFIG.ANALYTICS["analytics"]
+
 								if (data.CONFIG.CTABLE)
 									treatTables(data.CONFIG.CTABLE, data.CONFIG.EMPTY_MASTERS)
 
@@ -2511,14 +2518,17 @@ function dragElement(elmnt) {
 
 								if (data.CONFIG.LISTENERS)
 									listenerList = data.CONFIG.LISTENERS
+
+								doChart()
 							} else {
 								if (data.ANALYTICS)
-									analytics = data.ANALYTICS["analytics"]
+										analytics = data.ANALYTICS["analytics"]
 
 								if (data.TRAFFIC)
 									doTraffic(data.TRAFFIC)
 
 								if (!mobileDevice) {
+
 									if (data.CTABLE)
 										treatTables(data.CTABLE, data.EMPTY_MASTERS)
 

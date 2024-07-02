@@ -46,6 +46,7 @@ enum Opcodes {
   BRDG_EVENT
 }
 
+export let __analytics__: any
 export let __ctable__: any
 export let __btable__: any = { 'BRIDGES':{} }
 export let __bridges__: any
@@ -857,7 +858,7 @@ export class Reporter {
       fs.writeFileSync(`${config.__log_path__}${config.__analytics__}`, JSON.stringify(analytics, null, 2), { encoding:'utf-8', flag:'w' })
     }
 
-    return analytics
+    return __analytics__ = analytics
   }
 
   /**
@@ -868,13 +869,13 @@ export class Reporter {
 
     if (this.now > this.build_time + 500 && this.dashboardServer != null) {
 
-      let analytics = this.buildAnalytics()
+      this.buildAnalytics()
 
       this.dashboardServer.clients.forEach((ws: any) => {        
         if (ws.fromPage) {
           if (ws.page !== 'logbook') {
             if (ws.page === 'dashboard' || ws.page === 'aprs')
-              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'ANALYTICS': analytics, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
+              ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'ANALYTICS': __analytics__, 'EMPTY_MASTERS' : config.__empty_masters__, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table() }))
             else
               ws.send(JSON.stringify({ 'CTABLE' : __ctable__, 'BTABLE': { 'BRIDGES': __btable__['BRIDGES'] }, 'BIGEARS': this.dashboardServer.clients.size.toString(), 'LISTENERS': __listeners__, 'DIAGNOSTICS': this.build_Diagnostic_table()}))
           } else {
