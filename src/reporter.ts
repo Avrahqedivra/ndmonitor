@@ -774,6 +774,10 @@ export class Reporter {
 
       if (!analytics["analytics"]["masters"]["onlinebyhour"])
         analytics["analytics"]["masters"]["onlinebyhour"] = new Array(TIME_INTERVALS).fill(0)
+
+      // to ensure compatibility with previous version, will be removed someday
+      if (analytics["analytics"]["masters"]["onlinebyhour"].length < TIME_INTERVALS) 
+        analytics["analytics"]["masters"]["onlinebyhour"].push(0)
     }
     else
       analytics = { "analytics": { "masters": { "onlinebyhour": new Array(TIME_INTERVALS).fill(0), "hotspots": [] } } }
