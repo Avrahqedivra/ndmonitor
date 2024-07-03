@@ -202,4 +202,5 @@ export const __file_reload__: number            = 7                             
 export const __path__: string                   = './'                            // MUST END WITH '/'
 export const __log_path__: string               = './log/'                        // MUST END WITH '/'
 
-export const __analytics__: string              = "analytics.json"
+export const __analytics__: string              = "analytics.json"                // hotspots statistics
+export const __hotspotMonitoring__: boolean     = true                            // monitoring or statistics (true -> current count and day reset, false -> average day after day)

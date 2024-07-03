@@ -856,11 +856,18 @@ export class Reporter {
       }
 
       // don't start at onlinebyhour 0
-      if (analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] != 0)
-        analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] = (analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] + onlineCount) / 2
-      else
+      if (!analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] || config.__hotspotMonitoring__) {
         analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] = onlineCount
-
+        
+        // reset the next hours
+        if (config.__hotspotMonitoring__) {
+          for(let h=date.getHours()+1; h<TIME_INTERVALS; h++)
+            analytics["analytics"]["masters"]["onlinebyhour"][h] = 0
+        }
+      }
+      else
+        analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] = (analytics["analytics"]["masters"]["onlinebyhour"][date.getHours()] + onlineCount) / 2
+        
       fs.writeFileSync(`${config.__log_path__}${config.__analytics__}`, JSON.stringify(analytics, null, 2), { encoding:'utf-8', flag:'w' })
     }
 
