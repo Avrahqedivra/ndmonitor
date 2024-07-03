@@ -1801,6 +1801,7 @@ function dragElement(elmnt) {
 				curFreqStats[TIME_INTERVALS].count = curFreqStats[index].count
 				curFreqStats[TIME_INTERVALS].duration = curFreqStats[index].duration
 				curFreqStats[TIME_INTERVALS].individual = curFreqStats[index].individual
+				curFreqStats[TIME_INTERVALS].onlinebyhour = curFreqStats[index].onlinebyhour
 			}
 		}
 	}
@@ -1830,7 +1831,8 @@ function dragElement(elmnt) {
 				curCumulatedDuration = 0
 
 				for(let i=0; i<=TIME_INTERVALS; i++)
-					curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": (analytics ? analytics["masters"]["onlinebyhour"][i]:0), 'ratio': 0, 'individual': new Set() }
+					// curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": (analytics ? analytics["masters"]["onlinebyhour"][i]:0), 'ratio': 0, 'individual': new Set() }
+					curFreqStats[i] = {'count': 0, 'duration': 0, "onlinebyhour": 0, 'ratio': 0, 'individual': new Set() }
 				
 				for (var i = 0; i < trafficLength; i++) {
 					var record = traffic[i];
@@ -2354,7 +2356,7 @@ function dragElement(elmnt) {
 		curIndividualRecords = new Set()
 		curCumulatedDuration = 0
 		curFreqStats = []
-		analytics = null
+		analytics = []
 		oldFreqStats = null
 		specialtg = ""
 		mainChart = null

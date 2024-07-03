@@ -55,6 +55,7 @@ export let __bridges_rx__: string = null
 
 let currentDiag: any = []
 
+const TIME_INTERVALS = 24+1
 const MAXTRIES: number = 5
 
 // https://cs.lmu.edu/~ray/notes/jsnetexamples/
@@ -761,20 +762,21 @@ export class Reporter {
 
     if (fs.existsSync(`${config.__log_path__}${config.__analytics__}`)) {
       analytics = JSON.parse(fs.readFileSync(`${config.__log_path__}${config.__analytics__}`, 'utf-8'))
+
       if (!analytics["analytics"])
-        analytics["analytics"] = { "masters": { "onlinebyhour": new Array(24).fill(0), "hotspots": [] } }
+        analytics["analytics"] = { "masters": { "onlinebyhour": new Array(TIME_INTERVALS).fill(0), "hotspots": [] } }
       
       if (!analytics["analytics"]["masters"])
-        analytics["analytics"]["masters"] = { "onlinebyhour": new Array(24).fill(0), "hotspots": [] }
+        analytics["analytics"]["masters"] = { "onlinebyhour": new Array(TIME_INTERVALS).fill(0), "hotspots": [] }
 
       if (!analytics["analytics"]["masters"]["hotspots"])
         analytics["analytics"]["masters"]["hotspots"] = []
 
       if (!analytics["analytics"]["masters"]["onlinebyhour"])
-        analytics["analytics"]["masters"]["onlinebyhour"] = new Array(24).fill(0)
+        analytics["analytics"]["masters"]["onlinebyhour"] = new Array(TIME_INTERVALS).fill(0)
     }
     else
-      analytics = { "analytics": { "masters": { "onlinebyhour": new Array(24).fill(0), "hotspots": [] } } }
+      analytics = { "analytics": { "masters": { "onlinebyhour": new Array(TIME_INTERVALS).fill(0), "hotspots": [] } } }
 
     let m = analytics["analytics"]["masters"]["hotspots"]
 
@@ -1205,7 +1207,7 @@ export class Reporter {
                 // log only to file if system is NOT OpenBridge event (not logging open bridge system, name depends on your OB definitions) 
                 // and transmit time is LONGER as N sec (make sense for very short transmits)
                 if (config.__lastheard_inc__ && parseInt(p[9]) > 0) {
-                  // 2023-07-21 11:16:27 CEST,61,GROUP VOICE,END,RIS-PEER+,208081098,208081098,TS1,TG20859,YSF-Linux.fr (FD),2089246,F4MZI, Pierre-Philippe F4MZI
+                  // 2023-07-21 11:16:27 CEST,61,GROUP VOICE,END,RIS-PEER+,2080xxxx,2080xxxx,TS1,TG20859,YSF-Linux.fr (FD),208xxxx,F4XXX, Pxxx F4XXX
                   let dt = new Date()
                   let diffTZ = dt.getTimezoneOffset() / -60
                   let buffer: string = `${this.strftime(new Date())} UTC${diffTZ < 0 ? diffTZ : '+' + diffTZ },${REPORT_DELAY},${REPORT_TYPE},${REPORT_PACKET},${REPORT_SYS},${REPORT_SRC_ID},${utils.alias_call(REPORT_SRC_ID, __subscriber_ids__)},TS${REPORT_TS},TG${REPORT_TGID},${REPORT_ALIAS},${REPORT_DMRID},${callfname}\n`
