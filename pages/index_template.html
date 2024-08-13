@@ -2104,8 +2104,10 @@ function dragElement(elmnt) {
 	}
 
 	function 	updateAnalytics() {
-		for(let i=0; i<=TIME_INTERVALS; i++)
+		for(let i=0; i<=TIME_INTERVALS; i++) {
+			if (curFreqStats[i] != null)
 				curFreqStats[i]["onlinebyhour"] = (analytics ? analytics["masters"]["onlinebyhour"][i]:0)
+		}
 	}
 
 	function treatTables(CTable, emaster) {
