@@ -323,7 +323,7 @@ function getCountryFlag(countryCode) {
 
     for (let i = 0; i < mcc.length; i++) {
         if (mcc[i].code == code) {
-            return "https://flagcdn.com/h20/" + code + ".png"
+            return "https://flagcdn.com/h20/" + code.toLowerCase() + ".png"
         }
     }
 
@@ -382,7 +382,7 @@ function getTgFlag(id) {
                 if (flag64[code] != null)
                     return flag64[code]
                 
-                return "https://flagcdn.com/h20/" + code + ".png"
+                return "https://flagcdn.com/h20/" + code.toLowerCase() + ".png"
             }
         }
     }
@@ -458,7 +458,7 @@ function getFlag(callsign, dmrid) {
                 if (flag64[code] != null)
                     return flag64[code]
 
-                return "https://flagcdn.com/h20/" + code + ".png"
+                return "https://flagcdn.com/h20/" + code.toLowerCase() + ".png"
             }
         }
     }
