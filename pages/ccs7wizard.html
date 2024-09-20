@@ -509,7 +509,7 @@
         if (id < 1 || id > 16777215)
           return pattern;
 
-        callsign = sanity(pUser.callsign);
+        callsign = sanity(pUser.callsign).toUpperCase();
         city = sanity(pUser.city).capitalize(true);
         state = sanity(pUser.state).capitalize(true);
         country = sanity(pUser.country).capitalize(true);
@@ -517,10 +517,12 @@
         fname = sanity(pUser.trustee).capitalize(true);
         name = sanity(pUser.ipsc_network).capitalize(true);
         surname = sanity(pUser.assigned).capitalize(true);
+
         remarks = sanity(pUser.ts_linked);
       } else {
         radio_id = (pUser.radio_id == null || pUser.radio_id == "") ? sanity(pUser.id) : sanity(pUser.radio_id);
         id = parseInt(radio_id);
+
         if (id < 1 || id > 16777215)
           return pattern;
 
@@ -537,6 +539,16 @@
 
       if (fname == "")
         fname = name;
+
+      /* don't capitalize if callsign */
+      if (fname.toUpperCase() == callsign)
+        fname = callsign
+
+      if (name.toUpperCase() == callsign)
+        name = callsign
+
+      if (surname.toUpperCase() == callsign)
+        surname = callsign
 
       wholename = (fname + " " + surname).trim();
 
