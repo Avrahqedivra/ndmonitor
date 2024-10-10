@@ -226,7 +226,7 @@ export class Monitor {
         /**
          * authenticated, add to session and continue
          */
-        let requestip = '::1' ? '127.0.0.1':req.socket.remoteAddress.replace(/^.*:/, '')
+        let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
         if (!sessionmgr.sessions.hasOwnProperty(requestip)) {
           // logger.info(`adding ipaddress to session ${requestip}`)
           sessionmgr.sessions[requestip] = new sessionmgr.Session(requestip, 0)
@@ -864,7 +864,7 @@ export class Monitor {
             ws.connectTime = Date.now()
 
             // get ip address
-            let requestip = '::1' ? '127.0.0.1':req.socket.remoteAddress.replace(/^.*:/, '')
+            let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
 
             /** 
              * check if session management is already done by html
@@ -1015,63 +1015,68 @@ export class Monitor {
               if (config.__loginfo__)
                 logger.info(`command received: ${payload}`)
 
-              let _command = JSON.parse(payload)
+              try {
+                let _command = JSON.parse(payload)
 
-              if (ws.fromPage && _command != null) {
-                if (_command.hasOwnProperty('request')) {
-                  if (_command['request'] === 'subscribers') {
-                    if (fs.existsSync(config.__local_subscriber_file__))
-                      ws.send(JSON.stringify({ 'SUBSCRIBERS': JSON.parse(loadTemplate(config.__local_subscriber_file__)).results, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
-                    else
-                      ws.send(JSON.stringify({ 'SUBSCRIBERS': {}, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
-                  }
-                  else
-                  if (_command['request'] === 'loglast') {
-                    let loglastList = this.createLogTableJson()
-
-                    /**
-                     * add tgid image field to lastheard
-                     */
-                    if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-                      for(let i=0; i<loglastList.length; i++) {
-                        let record = loglastList[i]
-                        
-                        let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
-                        
-                        record['TGIMG'] = networkData['TGIMG']
-                        record['ALIAS'] = networkData['ALIAS']
-                      }
+                if (ws.fromPage && _command != null && (typeof _command === 'object')) {
+                  if (_command.hasOwnProperty('request')) {
+                    if (_command['request'] === 'subscribers') {
+                      if (fs.existsSync(config.__local_subscriber_file__))
+                        ws.send(JSON.stringify({ 'SUBSCRIBERS': JSON.parse(loadTemplate(config.__local_subscriber_file__)).results, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
+                      else
+                        ws.send(JSON.stringify({ 'SUBSCRIBERS': {}, 'BIGEARS': this.dashboardServer.clients.size.toString() }))
                     }
+                    else
+                    if (_command['request'] === 'loglast') {
+                      let loglastList = this.createLogTableJson()
 
-                    ws.send(JSON.stringify({ 'LOGLAST': loglastList }))
+                      /**
+                       * add tgid image field to lastheard
+                       */
+                      if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
+                        for(let i=0; i<loglastList.length; i++) {
+                          let record = loglastList[i]
+                          
+                          let networkData = utils.getNetWorkPicture(record['TGID'], record['ALIAS'])
+                          
+                          record['TGIMG'] = networkData['TGIMG']
+                          record['ALIAS'] = networkData['ALIAS']
+                        }
+                      }
+
+                      ws.send(JSON.stringify({ 'LOGLAST': loglastList }))
+                    }
                   }
-                }
-                else {
-                  if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
-                    let fileurl = _command['fileurl']
-                    if (fileurl != '') {
-                      logger.info(`requesting: ${fileurl}`)
+                  else {
+                    if (_command.hasOwnProperty('fileurl') && _command['fileurl'].toString().startsWith('http')) {
+                      let fileurl = _command['fileurl']
+                      if (fileurl != '') {
+                        logger.info(`requesting: ${fileurl}`)
 
-                      let filename = fileurl.substring(fileurl.lastIndexOf('/') + 1, fileurl.length)
-                      let filepath = `${config.__path__}assets/${filename}`
-                
-                      const downloader = new FileDownloader()
-                      const envFiles: any[] = [  { path:  `${config.__path__}assets/`, file:  filename, url:  fileurl, stale: 86400 * 5 } ]
+                        let filename = fileurl.substring(fileurl.lastIndexOf('/') + 1, fileurl.length)
+                        let filepath = `${config.__path__}assets/${filename}`
                   
-                      downloader.downloadAndWriteFiles(envFiles).then(() => {
-                        logger.info(`ccs7manager ${filename} downloaded and saved.\n`)
-                        ws.send(JSON.stringify({ 'FILENAME': filename }))
-                      }).catch(err => {
-                        logger.info(`ccs7manager download request error ${filename}`)
-                      })
+                        const downloader = new FileDownloader()
+                        const envFiles: any[] = [  { path:  `${config.__path__}assets/`, file:  filename, url:  fileurl, stale: 86400 * 5 } ]
+                    
+                        downloader.downloadAndWriteFiles(envFiles).then(() => {
+                          logger.info(`ccs7manager ${filename} downloaded and saved.\n`)
+                          ws.send(JSON.stringify({ 'FILENAME': filename }))
+                        }).catch(err => {
+                          logger.info(`ccs7manager download request error ${filename}`)
+                        })
+                      }
                     }
                   }
                 }
               }
+              catch(e) {
+                logger.info(`invalid json received : ${payload}`)
+              }
             })
 
             ws.on('close', () => {
-              let requestip = '::1' ? '127.0.0.1':req.socket.remoteAddress.replace(/^.*:/, '')
+              let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
               if (config.__web_auth__ && sessionmgr.sessions.hasOwnProperty(requestip))
                 delete sessionmgr.sessions[requestip]
             })
