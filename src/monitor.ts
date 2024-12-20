@@ -352,6 +352,7 @@ export class Monitor {
       case '/aprs.html':
       case '/aprsnew.html':
       case '/bridgesnew.html':
+      case '/index_adn.html':
         // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
@@ -870,7 +871,7 @@ export class Monitor {
              * check if session management is already done by html
              * if not, means websocket direct connection
              */
-            if (/*config.__web_auth__ &&*/ !sessionmgr.sessions.hasOwnProperty(requestip)) {
+            if (config.__web_auth__ && !sessionmgr.sessions.hasOwnProperty(requestip)) {
               /**
                * no yet registered in session
                * it is a direct connection
