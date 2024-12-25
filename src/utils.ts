@@ -70,12 +70,39 @@ export class Utils {
   /**
    * add tgid image field to lastheard
    */
+  isTgidInList(tgid: string, list: String[]): boolean {
+    let negate = false
+    let pattern = null
+    let index = -1
+    
+    for(let i=0; i < list.length; i++) {
+      pattern = list[i]
+
+      // if negate note nagation, and get interval
+      if (negate = pattern.startsWith('~'))
+        pattern = pattern.substring(1)
+
+      if (pattern == tgid)
+        return negate ? false:true
+
+      if ((index = pattern.indexOf('*')) != -1 && tgid.startsWith(pattern.substring(0, index)))
+        return negate ? false:true
+
+      if ((index = pattern.indexOf('..')) != -1) {
+        if (parseInt(pattern.substring(0, index)) <= parseInt(tgid) && parseInt(tgid) <= parseInt(pattern.substring(index+2)))
+          return negate ? false:true
+      }
+    }
+
+    return false
+  }
+
   getNetWorkPicture(tgid: string, alias: string): any {
     if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
       for(let entry of config.__tgImage__) {
-        let tgs = new Set(Object.values(entry)[0].toString().split(','))
+        let tgs = Object.values(entry)[0].toString().split(',')
                 
-        if (tgs.has(tgid)) {
+        if (this.isTgidInList(tgid, tgs)) {
           let exts = entry['ext'].split(',')
 
           for(let i=0; i<exts.length; i++) {
