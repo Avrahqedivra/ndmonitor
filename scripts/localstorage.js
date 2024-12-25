@@ -41,6 +41,78 @@ names["Joel"] = "Joël"
 names["Jeremie"] = "Jérémie"
 names["Jerã´me"] = "Jérôme"
 
+var tableVisibility = {    
+    "chartstype": { visibility: { menu: true, item: { show: "block", hide: "none" }}, title: "Charts" },
+    "insertPoint": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Talkgroups" },
+    "bridgesTable": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Bridges" },
+    "mastersTable": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Masters" }, 
+    "peersTable": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Peers" }    
+}
+
+const hideShowMenu = '<li><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:tableShowAll();javascript:saveSettings();">Show All</a></li><li><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:tableHideAll();javascript:saveSettings();">Hide All</a></li><hr>'
+
+const tableHideAll = () => {
+    let content = hideShowMenu
+    
+    Object.keys(tableVisibility).forEach(elementId => {
+        let visibility = tableVisibility[elementId].visibility
+        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
+        document.getElementById(elementId).style.display = visibility.item.hide;
+
+        visibility.menu = false
+    })
+
+    document.getElementById("hideshowmenu").innerHTML = content
+}
+
+const tableShowAll = () => {
+    let content = hideShowMenu
+
+    Object.keys(tableVisibility).forEach(elementId => {
+        let visibility = tableVisibility[elementId].visibility
+        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility:block");"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
+        document.getElementById(elementId).style.display = visibility.item.show;
+
+        visibility.menu = true
+    })
+
+    document.getElementById("hideshowmenu").innerHTML = content
+}
+
+const toggleVisibility = (anchor, elementId) => {
+    const closestLi = anchor.closest('li');
+
+    if (closestLi) {
+        const liId = closestLi.getAttribute('data');
+
+        const icon = closestLi.querySelector('i');
+        if (icon) {
+            icon.style.visibility = icon.style.visibility === 'hidden' ? 'visible' : 'hidden';
+        }
+
+        const element = document.getElementById(liId);
+        if (element.style.display === tableVisibility[liId].visibility.item.show) {
+            element.style.display = tableVisibility[liId].visibility.item.hide;
+        } else {
+            element.style.display = tableVisibility[liId].visibility.item.show;
+        }
+
+        tableVisibility[liId].visibility.menu = element.style.display === tableVisibility[liId].visibility.item.show
+    }
+};
+
+function adjustVisibility() {
+    let content = hideShowMenu
+
+    Object.keys(tableVisibility).forEach(elementId => {
+        let visibility = tableVisibility[elementId].visibility
+        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility: ${(visibility.menu ? "block" : "hidden")};"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
+        document.getElementById(elementId).style.display = (visibility.menu ? visibility.item.show : visibility.item.hide);
+    })
+
+    document.getElementById("hideshowmenu").innerHTML = content
+}
+
 function adjustMenuLayoutStyle(f) {
   siteHeader.style.transform = "scale(" + zoomValue + ")"
   if (mobileDevice != null && mobileDevice == true) 
@@ -156,18 +228,18 @@ function readCookie(name) {
 }
 
 function saveSettings() {
-    themeSettings = document.documentElement.className    
-    
+    themeSettings = document.documentElement.className
+
     if (document.getElementById("openbridges")) {
         var ob = document.getElementById("openbridges").style.display != "none"
         var ma = document.getElementById("masters").style.display != "none"
         var pe = document.getElementById("peers").style.display != "none"
 
         settings = [
-            { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now(), "allbridges": allbridges } },
+            { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now(), "allbridges": allbridges, "tableVisibility": tableVisibility } },
             { "map": { "zoom" : (map != null) ? map.getZoom() : 6.5 } },
-            { "name": "openbridges",    "open": ob, "colspan": $("#theadOpenbridges tr th").length }, 
-            { "name": "masters",        "open": ma, "colspan": $("#theadMasters tr th").length }, 
+            { "name": "openbridges",    "open": ob, "colspan": $("#theadOpenbridges tr th").length },
+            { "name": "masters",        "open": ma, "colspan": $("#theadMasters tr th").length },
             { "name": "peers",          "open": pe, "colspan": $("#theadPeers tr th").length }
         ]
 
@@ -182,7 +254,7 @@ function saveSettings() {
             });
         }
     } else {
-        settings[0]['config'] = { "theme": themeSettings, "hidetg": settings[0]['config']['hidetg'], "last": Date.now(), "allbridges": allbridges }
+        settings[0]['config'] = { "theme": themeSettings, "hidetg": settings[0]['config']['hidetg'], "last": Date.now(), "allbridges": allbridges, "tableVisibility": tableVisibility }
     }
     
     createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity)
@@ -215,7 +287,8 @@ function applyConfig() {
 
         if (tbs.config) {
             themeSettings = tbs.config.theme
-            if (hideAllTG = tbs.config.hidetg)
+            
+            if (hideAllTG = tbs.config.hidetg || tableVisibility["insertPoint"].visibility.menu == false)
 			    $("#insertPoint").hide()
 		    else
 			    $("#insertPoint").show()
@@ -248,6 +321,19 @@ function getConfigFromLocalStorage() {
             cookie[0].config.last = 0
 
         settings = cookie
+
+        if (settings && settings[0] && settings[0].config && settings[0].config.tableVisibility) {
+            if (settings[0].config.tableVisibility) {
+                let t = Object.values(settings[0].config.tableVisibility)
+                for(let i=0; i<t.length; i++) {
+                    let element = t[i]
+                    if (element != null && element.visibility != null && element.visibility.menu != null && element.visibility.item != null) {
+                        tableVisibility = settings[0].config.tableVisibility
+                        break
+                    }
+                }
+            }
+        }
     }
 }
 

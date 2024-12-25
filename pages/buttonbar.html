@@ -76,7 +76,7 @@
       <li><a href="#" title="Font bigger" onclick="zoom(1)" style="width:1.5rem;padding:0 0.5rem 0 0.25rem;">A+</a></li>
     </div>
 
-    <li id="listenersmenu"><a title="Dashboard users" style="width:3rem;"><i class="fa fa-eye"></i><div id="btnlisteners" style="display: inline-block;padding-left:0.25rem;">1</div></a></li>
+    <li id="listenersmenu"><a title="Dashboard users" style="width:3rem;"><i class="fas fa-users"></i><div id="btnlisteners" style="display: inline-block;padding-left:0.25rem;">1</div></a></li>
       
     <li><a href="#" title="Theme"><i class="fas fa-moon"></i></a>
       <ul>
@@ -85,7 +85,17 @@
         <li><a onclick="javascript:themeSettings='auto';adjustTheme();javascript:saveSettings();">Auto</a></li>
       </ul>
     </li>
-      
+
+    <li><a href="#" title="Show"><i class="fas fa-eye-slash"></i></a>
+      <ul id="hideshowmenu">
+        <li data="chartstype"><i class="fa-solid fa-check"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">Charts</a></li>
+        <li data="insertPoint"><i class="fa-solid fa-check"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">Talkgroups</a></li>
+        <li data="bridgesTable"><i class="fa-solid fa-check"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">Bridges</a></li>
+        <li data="bridgesTable"><i class="fa-solid fa-check"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">Masters</a></li>
+        <li data="peersTable"><i class="fa-solid fa-check"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">Peers</a></li>
+      </ul>
+    </li>
+    
     <li><a title="Refresh" onclick="javascript:window.location.reload(false);"><i class="fa fa-refresh"></i></a></li>
       
     <li><a title="FixMenu"><i id="lockButton" class="fas fa-lock"></i></a></li>

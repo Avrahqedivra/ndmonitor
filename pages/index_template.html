@@ -252,7 +252,7 @@
 					<tbody id="lastActiveBody"></tbody>
 				</table>
 
-				<div class="chartstype">
+				<div id="chartstype" class="chartstype">
 					<div id="freqstatsdiv" class="freqstatsdiv" style="display:none;">
 						<canvas id="freqstatscanvas"></canvas>
 					</div>
@@ -275,7 +275,7 @@
 				<div id="insertPoint"></div>
 				<br>
 				<div id="sysoptables">
-					<table class="tables tablefixed network">
+					<table id="bridgesTable" class="tables tablefixed network">
 						<thead id="theadOpenbridges" tbodyid="openbridges">
 							<tr class="headerRow">
 								<th class="thopmaster">OpenBridge</th>
@@ -668,7 +668,8 @@ function dragElement(elmnt) {
 		}
 
 		// hide empty peers
-		($("#peersTable tbody tr").length == 0) ? $("#peersTable").hide() : $("#peersTable").show()
+		if ($("#peersTable tbody tr").length == 0)
+			$("#peersTable").hide()
 	}
 	
 	// https://gist.github.com/umidjons/9614157
@@ -2013,7 +2014,7 @@ function dragElement(elmnt) {
 					if ($('#hblink' + record.TGID + ' >tr div[dmrid=' + record.DMRID + ']').length == 0) {
 						/* deal with content if < displaylines */
 						if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
-							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);						
+							var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
 							if (flagUrl == "")
 								flagUrl = flag64["shield"]
 
@@ -2314,7 +2315,7 @@ function dragElement(elmnt) {
 				window.event.returnValue = false
 				showContextMenu(event, event.target.closest("table"))
 			})
-		}				
+		}
 	}
 
 	/**
@@ -2413,6 +2414,8 @@ function dragElement(elmnt) {
 			'use strict';
 			this.socket = {};
 		}
+
+		adjustVisibility()
 
 		/**
 		 * https://stackoverflow.com/questions/1495822/replacing-nbsp-from-javascript-dom-text-node

@@ -68,7 +68,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.9.0"
+export let __version__: string          = "2.10.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -352,7 +352,7 @@ export class Monitor {
       case '/aprs.html':
       case '/aprsnew.html':
       case '/bridgesnew.html':
-      case '/index_adn.html':
+      case '/index_swipe.html':
         // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
