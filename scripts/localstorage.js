@@ -288,7 +288,7 @@ function applyConfig() {
         if (tbs.config) {
             themeSettings = tbs.config.theme
             
-            if (hideAllTG = tbs.config.hidetg || tableVisibility["insertPoint"].visibility.menu == false)
+            if (hideAllTG = (tableVisibility["insertPoint"].visibility.menu == false))
 			    $("#insertPoint").hide()
 		    else
 			    $("#insertPoint").show()
