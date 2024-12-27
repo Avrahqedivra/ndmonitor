@@ -41,7 +41,7 @@ names["Joel"] = "Joël"
 names["Jeremie"] = "Jérémie"
 names["Jerã´me"] = "Jérôme"
 
-var tableVisibility = {    
+var tableVisibility = {
     "chartstype": { visibility: { menu: true, item: { show: "block", hide: "none" }}, title: "Charts" },
     "insertPoint": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Talkgroups" },
     "bridgesTable": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Bridges" },
