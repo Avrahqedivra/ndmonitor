@@ -51,32 +51,31 @@ var tableVisibility = {
 
 const hideShowMenu = '<li><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:tableShowAll();javascript:saveSettings();">Show All</a></li><li><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:tableHideAll();javascript:saveSettings();">Hide All</a></li><hr>'
 
-const tableHideAll = () => {
+function doHideShow(state) {
     let content = hideShowMenu
-    
+
     Object.keys(tableVisibility).forEach(elementId => {
         let visibility = tableVisibility[elementId].visibility
-        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility:hidden");"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
-        document.getElementById(elementId).style.display = visibility.item.hide;
+        let ref = (state != null)  ? state:visibility.menu
+        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility:${ref ? 'block':'hidden'}");"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
+        document.getElementById(elementId).style.display = visibility.item[ref ? "show":"hide"];
 
-        visibility.menu = false
+        visibility.menu = ref
     })
 
     document.getElementById("hideshowmenu").innerHTML = content
 }
 
+const tableHideAll = () => {
+    doHideShow(false)
+}
+
 const tableShowAll = () => {
-    let content = hideShowMenu
+    doHideShow(true)
+}
 
-    Object.keys(tableVisibility).forEach(elementId => {
-        let visibility = tableVisibility[elementId].visibility
-        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility:block");"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
-        document.getElementById(elementId).style.display = visibility.item.show;
-
-        visibility.menu = true
-    })
-
-    document.getElementById("hideshowmenu").innerHTML = content
+function adjustVisibility() {
+    doHideShow(null)
 }
 
 const toggleVisibility = (anchor, elementId) => {
@@ -100,18 +99,6 @@ const toggleVisibility = (anchor, elementId) => {
         tableVisibility[liId].visibility.menu = element.style.display === tableVisibility[liId].visibility.item.show
     }
 };
-
-function adjustVisibility() {
-    let content = hideShowMenu
-
-    Object.keys(tableVisibility).forEach(elementId => {
-        let visibility = tableVisibility[elementId].visibility
-        content += `<li data="${elementId}"><i class="fa-solid fa-check" style="visibility: ${(visibility.menu ? "block" : "hidden")};"></i>&nbsp;<a onclick="javascript:toggleVisibility(this);javascript:saveSettings();">${tableVisibility[elementId].title}</a></li>`
-        document.getElementById(elementId).style.display = (visibility.menu ? visibility.item.show : visibility.item.hide);
-    })
-
-    document.getElementById("hideshowmenu").innerHTML = content
-}
 
 function adjustMenuLayoutStyle(f) {
   siteHeader.style.transform = "scale(" + zoomValue + ")"
@@ -138,7 +125,6 @@ function initMenubar(disabledMenuPattern) {
     
     adjustMenuLayoutStyle(isFixed)
 
-
     /**
      * disabledMenuPattern is like '--X----------X--'
      * all the menus corresponding to a minus will be disabled
@@ -151,7 +137,7 @@ function initMenubar(disabledMenuPattern) {
                     $(`#menubar ul > li:nth-child(${i+1})`).addClass('menudisabled')
                 else {
                 el = $(`#menubar ul div:nth-child(${i+1})`)
-                    if (el.prop('tagName') === 'DIV') {
+                    if (el.prop('tagName').toLowerCase === 'div') {
                         $(`#menubar ul > div li`).addClass('menudisabled')
                     }
                 }
