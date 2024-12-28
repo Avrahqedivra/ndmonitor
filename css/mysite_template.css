@@ -112,21 +112,18 @@ h1 {
 }
 
 /* first row */
-.menubar ul li:hover {
+.menubar ul li:hover:not(.zoom) {
   color: var(--color-menubar-foreground);
   background-color: var(--color-menubar-hover);
-}
-/* .menubar > ul li:hover a {
-  color: var(--color-dropdown-content);
-} */
-/* first row */
-.menubar ul li a:hover {
-  color: var(--color-menubar-foreground);
 }
 .menubar ul li a, visited {
   text-decoration: none;
   padding: 0.2rem 0.2rem 0.2rem 0.2rem;
   color: var(--color-menubar-foreground);
+}
+.menubar ul li div:hover {
+  color: var(--color-menubar-foreground);
+  background-color: var(--color-menubar-hover);
 }
 .menubar ul li:hover > ul {
   display: block;
@@ -228,4 +225,8 @@ h1 {
 
 .msAlien {
   background-color: #ff0000;
+}
+
+.serverActive {
+  background-color: #0c710c;
 }

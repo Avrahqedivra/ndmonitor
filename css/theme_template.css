@@ -297,6 +297,11 @@ a:active, .alink:active {
   font-size:1.4rem;
   font-weight:800;
   color:white;
+
+  div {
+    width: 2.5rem;
+    display: inline-block;
+  }
 }
 
 table, td, th {
