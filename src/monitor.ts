@@ -30,6 +30,7 @@ import http from 'http'
 import https from 'https'
 
 import { Logger } from './logger.js'
+import { Buffer } from 'buffer'
 import { Utils } from './utils.js'
 import { FileDownloader } from './filedownloader.js'
 import { Crc16 } from './crc16.js'
@@ -228,7 +229,7 @@ export class Monitor {
          */
         let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
         if (!sessionmgr.sessions.hasOwnProperty(requestip)) {
-          // logger.info(`adding ipaddress to session ${requestip}`)
+          // logger.info(`\nadding ipaddress to session ${requestip}`)
           sessionmgr.sessions[requestip] = new sessionmgr.Session(requestip, 0)
         }
       }
@@ -871,6 +872,7 @@ export class Monitor {
              * check if session management is already done by html
              * if not, means websocket direct connection
              */
+            // else check if session is already registered
             if (config.__web_auth__ && !sessionmgr.sessions.hasOwnProperty(requestip)) {
               /**
                * no yet registered in session
@@ -1077,9 +1079,10 @@ export class Monitor {
             })
 
             ws.on('close', () => {
-              let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
-              if (config.__web_auth__ && sessionmgr.sessions.hasOwnProperty(requestip))
-                delete sessionmgr.sessions[requestip]
+              // let requestip = req.socket.remoteAddress.startsWith('::1') ? '127.0.0.1' : req.socket.remoteAddress.replace(/^.*:/, '')
+              // if (config.__web_auth__ && sessionmgr.sessions.hasOwnProperty(requestip))
+              //   logger.info(`removing ipaddress to session ${requestip}`)
+              // delete sessionmgr.sessions[requestip]
             })
       
             ws.send(JSON.stringify({ 'CONFIG': _message}))
