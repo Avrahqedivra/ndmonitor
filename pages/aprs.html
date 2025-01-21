@@ -960,7 +960,7 @@
 
     currentZoom = settings[1].map.zoom
 
-    let wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=aprs"
+    let wsuri = "__SOCKET_TYPE__://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=aprs"
 
     $("#menubar").show()
     $("#siteHeader").show()

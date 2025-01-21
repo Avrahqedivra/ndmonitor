@@ -18,6 +18,13 @@ export const __start_tot__: number              = 240                           
 
 export const __loginfo__: boolean               = false                                       // more log
 
+/**
+ * https://letsencrypt.org/     A nonprofit Certificate Authority providing TLS certificates to 500 million websites.
+ */
+export const __https__                          = false                                       // https or http
+export const __privateKey__: string             = "/etc/letsencrypt/live/yourdomain/privkey.pem"
+export const __certificate__: string            = "/etc/letsencrypt/live/yourdomain/fullchain.pem"
+
 // bridges
 export const __bridges_params__                 = {
                                                   "showDisconnected": false,

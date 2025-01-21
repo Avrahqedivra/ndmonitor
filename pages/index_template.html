@@ -129,7 +129,7 @@
 	</head>
 	
 <body>
-	<div class="mainContainer">
+	<main class="mainContainer">
 		<noscript>You must enable JavaScript</noscript>
 
 		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
@@ -143,7 +143,7 @@
 			</ul>
 		</div>
 
-		<div id="modals">
+		<section id="modals">
 			<!-- The Followup -->
 			<div id="followUpModal" class="modal">
 				<!-- Modal content -->
@@ -223,10 +223,9 @@
 				</div>
 			</div>
 
-		</div>
+		</section>
 
 		<div id="siteHeader" style="display:none">
-
 			<!-- comment out this div block to avoid display -->
 			<div id="banner" class="banner">
 				<img class="imgleft" src="sitelogo.png" alt="Image du réseau ADN SYSTEMS"> Welcome to this Dashboard  <img class="imgright" src="sitelogo.png" alt="sitelogo image comment">
@@ -252,7 +251,7 @@
 					<tbody id="lastActiveBody"></tbody>
 				</table>
 
-				<div id="chartstype" class="chartstype">
+				<section id="chartstype" class="chartstype">
 					<div id="freqstatsdiv" class="freqstatsdiv" style="display:none;">
 						<canvas id="freqstatscanvas"></canvas>
 					</div>
@@ -270,11 +269,11 @@
 							<div id="tgstatspaneltext"></div>
 						</div>
 					</div>
-				</div>
+				</section>
 
-				<div id="insertPoint"></div>
+				<section id="insertPoint"></section>
 				<br>
-				<div id="sysoptables">
+				<section id="sysoptables">
 					<table id="bridgesTable" class="tables tablefixed network">
 						<thead id="theadOpenbridges" tbodyid="openbridges">
 							<tr class="headerRow">
@@ -316,15 +315,15 @@
 						<tbody id="peers">
 						</tbody>
 					</table>
-				</div>
+				</section>
 			</div>
 
-			<div id="footer">
+			<footer id="footer">
 				__FOOTER__
-			</div> 
+			</footer> 
 			<!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
 		</div>
-	</div>
+	</main>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -2379,7 +2378,7 @@ function dragElement(elmnt) {
 			$("#footer, #infoLine").css("font-size", "0.4rem");
 		}
 
-		var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
+		var wsuri = "__SOCKET_TYPE__://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
 
 		if (isNaN(displayLines))
 			displayLines = 10;

@@ -906,7 +906,7 @@
       }
 
       hideAllTG = false;
-      var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=logbook";
+      var wsuri = "__SOCKET_TYPE__://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=logbook";
 
       if (isNaN(displayLines))
           displayLines = 10;

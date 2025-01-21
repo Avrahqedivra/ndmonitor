@@ -69,7 +69,7 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.10.0"
+export let __version__: string          = "2.50.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -89,7 +89,8 @@ const replaceSystemStrings = (data: string): string => {
                 .replace('__VERSION__',  __version__)
                 .replace('__FOOTER__',  __footer_html__)
                 .replace('__BUTTON_BAR__',  __buttonBar_html__)
-                .replace('__SOCKET_SERVER_PORT__',  `${config.__socketServerPort__}`)
+                .replace('__SOCKET_TYPE__',  config.__https__ ? "wss":"ws")
+                .replace('__SOCKET_SERVER_PORT__',  config.__https__ ? `${config.__monitor_webserver_port__}`:`${config.__socketServerPort__}`)
                 .replace('__PAGE_MENU_STATE__',  __currentPageMenuState__)
                 .replace('__DISPLAY_LINES__',  `${config.__displayLines__}`)
                 .replace('__TGID_FILTER__',  config.__tgFilter__)
@@ -113,6 +114,11 @@ const replaceSystemStrings = (data: string): string => {
   
   return data
 }
+
+const options = {
+  key: fs.readFileSync(config.__privateKey__), // privatekey path
+  cert: fs.readFileSync(config.__certificate__), // certificate path
+};
 
 export class Monitor {
   private __local_subscriber_ids__ = null
@@ -799,30 +805,73 @@ export class Monitor {
          * create socket server https://github.com/websockets/ws#simple-server
          */
         try {
-          logger.info(`creating dashboard socket server on port:${config.__socketServerPort__}`)
-          
-          this.dashboardServer = new WebSocketServer({ 
-            port: config.__socketServerPort__,
-            perMessageDeflate: {
-              zlibDeflateOptions: {
-                // See zlib defaults.
-                chunkSize: 1024,
-                memLevel: 7,
-                level: 3
-              },
-              zlibInflateOptions: {
-                chunkSize: 10 * 1024
-              },
-              // Other options settable:
-              clientNoContextTakeover: true, // Defaults to negotiated value.
-              serverNoContextTakeover: true, // Defaults to negotiated value.
-              serverMaxWindowBits: 10, // Defaults to negotiated value.
-              // Below options specified as default values.
-              concurrencyLimit: 10, // Limits zlib concurrency for perf.
-              threshold: 1024 // Size (in bytes) below which messages
-              // should not be compressed if context takeover is disabled.
+          try {
+            let hostServer: string = config.testMode ? 'localhost':config.hblink_server_host
+
+            if (config.__https__) {
+              this.webServer = https.createServer(options, this.requestListener)
+            } else {
+              this.webServer = http.createServer(this.requestListener)
             }
-           })
+
+            this.webServer.listen(config.__monitor_webserver_port__, hostServer, () => {
+              logger.info(`Web server is running on ${config.__https__ ? "https":"http"}://${hostServer}:${config.__monitor_webserver_port__}`)
+            })
+          }
+          catch(e) {
+            logger.info(`Error in webserver creation: ${e.toString()}`) 
+          }
+
+          logger.info(`creating dashboard socket server on port:${config.__socketServerPort__}`)
+
+          if (config.__https__) {
+            this.dashboardServer = new WebSocketServer({ 
+              server: this.webServer,
+              perMessageDeflate: {
+                zlibDeflateOptions: {
+                  // See zlib defaults.
+                  chunkSize: 1024,
+                  memLevel: 7,
+                  level: 3
+                },
+                zlibInflateOptions: {
+                  chunkSize: 10 * 1024
+                },
+                // Other options settable:
+                clientNoContextTakeover: true, // Defaults to negotiated value.
+                serverNoContextTakeover: true, // Defaults to negotiated value.
+                serverMaxWindowBits: 10, // Defaults to negotiated value.
+                // Below options specified as default values.
+                concurrencyLimit: 10, // Limits zlib concurrency for perf.
+                threshold: 1024 // Size (in bytes) below which messages
+                // should not be compressed if context takeover is disabled.
+              }
+            })
+          }
+          else {
+            this.dashboardServer = new WebSocketServer({ 
+              port: config.__socketServerPort__,
+              perMessageDeflate: {
+                zlibDeflateOptions: {
+                  // See zlib defaults.
+                  chunkSize: 1024,
+                  memLevel: 7,
+                  level: 3
+                },
+                zlibInflateOptions: {
+                  chunkSize: 10 * 1024
+                },
+                // Other options settable:
+                clientNoContextTakeover: true, // Defaults to negotiated value.
+                serverNoContextTakeover: true, // Defaults to negotiated value.
+                serverMaxWindowBits: 10, // Defaults to negotiated value.
+                // Below options specified as default values.
+                concurrencyLimit: 10, // Limits zlib concurrency for perf.
+                threshold: 1024 // Size (in bytes) below which messages
+                // should not be compressed if context takeover is disabled.
+              }
+            })
+          } 
 
           logger.info(`dashboard socket server created ${config.__socketServerPort__} ${globals.__OK__}\n`)
 
@@ -1087,17 +1136,6 @@ export class Monitor {
       
             ws.send(JSON.stringify({ 'CONFIG': _message}))
           })
-
-          try {
-            let hostServer: string = config.testMode ? 'localhost':config.hblink_server_host
-            this.webServer = http.createServer(this.requestListener)
-            this.webServer.listen(config.__monitor_webserver_port__, hostServer, () => {
-              logger.info(`Web server is running on ${hostServer}:${config.__monitor_webserver_port__}`)
-            })
-          }
-          catch(e) {
-            logger.info(`Error in webserver creation: ${e.toString()}`) 
-          }
         }
         catch(e) {
           logger.info(`Error creating WebSocketServer: ${e.toString()}`)

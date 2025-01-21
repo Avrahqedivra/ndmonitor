@@ -625,7 +625,7 @@
         userJson = [];
         $("#loaded").text("User list download starting");
 
-        var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=ccs7";
+        var wsuri = "__SOCKET_TYPE__://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=ccs7";
 
         socket = new WebSocket(wsuri);
 

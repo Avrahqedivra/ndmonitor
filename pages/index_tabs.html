@@ -974,7 +974,7 @@
     mainChart = null
     statsType = "all"
 
-    var wsuri = "ws://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
+    var wsuri = "__SOCKET_TYPE__://" + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
 
     if (isNaN(displayLines))
       displayLines = 10;
