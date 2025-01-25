@@ -421,6 +421,9 @@ export class Monitor {
         try {
           fs.promises.readFile(`${config.__path__}${folder}${filename}`)
             .then(content => {
+              if (filename.startsWith("/pcm-player")) {
+                content = Buffer.from(content.toString().replace("ws://", (config.__https__ ?  "wss://": "ws://")))
+              }
               res.writeHead(200, {
                 "Content-Type": mimetype,
               })
