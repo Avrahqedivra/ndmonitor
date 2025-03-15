@@ -2378,7 +2378,7 @@ function dragElement(elmnt) {
 			$("#footer, #infoLine").css("font-size", "0.4rem");
 		}
 
-		var wsuri = ((document.location.protocol == "https:") ? "wss://":"wss//") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
+		var wsuri = ((document.location.protocol == "https:") ? "wss://":"ws://") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=dashboard";
 
 		if (isNaN(displayLines))
 			displayLines = 10;
@@ -2388,7 +2388,7 @@ function dragElement(elmnt) {
 				$("#insertPoint").append($("<div id='tg" + tgid + "marker'></div>"));
 		});
 
-		document.getElementById("menuSearch").style.display = "inline-block";				
+		document.getElementById("menuSearch").style.display = "inline-block"
 
 		// don't show banner if already done within 3600s
 		if (bannerDelay == 0 || (Math.floor(Date.now() - settings[0].config.last) / 1000) < 3600) {
