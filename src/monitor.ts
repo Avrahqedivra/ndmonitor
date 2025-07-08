@@ -69,7 +69,27 @@ type LastHeardSchema = {
   fname: string           // 12
 }
 
-export let __version__: string          = "2.50.0"
+interface NodeObject {
+  id: string | number;  // A unique identifier for the node
+  group?: number;       // Optional grouping for styling or logic
+  name?: string;        // Optional name for the node
+  val?: number;         // Optional value for sizing or other logic
+  [key: string]: any;   // Allow additional properties
+}
+
+interface NodeType extends NodeObject {
+  id: string;
+  group?: number;
+}
+
+const nodes: NodeType[] = [];
+
+// Example of adding a node
+nodes.push({ id: 'operator1', group: 1 });
+nodes.push({ id: 'talkgroup1', group: 2 });
+
+
+export let __version__: string          = "2.60.0"
 export let __sessions__: any[]          = []
 export let __talkgroup_ids__            = null
 export let __subscriber_ids__           = null
@@ -169,6 +189,42 @@ export class Monitor {
     }
 
     return false
+  }
+
+  buildGraph3dNodes() {
+    let jsonArray: any[] = []
+    
+    const nodes: { id: string; group?: number }[] = [];
+    const links: { source: string; target: string, value: number }[] = [];
+
+    if (fs.existsSync(`${config.__log_path__}${config.__lastheard_file__}`)) {
+      jsonArray = JSON.parse(fs.readFileSync(`${config.__log_path__}${config.__lastheard_file__}`, 'utf-8'))['TRAFFIC']
+
+      const callsignMap = new Map();
+      const talkgroupMap = new Map();
+    
+      jsonArray.forEach(entry => {
+        if (entry.PACKET === 'START') {
+          if (!callsignMap.has(entry.CALLSIGN)) {
+            callsignMap.set(entry.CALLSIGN, nodes.length);
+            nodes.push({ id: entry.CALLSIGN, group: 1 });
+          }
+      
+          if (!talkgroupMap.has(entry.TGID)) {
+            talkgroupMap.set(entry.TGID, nodes.length);
+            nodes.push({ id: entry.TGID, group: 2 });
+          }
+      
+          links.push({
+            source: entry.CALLSIGN,
+            target: entry.TGID,
+            value: talkgroupMap.get(entry.TGID)
+          });
+        }
+      });
+    }
+
+    return { nodes, links }
   }
 
   /**
@@ -360,7 +416,9 @@ export class Monitor {
       case '/aprsnew.html':
       case '/bridgesnew.html':
       case '/index_swipe.html':
-        // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
+      case '/graph3d.html':
+      case '/terminal.html':
+          // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
         
@@ -371,8 +429,8 @@ export class Monitor {
           'Content-Type': 'text/html' 
         })
         res.end(replaceSystemStrings(loadTemplate(`${config.__path__}pages${req.url}`)))
-        break;
-  
+        break
+
       default:
         var dotOffset = req.url.lastIndexOf('.');
         if (dotOffset == -1 || !extensions.includes(req.url.substr(dotOffset)))
@@ -967,21 +1025,27 @@ export class Monitor {
 
             // prepare initial packet
             if (ws.fromPage) {
+              if (ws.page === 'graph3d') {
+                ws.send(JSON.stringify({ 'GRAPH': this.buildGraph3dNodes()}))
+                return
+              }
+
               if (ws.page === 'dashboard') {
                 _message['CTABLE'] = rep.__ctable__
                 _message['ANALYTICS'] = rep.__analytics__
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
               }
-
+              else
               if (ws.page === 'bridges') {
                 _message['CTABLE'] = rep.__ctable__
                 _message['BTABLE'] = { 'BRIDGES': rep.__btable__['BRIDGES'] }
                 _message['EMPTY_MASTERS'] = config.__empty_masters__
                 _message['TALKGROUPS'] = __talkgroup_ids__
               }
-
-              if (ws.page === 'aprs') 
+              else
+              if (ws.page === 'aprs') {
                 _message['APRS_SYMBOLS'] = config.__aprs_suffix_symbols__
+              }
 
               _message['BIGEARS'] = this.dashboardServer.clients.size.toString()
               _message['LISTENERS'] = rep.__listeners__

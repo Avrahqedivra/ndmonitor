@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html class="__THEME__">
+
+<head>
+		<link rel="icon" type="image/x-icon" href="favicon.ico" />
+		<meta charset="UTF-8">
+		<meta http-equiv="refresh" content="20000"/>
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+
+		<title>NDMonitor</title>
+
+    <link rel="stylesheet" href="theme_template.css">
+    <link rel="stylesheet" href="mysite_template.css">
+    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+
+		<script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/3d-force-graph"></script>
+		<script src="https://unpkg.com/three-spritetext"></script>
+
+    <style>
+		#graph-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }    </style>
+	</head>
+	
+<body>
+	<main class="mainContainer">
+		<noscript>You must enable JavaScript</noscript>
+
+		<div id="sitelogo" style="display:none">__SITE_LOGO__</div>
+
+		__BUTTON_BAR__
+
+		<div id="siteHeader" style="display:none">
+      <div id="graph-container"></div>
+		</div>
+  </main>
+
+<script>
+	function log(msg) {
+		console.log(msg)
+	}
+
+  $(document).ready(function () {
+		// document ready occurs before windows.onLoad
+		if (getConfigFromLocalStorage != null) {
+			getConfigFromLocalStorage();
+
+			if (document.documentElement.className != settings[0].config.theme)
+					document.documentElement.className = settings[0].config.theme;
+		}
+
+		document.cookie = "SameSite=None; Secure"
+
+		initMenubar(__PAGE_MENU_STATE__)
+  })
+
+  window.onload = () => {
+    var wsuri = ((document.location.protocol == "https:") ? "wss://":"ws://") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=graph3d";
+
+    document.getElementById("menuSearch").style.display = "inline-block"
+
+    // don't show banner if already done within 3600s
+    $("#menubar").show();
+    $("#siteHeader").show();
+
+    function WSConnection() {
+      'use strict';
+      this.socket = {};
+    }
+
+		WSConnection.prototype.connect = (url) => {
+			'use strict';
+
+			return new Promise((resolve, reject) => {
+				if ("WebSocket" in window)
+					this.socket = new WebSocket(url);
+				else if ("MozWebSocket" in window)
+					this.socket = new MozWebSocket(url);
+				else {
+					log("Browser does not support WebSocket!");
+					resolve();
+				}
+
+				this.socket.onopen = () => {
+					log("Connected to " + url)
+					resolve()
+				}
+
+				this.socket.onmessage = (e) => {
+					var data = null;
+
+					try {
+						data = JSON.parse(e.data);
+
+						// console.log("");
+						// console.log(data);
+						// console.log("");
+
+						if (data != null && data.GRAPH != null) {
+              // const Graph = new ForceGraph3D(document.getElementById('graph-container')).graphData(data.GRAPH);
+
+							const graphData = data.GRAPH;
+
+							// Initialisation du graphique 3D
+							const ForceGraph3D = window.ForceGraph3D();
+							const elem = document.getElementById('graph-container');
+
+							ForceGraph3D(elem)
+								.cameraPosition({ z: 2100 })
+								.graphData(graphData)
+								.nodeThreeObject(node => {
+									const sprite = new SpriteText(node.id);
+									sprite.color = ((node.id.length > 0) && (node.id[0] > "@")) ? '#ffffff' : '#ff0000';
+									sprite.textHeight = ((node.id.length > 0) && (node.id[0] > "@")) ? 8 : 16;
+									// sprite.textFontFamily = 'Arial';
+									return sprite;
+								})
+								// .nodeColor(node => ((node.id.length > 0) && (node.id[0] > "@")) ? 'blue' : 'red')
+								// .nodeVal(node => ((node.id.length > 0) && (node.id[0] > "@")) ? 1 : 2)
+								// .nodeRelSize(10)
+								.linkWidth(1)
+						}
+					} catch (error) {
+						log(error);
+					}
+				};
+
+				socket.onerror = function (error) {
+					console.log('WebSocket error: ' + error);
+					reject(error);
+				};
+
+				socket.onclose = function (e) {
+					log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+					this.sock = null;
+				}
+			})
+		}
+
+		WSConnection.prototype.disconnect = () => {
+			'use strict';
+			console.log("Disconnect request from local app layer")
+			this.socket.close()
+		}
+
+		setTimeout(() => {
+			socket = new WSConnection().connect(wsuri)
+		}, 250)
+
+  }
+
+
+      // fetch('/graph')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     const Graph = ForceGraph3D()
+      //       (document.getElementById('graph'))
+      //         .graphData(data);
+      //   });
+  </script>
+</body>
+</html>

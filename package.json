@@ -1,26 +1,32 @@
 {
   "name": "monitor",
-  "version": "2.50.0",
+  "version": "2.60.0",
   "description": "A FreeDMR/HBLink Dashboard Monitor",
   "author": "F4JDN - Jean-Michel Cohen <f4jdn@outlook.fr>",
   "license": "ISC",
-
   "main": "monitor.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["freedmr", "hblink", "dashboard", "monitor"],
+  "keywords": [
+    "freedmr",
+    "hblink",
+    "dashboard",
+    "monitor"
+  ],
   "devDependencies": {
-    "@types/node": ">=20.5.9",
-    "@types/websocket": ">=1.0.6",
-    "@types/ws": ">=8.5.5"
+    "@types/node": "^18",
+    "@types/websocket": ">=1",
+    "@types/ws": ">=8"
   },
   "dependencies": {
-    "net": ">=1.0.2",
-    "permessage-deflate": ">=0.1.7",
-    "typescript": ">=5.2.2",
-    "ws": ">=8.14.1"
+    "3d-force-graph": "^1",
+    "net": ">=1",
+    "permessage-deflate": ">=0",
+    "ts-node": "^10",
+    "typescript": ">=5",
+    "ws": ">=8"
   }
 }

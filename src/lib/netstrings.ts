@@ -32,7 +32,9 @@ export class NetStringReceiver {
   private offset: number = 0
 
   constructor(receiveBoxCallback: any) {
-    this.receiveBox = receiveBoxCallback || function(box: Buffer) { logger.info(box.toString()) }
+    this.receiveBox = receiveBoxCallback || function(box: Buffer) {
+      logger.info(box.toString()) 
+    }
   }
 
   reSync(): void {

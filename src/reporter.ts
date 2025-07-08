@@ -34,6 +34,8 @@ import * as config from "./config.js"
 import * as diags from "./diagnostics.js"
 import { Extra } from "./extracommand.js"
 
+import { SocketProxy } from "./socketproxy.js"
+
 // Opcodes for reporting protocol to HBlink
 enum Opcodes {
   CONFIG_REQ  = 0,
@@ -83,6 +85,8 @@ export class Reporter {
   private hourPadding = 2
   private minutePadding = 2
   private secondsPadding = 2
+
+  private socketProxy = null
 
   /**
    * Return friendly elapsed time from time in seconds 
@@ -1010,6 +1014,9 @@ export class Reporter {
   // https://stackoverflow.com/questions/25791436/reconnect-net-socket-nodejs
 
   constructor(monitor: Monitor, address: string, port: number) {
+    if (config.__proxyServerPort__ != null)
+      this.socketProxy = new SocketProxy().init()
+
     this.opbNotAllowed = new Set()
     this.monitor = monitor
     this.dashboardServer = this.monitor.dashboardServer
@@ -1280,6 +1287,9 @@ export class Reporter {
        * socket data listener
        */
       this.client.on('data', (data: string) => {
+        if (this.socketProxy)
+          this.socketProxy.broadcast(data)
+
         this.netstring.dataReceived(data)
       })
     }
