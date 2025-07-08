@@ -415,9 +415,7 @@ export class Monitor {
       case '/aprs.html':
       case '/aprsnew.html':
       case '/bridgesnew.html':
-      case '/index_swipe.html':
       case '/graph3d.html':
-      case '/terminal.html':
           // https://stackoverflow.com/questions/17779744/regular-expression-to-get-a-string-between-parentheses-in-javascript
         var regExp = /\/([^.]+)\./
         var matches = regExp.exec(req.url)
