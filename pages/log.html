@@ -168,7 +168,7 @@
 
   window.onload = function () {
     hideAllTG = false;
-    var wsuri = ((document.location.protocol == "https:") ? "wss://":"wss//") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=log";
+    var wsuri = ((document.location.protocol == "https:") ? "wss://":"ws//") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=log";
 
     if (isNaN(displayLines))
       displayLines = 10;

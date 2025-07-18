@@ -347,7 +347,7 @@
 		    tgbeacons = {};
 	    }
 
-        var wsuri = ((document.location.protocol == "https:") ? "wss://":"wss//") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=loglast";
+        var wsuri = ((document.location.protocol == "https:") ? "wss://":"ws//") + window.location.hostname + ":__SOCKET_SERVER_PORT__?page=loglast";
 
         // https://stackoverflow.com/questions/34088381/websocket-and-javascript-promises
         function WSConnection() {
