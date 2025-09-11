@@ -67,7 +67,7 @@ export class FileDownloader {
 
           const file = fs.createWriteStream(tempfilename)
 
-          const request = protocol.get(url, (response) => {
+          const request = protocol.get(url, {agent: new https.Agent({ rejectUnauthorized: false })}, (response) => {
             response.pipe(file)
 
             file.on('finish', () => {
