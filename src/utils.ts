@@ -248,6 +248,9 @@ export class Utils {
                     if (record.hasOwnProperty('surname'))
                         _name = record['surname']
                     else
+                    if (record.hasOwnProperty('name'))
+                        _name = record['name']
+                    else
                         _name = 'NO NAME'
 
                     // Make dictionary entry, if any of the information below isn't in the record, it wil be skipped
