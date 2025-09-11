@@ -691,7 +691,7 @@ export class Monitor {
   }
 
   // 'radioid', 'https://database.radioid.net/static/users.json');
-  // 'Francophonie', 'http://francophonie.link/local_subscriber_ids.json');
+  // 'Francophonie', 'https://francophonie.link/local_subscriber_ids.json');
   fetchRemoteUsersFiles(fileurl: string) {
     if (fileurl != '') {
       logger.info(`requesting: ${fileurl}`)
