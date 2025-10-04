@@ -17,7 +17,7 @@
     "monitor"
   ],
   "devDependencies": {
-    "@types/node": "^18",
+    "@types/node": "^20",
     "@types/websocket": ">=1",
     "@types/ws": ">=8"
   },
