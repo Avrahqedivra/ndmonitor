@@ -66,9 +66,9 @@
                     <option idx="4" value="https://www.radioid.net/static/rptrs.json">RadioID [Repeaters]</option>
 
                     <!-- DONT FORGET TO ADJUST THOSE FOLLOWING URLS AND LABELS TO YOUR WEBSITE -->
-                    <option idx="1" value="http://francophonie.link/local_subscriber_ids.json">Francophonie [Unlicenced]
+                    <option idx="1" value="https://francophonie.link/local_subscriber_ids.json">Francophonie [Unlicenced]
                     </option>
-                    <option idx="5" value="http://francophonie.link/active_subscriber_ids.json">Active subscribers
+                    <option idx="5" value="https://francophonie.link/active_subscriber_ids.json">Active subscribers
                     </option>
                   </select>
                 </div>
@@ -569,7 +569,7 @@
           pattern = radio_id + "," + callsign + "," + wholename + "," + "," + city + "," + state + "," + country + ",";
           break;
         case "HD1":
-          pattern = "Private Call," + callsign + "," + fname + "," + city + "," + state + "," + country + "," + radio_id;
+          pattern = "Private Call," + callsign + " " + fname + "," + city + "," + state + "," + country + "," + radio_id;
           break;
         case "MOTO":
           pattern = "" + callsign + " " + fname + "," + radio_id;
