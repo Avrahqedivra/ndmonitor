@@ -6,8 +6,13 @@
   "license": "ISC",
   "main": "monitor.js",
   "type": "module",
+  "imports": {
+    "#root/*": "./dist/*"
+  },
   "scripts": {
     "build": "tsc",
+    "start": "node monitor.js",
+    "dev": "ts-node monitor.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -16,17 +21,18 @@
     "dashboard",
     "monitor"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/websocket": ">=1",
-    "@types/ws": ">=8"
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
-    "3d-force-graph": "^1",
-    "net": ">=1",
-    "permessage-deflate": ">=0",
-    "ts-node": "^10",
-    "typescript": ">=5",
-    "ws": ">=8"
+    "3d-force-graph": "^1.73.0",
+    "permessage-deflate": "^0.1.7",
+    "ws": "^8.16.0"
   }
 }
