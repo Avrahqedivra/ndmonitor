@@ -1,6 +1,6 @@
 {
   "name": "monitor",
-  "version": "2.60.0",
+  "version": "3.00.0",
   "description": "A FreeDMR/HBLink Dashboard Monitor",
   "author": "F4JDN - Jean-Michel Cohen <f4jdn@outlook.fr>",
   "license": "ISC",
@@ -22,17 +22,17 @@
     "monitor"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@types/ws": "^8.5.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.11",
+    "@types/ws": "^8.5",
+    "ts-node": "^10.9",
+    "typescript": "^6.0"
   },
   "dependencies": {
-    "3d-force-graph": "^1.73.0",
-    "permessage-deflate": "^0.1.7",
-    "ws": "^8.16.0"
+    "3d-force-graph": "^1.73",
+    "permessage-deflate": "^0.1",
+    "ws": "^8.16"
   }
 }

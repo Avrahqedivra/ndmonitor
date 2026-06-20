@@ -17,18 +17,18 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
- *  
-*/
+ *  Copyright(c) 2023-26 F4JDN - Jean-Michel Cohen
+ *
+ */
 
-import { Crc16 } from './crc16.js'
-import * as config from './config.js'
-import { abort } from 'process'
+import { Crc16 } from "./crc16.js"
+import * as config from "./config.js"
+import { abort } from "process"
 
 export let crc16: Crc16 = new Crc16()
 
 class GenCode {
-  private callsign: string = ''
+  private callsign: string = ""
   private params: string[] = []
   private options: any = null
   private index: number = 0
@@ -36,58 +36,58 @@ class GenCode {
   constructor(argv: string[]) {
     if (argv.length < 1) {
       this.usage()
-      throw(abort)
+      throw abort
     }
 
-    for (let i=0; i<argv.length; i++) {
-      if (argv[i].startsWith('-s') && argv[i].length > 2) {
+    for (let i = 0; i < argv.length; i++) {
+      if (argv[i].startsWith("-s") && argv[i].length > 2) {
         this.index = parseInt(argv[i].substring(2))
         if (this.index + 1 > config.__web_secret_key__.length) {
-          console.log(`bad ${argv[i]} parameter` )
+          console.log(`bad ${argv[i]} parameter`)
           this.usage()
-          throw(abort)
+          throw abort
         }
-      }
-      else
-      if (argv[i].startsWith('-'))
+      } else if (argv[i].startsWith("-"))
         this.params.push(argv[i].substring(1).trim())
-      else
-        this.callsign = argv[i].trim()
+      else this.callsign = argv[i].trim()
     }
 
     this.options = new Set(this.params)
-  
-    if (this.options.has('c') || this.options.has('u'))
+
+    if (this.options.has("c") || this.options.has("u"))
       this.callsign = this.callsign.toUpperCase()
-    
-    if (this.options.has('m') || this.options.has('l'))
+
+    if (this.options.has("m") || this.options.has("l"))
       this.callsign = this.callsign.toLowerCase()
 
-    if (this.callsign === '') {
+    if (this.callsign === "") {
       this.usage()
-      throw(abort)
+      throw abort
     }
   }
 
   usage(): void {
-    console.log("\nusage: node ./dist/gencode[.js] [-c] callsign [-sX]\n \
+    console.log(
+      "\nusage: node ./dist/gencode[.js] [-c] callsign [-sX]\n \
       \toptional -sX, X is the index of the secret key starting at 0\n \
-      \toptional -c will uppercase the callsign\n\toptional -m will lowercase the callsign\n")
+      \toptional -c will uppercase the callsign\n\toptional -m will lowercase the callsign\n",
+    )
   }
 
-  compute(): [ string, string ] {
-    let code = crc16.compute(this.callsign, config.__web_secret_key__[this.index]).toString()
-    return [ this.callsign, code ]
+  compute(): [string, string] {
+    let code = crc16
+      .compute(this.callsign, config.__web_secret_key__[this.index])
+      .toString()
+    return [this.callsign, code]
   }
 }
 
 try {
   let gencode = new GenCode(process.argv.slice(2))
 
-  let [ callsign, code ] = gencode.compute()
-  console.log("\nLogin/Passcode generator for NDMonitor v2.0.0\nCopyright (c) 2024 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>\n")
+  let [callsign, code] = gencode.compute()
+  console.log(
+    "\nLogin/Passcode generator for NDMonitor v2.0.0\nCopyright (c) 2024 Jean-Michel Cohen, F4JDN <f4jdn@outlook.fr>\n",
+  )
   console.log(callsign + " passcode is " + code + "\n")
-} 
-catch(e) {
-
-}
+} catch (e) {}

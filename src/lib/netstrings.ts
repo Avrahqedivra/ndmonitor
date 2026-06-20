@@ -1,6 +1,6 @@
 /*
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
+ *  of this software and associated documentation files (the'Software'), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is
@@ -9,7 +9,7 @@
  *  The above copyright notice and this permission notice shall be included in
  *  all copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -17,24 +17,27 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
- *  
-*/
-import fs from 'fs'
+ *  Copyright(c) 2023-26 F4JDN - Jean-Michel Cohen
+ *
+ */
+
+import fs from "fs"
 import { logger } from "../monitor.js"
-import * as config from '../config.js'
+import * as config from "../config.js"
 
 export class NetStringReceiver {
-  private receiveBox = null
+  private receiveBox: ((box: Buffer) => void) | null = null
   private box: Buffer = Buffer.alloc(0)
   private _unprocessed = Buffer.alloc(0)
   private totalLength: number = 0
   private offset: number = 0
 
   constructor(receiveBoxCallback: any) {
-    this.receiveBox = receiveBoxCallback || function(box: Buffer) {
-      logger.info(box.toString()) 
-    }
+    this.receiveBox =
+      receiveBoxCallback ||
+      function (box: Buffer) {
+        logger.info(box.toString())
+      }
   }
 
   reSync(): void {
@@ -48,44 +51,60 @@ export class NetStringReceiver {
     this.receiveBox = null
   }
 
-  dataReceived(data: any) {    
+  dataReceived(data: any) {
     try {
-      if (this.receiveBox === null)
+      // Get callback reference and validate immediately
+      const callback = this.receiveBox
+
+      if (callback === null) {
+        logger.info("receiveBox is null, ignoring data")
         return
+      }
 
-      this._unprocessed = Buffer.concat([this._unprocessed, data]);
+      if (typeof callback !== "function") {
+        logger.error(`receiveBox is not a function, it's a ${typeof callback}`)
+        return
+      }
 
-      while(this._unprocessed.length) {
+      this._unprocessed = Buffer.concat([this._unprocessed, data])
+
+      while (this._unprocessed.length) {
         if (this.offset == 0) {
           const colonIndex = this._unprocessed.indexOf(":")
-          if (colonIndex == -1)
-            break
+          if (colonIndex == -1) break
 
-          this.totalLength = parseInt(this._unprocessed.subarray(0, colonIndex).toString())
+          this.totalLength = parseInt(
+            this._unprocessed.subarray(0, colonIndex).toString(),
+          )
           this.offset = colonIndex + 1
         }
-        
-        // if we need more data skip until next packet
-        if (this._unprocessed.length < this.totalLength)
-          break
 
-        // we are done, get the box
-        this.box = this._unprocessed.subarray(this.offset, this.totalLength+this.offset)
-        // adjust buffer for next round
-        this._unprocessed = Buffer.from(this._unprocessed.subarray(this.totalLength+this.offset+1))
-        // reset local pointer
+        if (this._unprocessed.length < this.totalLength + this.offset) break
+
+        this.box = this._unprocessed.subarray(
+          this.offset,
+          this.totalLength + this.offset,
+        )
+        this._unprocessed = Buffer.from(
+          this._unprocessed.subarray(this.totalLength + this.offset + 1),
+        )
         this.offset = 0
 
-        this.receiveBox(this.box)
-        // reset box
+        // Call with the stored reference
+        callback(this.box)
         this.box = Buffer.alloc(0)
       }
-    }catch(e) {
+    } catch (e) {
+      console.error("NetString error:", e)
       this.reSync()
-      logger.info('NetString out of sync. Please relaunch the monitor')
+      logger.info("NetString out of sync. Please relaunch the monitor")
 
       if (config.__loginfo__) {
-        fs.writeFileSync(`${config.__log_path__}$/NETSTRING${Date.now()}.txt`, data.toString('utf-8'), { encoding: 'utf8' })
+        fs.writeFileSync(
+          `${config.__log_path__}$/NETSTRING${Date.now()}.txt`,
+          data.toString("utf-8"),
+          { encoding: "utf8" },
+        )
       }
     }
   }

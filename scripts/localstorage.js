@@ -6,11 +6,11 @@ allbridges = true
 // localStorage.setItem('theme', themeName)
 // localStorage.getItem('theme', themeName)
 
-var mobileDevice = false
+let mobileDevice = false
 
-var zoomValue = 1
+let zoomValue = 1
 
-var names = []    
+let names = []    
 
 names["Andre"] = "André"
 names["Francois"] = "François"
@@ -41,7 +41,7 @@ names["Joel"] = "Joël"
 names["Jeremie"] = "Jérémie"
 names["Jerã´me"] = "Jérôme"
 
-var tableVisibility = {
+let tableVisibility = {
     "chartstype": { visibility: { menu: true, item: { show: "block", hide: "none" }}, title: "Charts" },
     "insertPoint": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Talkgroups" },
     "bridgesTable": { visibility: { menu: true, item: { show: "inline-table", hide: "none" }}, title: "Bridges" },
@@ -132,7 +132,7 @@ function initMenubar(disabledMenuPattern) {
     if (disabledMenuPattern != null) {
         for(let i=0; i<disabledMenuPattern.length; i++) {
             if (disabledMenuPattern.charAt(i) == 'X') {
-                var el = $(`#menubar ul li:nth-child(${i+1})`)
+                let el = $(`#menubar ul li:nth-child(${i+1})`)
                 if (el.prop('tagName') === 'LI')
                     $(`#menubar ul > li:nth-child(${i+1})`).addClass('menudisabled')
                 else {
@@ -186,10 +186,10 @@ function getTgTableState(name) {
 }
 
 function createCookie(name, value, days) {
-    var expires
+    let expires
 
     if (days) {
-        var date = new Date()
+        let date = new Date()
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
         expires = "; expires=" + date.toGMTString()
     } else {
@@ -201,10 +201,10 @@ function createCookie(name, value, days) {
 }
 
 function readCookie(name) {
-    var nameEQ = name + "="
-    var ca = document.cookie.split(';')
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i]
+    let nameEQ = name + "="
+    let ca = document.cookie.split(';')
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i]
         while (c.charAt(0) === ' ')
             c = c.substring(1, c.length)
         if (c.indexOf(nameEQ) === 0)
@@ -217,9 +217,9 @@ function saveSettings() {
     themeSettings = document.documentElement.className
 
     if (document.getElementById("openbridges")) {
-        var ob = document.getElementById("openbridges").style.display != "none"
-        var ma = document.getElementById("masters").style.display != "none"
-        var pe = document.getElementById("peers").style.display != "none"
+        let ob = document.getElementById("openbridges").style.display != "none"
+        let ma = document.getElementById("masters").style.display != "none"
+        let pe = document.getElementById("peers").style.display != "none"
 
         settings = [
             { "config": { "theme": themeSettings, hidetg: hideAllTG, "last": Date.now(), "allbridges": allbridges, "tableVisibility": tableVisibility } },
@@ -231,10 +231,10 @@ function saveSettings() {
 
         if (tgorder != null) {
             tgorder.forEach(tg => {
-                var tgName = "tgId"+tg
-                var tgId = "hblink"+tg
+                let tgName = "tgId"+tg
+                let tgId = "hblink"+tg
                 if (document.getElementById(tgName) != null) {
-                    var visible = document.getElementById(tgId).style.display != "none"
+                    let visible = document.getElementById(tgId).style.display != "none"
                     settings.push({ "name": tgId, "open": visible, "colspan": $("#" + tgName + " tr th").length })
                 }
             });
@@ -254,7 +254,7 @@ function eraseCookie(name) {
 
 function adjustTheme() {
     if (themeSettings == "auto") {
-        var hr = new Date().getHours()
+        let hr = new Date().getHours()
         // choose dark netween 10PM and 7AM
         if (hr > 22 && hr < 7) {
             if (document.documentElement.className != "theme-dark")
@@ -269,7 +269,7 @@ function adjustTheme() {
 
 function applyConfig() {
     for(let i=0; i < settings.length; i++) {
-        var tbs = settings[i]
+        let tbs = settings[i]
 
         if (tbs.config) {
             themeSettings = tbs.config.theme
@@ -391,7 +391,7 @@ function getCountryFlag(countryCode) {
     if (flag64[countryCode.toLowerCase()] != null)
         return flag64[countryCode.toLowerCase()]
 
-    var code = countryCode.toUpperCase()
+    let code = countryCode.toUpperCase()
 
     for (let i = 0; i < mcc.length; i++) {
         if (mcc[i].code == code) {
@@ -449,7 +449,7 @@ function getTgFlag(id) {
 
         for (let i = 0; i < mcc.length; i++) {
             if (mcc[i].dmrid == id) {
-                var code = mcc[i].code.toLowerCase()
+                let code = mcc[i].code.toLowerCase()
 
                 if (flag64[code] != null)
                     return flag64[code]
@@ -467,7 +467,7 @@ function getFlag(callsign, dmrid) {
 
     if (dmrid.length > 2 && parseInt(dmrid) > 100) {
         // check if beacon has specific bitmap
-        for (var key in tgbeacons) {
+        for (let key in tgbeacons) {
             if (dmrid == key) {
                 if (flag64[tgbeacons[key]] != null)
                     return flag64[tgbeacons[key]]
@@ -525,7 +525,7 @@ function getFlag(callsign, dmrid) {
 
         for (let i = 0; i < mcc.length; i++) {
             if (mcc[i].dmrid == dmrid) {
-                var code = mcc[i].code.toLowerCase()
+                let code = mcc[i].code.toLowerCase()
                 
                 if (flag64[code] != null)
                     return flag64[code]

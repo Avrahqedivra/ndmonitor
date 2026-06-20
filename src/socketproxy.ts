@@ -17,19 +17,19 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
- *  
-*/
+ *  Copyright(c) 2023-26 F4JDN - Jean-Michel Cohen
+ *
+ */
 
-import fs from 'fs'
-import { WebSocketServer } from 'ws'
+import fs from "fs"
+import { WebSocketServer } from "ws"
 import { logger } from "./monitor.js"
 
 import * as globals from "./globals.js"
 import * as config from "./config.js"
 
 export class SocketProxy {
-  private proxyServer = null
+  private proxyServer: WebSocketServer | null = null
 
   broadcast(payload: any) {
     if (this.proxyServer) {
@@ -37,9 +37,8 @@ export class SocketProxy {
         this.proxyServer.clients.forEach((client: any) => {
           client.send(payload)
         })
-      }
-      catch(e) {
-        logger.info('error')
+      } catch (e) {
+        logger.info("error")
       }
     }
   }
@@ -52,10 +51,10 @@ export class SocketProxy {
           // See zlib defaults.
           chunkSize: 1024,
           memLevel: 7,
-          level: 3
+          level: 3,
         },
         zlibInflateOptions: {
-          chunkSize: 10 * 1024
+          chunkSize: 10 * 1024,
         },
         // Other options settable:
         clientNoContextTakeover: true, // Defaults to negotiated value.
@@ -63,28 +62,29 @@ export class SocketProxy {
         serverMaxWindowBits: 10, // Defaults to negotiated value.
         // Below options specified as default values.
         concurrencyLimit: 10, // Limits zlib concurrency for perf.
-        threshold: 1024 // Size (in bytes) below which messages
+        threshold: 1024, // Size (in bytes) below which messages
         // should not be compressed if context takeover is disabled.
-      }
+      },
     })
 
-    logger.info(`proxy socket server created ${config.__proxyServerPort__} ${globals.__OK__}\n`)
+    logger.info(
+      `proxy socket server created ${config.__proxyServerPort__} ${globals.__OK__}\n`,
+    )
 
-    this.proxyServer.on('connection', (ws: any, req: any) => {
+    this.proxyServer.on("connection", (ws: any, req: any) => {
       let _message: any = {}
 
-      ws.on('error', console.error)
+      ws.on("error", console.error)
 
-      ws.on('message', (payload: any) => {
+      ws.on("message", (payload: any) => {
         try {
           this.broadcast(payload)
-        }
-        catch(e) {
+        } catch (e) {
           logger.info(`invalid json received : ${payload}`)
         }
       })
 
-      ws.on('close', () => {
+      ws.on("close", () => {
         ws.close()
         this.proxyServer = null
       })

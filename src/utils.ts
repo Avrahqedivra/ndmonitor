@@ -1,6 +1,6 @@
 /*
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
+ *  of this software and associated documentation files (the'Software'), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is
@@ -9,7 +9,7 @@
  *  The above copyright notice and this permission notice shall be included in
  *  all copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -17,284 +17,326 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
- *  
-*/
+ *  Copyright(c) 2023-26 F4JDN - Jean-Michel Cohen
+ *
+ */
 
-import fs from "fs";
-import * as config from './config.js'
+import fs from "fs"
+import * as config from "./config.js"
+
+interface ElapsedTime {
+  days?: number
+  hours?: number
+  minutes?: number
+  seconds?: number
+}
+
+interface TimezoneInfo {
+  value: string
+  abbr: string
+  offset: number
+  isdst: boolean
+  text: string
+  utc: string[]
+}
+
+interface NetworkPictureResult {
+  TGIMG: string
+  ALIAS: string
+}
+
+interface IdEntry {
+  CALLSIGN?: string
+  NAME?: string
+  NETWORK?: string
+  CITY?: string
+  STATE?: string
+  COUNTRY?: string
+  FREQ?: string
+  CC?: string
+  OFFSET?: string
+  LINKED?: string
+  TRUSTEE?: string
+}
+
+type IdDictionaryEntry = Record<string, IdEntry>
+
+interface AliasRecord {
+  id: string
+  [key: string]: unknown
+}
+
+type AliasListDict = Record<string, AliasRecord[]>
 
 export class Utils {
-  constructor() {
+  constructor() {}
+
+  parseElapsedTime(elapsedTimeStr: string): ElapsedTime | null {
+    try {
+      let match = null
+
+      // check days hours
+      if ((match = elapsedTimeStr.match(/(\d+)d (\d+)h/))) {
+        const days = parseInt(match[1], 10)
+        const hours = parseInt(match[2], 10)
+        return { days, hours }
+      }
+
+      // check hours minutes
+      if ((match = elapsedTimeStr.match(/(\d+)h (\d+)m/))) {
+        const hours = parseInt(match[1], 10)
+        const minutes = parseInt(match[2], 10)
+        return { hours, minutes }
+      }
+
+      // check minutes seconds
+      if ((match = elapsedTimeStr.match(/(\d+)m (\d+)s/))) {
+        const minutes = parseInt(match[1], 10)
+        const seconds = parseInt(match[2], 10)
+        return { minutes, seconds }
+      }
+
+      // check only seconds
+      if ((match = elapsedTimeStr.match(/(\d+)s/))) {
+        const minutes = 0
+        const seconds = parseInt(match[1], 10)
+        return { minutes, seconds }
+      }
+
+      return null
+    } catch (e) {
+      return null
+    }
   }
-
-	parseElapsedTime(elapsedTimeStr: string) {
-		try { 
-			let match = null
-			
-			// check days hours
-			if (match = elapsedTimeStr.match(/(\d+)d (\d+)h/)) {
-				const days = parseInt(match[1], 10);
-				const hours = parseInt(match[2], 10);
-				return { days, hours }
-			}
-
-			// check hours minutes
-			if (match = elapsedTimeStr.match(/(\d+)h (\d+)m/)) {
-				const hours = parseInt(match[1], 10);
-				const minutes = parseInt(match[2], 10);
-				return { hours, minutes };
-			}
-
-			// check minutes seconds
-			if (match = elapsedTimeStr.match(/(\d+)m (\d+)s/)) {
-				const minutes = parseInt(match[1], 10);
-				const seconds = parseInt(match[2], 10);
-				return { minutes, seconds }
-			}
-
-			// check only seconds
-			if (match = elapsedTimeStr.match(/(\d+)s/)) {
-				const minutes = 0;
-				const seconds = parseInt(match[1], 10);
-				return { minutes, seconds }
-			}
-
-			return null
-		}
-		catch(e) {
-			return null
-		}
-	}
 
   /**
    * add tgid image field to lastheard
    */
-  isTgidInList(tgid: string, list: String[]): boolean {
+  isTgidInList(tgid: string, list: string[]): boolean {
     let negate = false
-    let pattern = null
+    let pattern: string | null = null
     let index = -1
-    
-    for(let i=0; i < list.length; i++) {
+
+    for (let i = 0; i < list.length; i++) {
       pattern = list[i]
 
       // if negate note nagation, and get interval
-      if (negate = pattern.startsWith('~'))
-        pattern = pattern.substring(1)
+      if ((negate = pattern.startsWith("~"))) pattern = pattern.substring(1)
 
-      if (pattern == tgid)
-        return negate ? false:true
+      if (pattern == tgid) return negate ? false : true
 
-      if ((index = pattern.indexOf('*')) != -1 && tgid.startsWith(pattern.substring(0, index)))
-        return negate ? false:true
+      if (
+        (index = pattern.indexOf("*")) != -1 &&
+        tgid.startsWith(pattern.substring(0, index))
+      )
+        return negate ? false : true
 
-      if ((index = pattern.indexOf('..')) != -1) {
-        if (parseInt(pattern.substring(0, index)) <= parseInt(tgid) && parseInt(tgid) <= parseInt(pattern.substring(index+2)))
-          return negate ? false:true
+      if ((index = pattern.indexOf("..")) != -1) {
+        if (
+          parseInt(pattern.substring(0, index)) <= parseInt(tgid) &&
+          parseInt(tgid) <= parseInt(pattern.substring(index + 2))
+        )
+          return negate ? false : true
       }
     }
 
     return false
   }
 
-  getNetWorkPicture(tgid: string, alias: string): any {
+  getNetWorkPicture(
+    tgid: string,
+    alias: string,
+  ): NetworkPictureResult | undefined {
     if (config.__tgImage__ != null && config.__tgImage__.length > 0) {
-      for(let entry of config.__tgImage__) {
-        let tgs = Object.values(entry)[0].toString().split(',')
-                
-        if (this.isTgidInList(tgid, tgs)) {
-          let exts = entry['ext'].split(',')
+      for (let entry of config.__tgImage__) {
+        // Object.values returns unknown[] in TS; ensure value is string
+        const _val = Object.values(entry)[0]
+        let tgs = (typeof _val === "string" ? _val : String(_val)).split(",")
 
-          for(let i=0; i<exts.length; i++) {
-            if (exts[i].trim().length)
-              alias = alias.replace(exts[i].trim(), '')
+        if (this.isTgidInList(tgid, tgs)) {
+          let exts = entry["ext"].split(",")
+
+          for (let i = 0; i < exts.length; i++) {
+            if (exts[i].trim().length) alias = alias.replace(exts[i].trim(), "")
           }
-          return {'TGIMG' : Object.keys(entry)[0], 'ALIAS': alias}
+          return { TGIMG: Object.keys(entry)[0], ALIAS: alias }
         }
       }
 
       // returns default picture (last entry of config.__tgImage__) and unmodified alias
-      return { 'TGIMG' : Object.keys(config.__tgImage__[config.__tgImage__.length-1])[0], 'ALIAS': alias}
+      return {
+        TGIMG: Object.keys(
+          config.__tgImage__[config.__tgImage__.length - 1],
+        )[0],
+        ALIAS: alias,
+      }
     }
   }
 
-  get_alias(_id: string, _dict: any): [] {
+  get_alias(_id: string, _dict: AliasListDict): AliasRecord | [] {
     const records = _dict[Object.keys(_dict)[0]]
-    
-    for(let i=0; i < records.length; i++) {
+
+    for (let i = 0; i < records.length; i++) {
       const record = records[i]
-      
-      if (record.id == _id)
-        return record
+
+      if (record.id == _id) return record
     }
 
     return []
   }
 
-  alias_only(_id: string, _dict: any): [string, string] {
-    for(let i=0; i<_dict.length; i++) {
-      if (_dict[i][_id] != null)
-        return([_dict[i][_id]["CALLSIGN"], _dict[i][_id]["NAME"]])
+  alias_only(_id: string, _dict: IdDictionaryEntry[]): [string, string] {
+    for (let i = 0; i < _dict.length; i++) {
+      const entry = _dict[i][_id]
+      if (entry != null) return [entry.CALLSIGN ?? "", entry.NAME ?? ""]
     }
 
     return ["", ""]
   }
 
-  peer_only(_id: string, _dict: any): [string, string] {
-    for(let i=0; i<_dict.length; i++) {
-      if (_dict[i][_id] != null)
-        return([_dict[i][_id]["CALLSIGN"], _dict[i][_id]["NETWORK"]])
+  peer_only(_id: string, _dict: IdDictionaryEntry[]): [string, string] {
+    for (let i = 0; i < _dict.length; i++) {
+      const entry = _dict[i][_id]
+      if (entry != null) return [entry.CALLSIGN ?? "", entry.NETWORK ?? ""]
     }
 
     return ["", ""]
   }
 
-  alias_tgid(_id: string, _dict: any): string {
-    for(let i=0; i<_dict.length; i++) {
-      if (_dict[i][_id] != null)
-        return(_dict[i][_id]["NAME"])
+  alias_tgid(_id: string, _dict: IdDictionaryEntry[]): string {
+    for (let i = 0; i < _dict.length; i++) {
+      const entry = _dict[i][_id]
+      if (entry != null) return entry.NAME ?? _id
     }
 
     return _id
   }
 
-  alias_short(_id: string, _dict: any): string {
+  alias_short(_id: string, _dict: IdDictionaryEntry[]): string {
     var alias = this.alias_only(_id, _dict)
     return `${alias[0]}, ${alias[1]}`
   }
 
-  peer_short(_id: string, _dict: any): string {
+  peer_short(_id: string, _dict: IdDictionaryEntry[]): string {
     var alias = this.peer_only(_id, _dict)
     return `${alias[0]}, ${alias[1]}`
   }
 
-  alias_call(_id: string, _dict: any): string {
+  alias_call(_id: string, _dict: IdDictionaryEntry[]): string {
     let alias = this.alias_only(_id, _dict)[0]
 
-    if (alias.length == 0)
-      return _id
+    if (alias.length == 0) return _id
 
     return alias
   }
 
-  peer_call(_id: string, _dict: any): string {
+  peer_call(_id: string, _dict: IdDictionaryEntry[]): string {
     let alias = this.peer_only(_id, _dict)[0]
 
-    if (alias.length == 0)
-      return _id
+    if (alias.length == 0) return _id
 
     return alias
   }
 
   // LONG VERSION - MAKES A FULL DICTIONARY OF INFORMATION BASED ON TYPE OF ALIAS FILE
-  // BASED ON DOWNLOADS FROM RADIOID.NET      
-  mk_full_id_dict(_path: string, _file: string, _type: string) {
-    let _dict = []
-    let record = ""
+  // BASED ON DOWNLOADS FROM RADIOID.NET
+  mk_full_id_dict(
+    _path: string,
+    _file: string,
+    _type: string,
+  ): IdDictionaryEntry[] {
+    let _dict: IdDictionaryEntry[] = []
+    let record: any = ""
 
-    if (_path.length == 0 || _file.length == 0)
-        return _dict
+    if (_path.length == 0 || _file.length == 0) return _dict
 
     try {
-        let records: any = JSON.parse(fs.readFileSync(_path+_file, { encoding: 'utf8', flag: 'r' }))
+      let records: any = JSON.parse(
+        fs.readFileSync(_path + _file, { encoding: "utf8", flag: "r" }),
+      )
 
-        if (_type === 'peer') {
-          if (records.hasOwnProperty('rptrs'))
-            records = records.rptrs
-          else
-            records = records[Object.keys(records)[0]]
+      if (_type === "peer") {
+        if (records.hasOwnProperty("rptrs")) records = records.rptrs
+        else records = records[Object.keys(records)[0]]
 
-            for(let i=0; i<records.length; i++) {
-                try {
-                    record = records[i]
+        for (let i = 0; i < records.length; i++) {
+          try {
+            record = records[i]
 
-                    _dict.push({ [record['id']]:  {
-                        'CALLSIGN': record['callsign'],
-                        'CITY': record['city'],
-                        'STATE': record['state'],
-                        'COUNTRY': record['country'],
-                        'FREQ': record['frequency'],
-                        'CC': record['color_code'],
-                        'OFFSET': record['offset'],
-                        'LINKED': record['ts_linked'],
-                        'TRUSTEE': record['trustee'],
-                        'NETWORK': record['ipsc_network']
-                    }})
-                }
-                catch(e) {
-                }
-            }
+            _dict.push({
+              [record["id"]]: {
+                CALLSIGN: record["callsign"],
+                CITY: record["city"],
+                STATE: record["state"],
+                COUNTRY: record["country"],
+                FREQ: record["frequency"],
+                CC: record["color_code"],
+                OFFSET: record["offset"],
+                LINKED: record["ts_linked"],
+                TRUSTEE: record["trustee"],
+                NETWORK: record["ipsc_network"],
+              },
+            })
+          } catch (e) {}
         }
-        else
-        if (_type === 'subscriber') {
-            if (records.hasOwnProperty('results'))
-                records = records.results
-            else
-                records = records[Object.keys(records)[0]]
+      } else if (_type === "subscriber") {
+        if (records.hasOwnProperty("results")) records = records.results
+        else records = records[Object.keys(records)[0]]
 
-            let _name = ""
+        let _name = ""
 
-            for(let i=0; i<records.length; i++) {
-                try {
-                    record = records[i]
+        for (let i = 0; i < records.length; i++) {
+          try {
+            record = records[i]
 
-                    // Try to craete a string name regardless of existing data
-                    if (record.hasOwnProperty('surname') && record.hasOwnProperty('fname'))
-                        _name = `${record['fname']} ${record['surname']}`
-                    else
-                    if (record.hasOwnProperty('fname'))
-                        _name = record['fname']
-                    else
-                    if (record.hasOwnProperty('surname'))
-                        _name = record['surname']
-                    else
-                    if (record.hasOwnProperty('name'))
-                        _name = record['name']
-                    else
-                        _name = 'NO NAME'
+            // Try to craete a string name regardless of existing data
+            if (
+              record.hasOwnProperty("surname") &&
+              record.hasOwnProperty("fname")
+            )
+              _name = `${record["fname"]} ${record["surname"]}`
+            else if (record.hasOwnProperty("fname")) _name = record["fname"]
+            else if (record.hasOwnProperty("surname")) _name = record["surname"]
+            else if (record.hasOwnProperty("name")) _name = record["name"]
+            else _name = "NO NAME"
 
-                    // Make dictionary entry, if any of the information below isn't in the record, it wil be skipped
-                    try {
-                        _dict.push({ [record['id']]:  {
-                            'CALLSIGN': record['callsign'],
-                            'NAME': _name,
-                            'CITY': record['city'],
-                            'STATE': record['state'],
-                            'COUNTRY': record['country']
-                        }})
-                    }
-                    catch(e) {
-                    }
-                }
-                catch(e) {
-                }
-            }
+            // Make dictionary entry, if any of the information below isn't in the record, it wil be skipped
+            try {
+              _dict.push({
+                [record["id"]]: {
+                  CALLSIGN: record["callsign"],
+                  NAME: _name,
+                  CITY: record["city"],
+                  STATE: record["state"],
+                  COUNTRY: record["country"],
+                },
+              })
+            } catch (e) {}
+          } catch (e) {}
         }
-        else
-        if (_type === 'tgid') {
-            records = records.results
+      } else if (_type === "tgid") {
+        records = records.results
 
-            for(let i=0; i<records.length; i++) {
-                try {
-                    record = records[i]
-                    _dict.push({ [record['id']]:  {
-                        'NAME': record['callsign']
-                    }})
-                }
-                catch(e) {
-                }
-            }
+        for (let i = 0; i < records.length; i++) {
+          try {
+            record = records[i]
+            _dict.push({
+              [record["id"]]: {
+                NAME: record["callsign"],
+              },
+            })
+          } catch (e) {}
         }
-        return _dict
+      }
+      return _dict
     } catch (e) {
-        return _dict
+      return _dict
     }
   }
 
   getTimeZone(offset: number): string {
-    for(let i=0; i<this.timezones.length; i++) {
-      if (this.timezones[i].offset == offset)
-        return this.timezones[i].abbr
+    for (let i = 0; i < this.timezones.length; i++) {
+      if (this.timezones[i].offset == offset) return this.timezones[i].abbr
     }
 
     return ""
@@ -302,127 +344,116 @@ export class Utils {
 
   // https://github.com/dmfilipenko/timezones.json
 
-  timezones = [
+  timezones: TimezoneInfo[] = [
     {
-      "value": "Dateline Standard Time",
-      "abbr": "DST",
-      "offset": -12,
-      "isdst": false,
-      "text": "(UTC-12:00) International Date Line West",
-      "utc": [
-        "Etc/GMT+12"
-      ]
+      value: "Dateline Standard Time",
+      abbr: "DST",
+      offset: -12,
+      isdst: false,
+      text: "(UTC-12:00) International Date Line West",
+      utc: ["Etc/GMT+12"],
     },
     {
-      "value": "UTC-11",
-      "abbr": "U",
-      "offset": -11,
-      "isdst": false,
-      "text": "(UTC-11:00) Coordinated Universal Time-11",
-      "utc": [
+      value: "UTC-11",
+      abbr: "U",
+      offset: -11,
+      isdst: false,
+      text: "(UTC-11:00) Coordinated Universal Time-11",
+      utc: [
         "Etc/GMT+11",
         "Pacific/Midway",
         "Pacific/Niue",
-        "Pacific/Pago_Pago"
-      ]
+        "Pacific/Pago_Pago",
+      ],
     },
     {
-      "value": "Hawaiian Standard Time",
-      "abbr": "HST",
-      "offset": -10,
-      "isdst": false,
-      "text": "(UTC-10:00) Hawaii",
-      "utc": [
+      value: "Hawaiian Standard Time",
+      abbr: "HST",
+      offset: -10,
+      isdst: false,
+      text: "(UTC-10:00) Hawaii",
+      utc: [
         "Etc/GMT+10",
         "Pacific/Honolulu",
         "Pacific/Johnston",
         "Pacific/Rarotonga",
-        "Pacific/Tahiti"
-      ]
+        "Pacific/Tahiti",
+      ],
     },
     {
-      "value": "Alaskan Standard Time",
-      "abbr": "AKDT",
-      "offset": -8,
-      "isdst": true,
-      "text": "(UTC-09:00) Alaska",
-      "utc": [
+      value: "Alaskan Standard Time",
+      abbr: "AKDT",
+      offset: -8,
+      isdst: true,
+      text: "(UTC-09:00) Alaska",
+      utc: [
         "America/Anchorage",
         "America/Juneau",
         "America/Nome",
         "America/Sitka",
-        "America/Yakutat"
-      ]
+        "America/Yakutat",
+      ],
     },
     {
-      "value": "Pacific Standard Time (Mexico)",
-      "abbr": "PDT",
-      "offset": -7,
-      "isdst": true,
-      "text": "(UTC-08:00) Baja California",
-      "utc": [
-        "America/Santa_Isabel"
-      ]
+      value: "Pacific Standard Time (Mexico)",
+      abbr: "PDT",
+      offset: -7,
+      isdst: true,
+      text: "(UTC-08:00) Baja California",
+      utc: ["America/Santa_Isabel"],
     },
     {
-      "value": "Pacific Daylight Time",
-      "abbr": "PDT",
-      "offset": -7,
-      "isdst": true,
-      "text": "(UTC-07:00) Pacific Daylight Time (US & Canada)",
-      "utc": [
-        "America/Los_Angeles",
-        "America/Tijuana",
-        "America/Vancouver"
-      ]
+      value: "Pacific Daylight Time",
+      abbr: "PDT",
+      offset: -7,
+      isdst: true,
+      text: "(UTC-07:00) Pacific Daylight Time (US & Canada)",
+      utc: ["America/Los_Angeles", "America/Tijuana", "America/Vancouver"],
     },
     {
-      "value": "Pacific Standard Time",
-      "abbr": "PST",
-      "offset": -8,
-      "isdst": false,
-      "text": "(UTC-08:00) Pacific Standard Time (US & Canada)",
-      "utc": [
+      value: "Pacific Standard Time",
+      abbr: "PST",
+      offset: -8,
+      isdst: false,
+      text: "(UTC-08:00) Pacific Standard Time (US & Canada)",
+      utc: [
         "America/Los_Angeles",
         "America/Tijuana",
         "America/Vancouver",
-        "PST8PDT"
-      ]
+        "PST8PDT",
+      ],
     },
     {
-      "value": "US Mountain Standard Time",
-      "abbr": "UMST",
-      "offset": -7,
-      "isdst": false,
-      "text": "(UTC-07:00) Arizona",
-      "utc": [
+      value: "US Mountain Standard Time",
+      abbr: "UMST",
+      offset: -7,
+      isdst: false,
+      text: "(UTC-07:00) Arizona",
+      utc: [
         "America/Creston",
         "America/Dawson",
         "America/Dawson_Creek",
         "America/Hermosillo",
         "America/Phoenix",
         "America/Whitehorse",
-        "Etc/GMT+7"
-      ]
+        "Etc/GMT+7",
+      ],
     },
     {
-      "value": "Mountain Standard Time (Mexico)",
-      "abbr": "MDT",
-      "offset": -6,
-      "isdst": true,
-      "text": "(UTC-07:00) Chihuahua, La Paz, Mazatlan",
-      "utc": [
-        "America/Chihuahua",
-        "America/Mazatlan"
-      ]
+      value: "Mountain Standard Time (Mexico)",
+      abbr: "MDT",
+      offset: -6,
+      isdst: true,
+      text: "(UTC-07:00) Chihuahua, La Paz, Mazatlan",
+      utc: ["America/Chihuahua", "America/Mazatlan"],
     },
     {
-      "value": "Mountain Standard Time",
-      "abbr": "MDT",
-      "offset": -6,
-      "isdst": true,
-      "text": "(UTC-07:00) Mountain Time (US & Canada)",
-      "utc": [
+      value: "Mountain Standard Time",
+      abbr: "MDT",
+      offset: -6,
+      isdst: true,
+      text: "(UTC-07:00) Mountain Time (US & Canada)",
+      utc: [
         "America/Boise",
         "America/Cambridge_Bay",
         "America/Denver",
@@ -430,16 +461,16 @@ export class Utils {
         "America/Inuvik",
         "America/Ojinaga",
         "America/Yellowknife",
-        "MST7MDT"
-      ]
+        "MST7MDT",
+      ],
     },
     {
-      "value": "Central America Standard Time",
-      "abbr": "CAST",
-      "offset": -6,
-      "isdst": false,
-      "text": "(UTC-06:00) Central America",
-      "utc": [
+      value: "Central America Standard Time",
+      abbr: "CAST",
+      offset: -6,
+      isdst: false,
+      text: "(UTC-06:00) Central America",
+      utc: [
         "America/Belize",
         "America/Costa_Rica",
         "America/El_Salvador",
@@ -447,16 +478,16 @@ export class Utils {
         "America/Managua",
         "America/Tegucigalpa",
         "Etc/GMT+6",
-        "Pacific/Galapagos"
-      ]
+        "Pacific/Galapagos",
+      ],
     },
     {
-      "value": "Central Standard Time",
-      "abbr": "CDT",
-      "offset": -5,
-      "isdst": true,
-      "text": "(UTC-06:00) Central Time (US & Canada)",
-      "utc": [
+      value: "Central Standard Time",
+      abbr: "CDT",
+      offset: -5,
+      isdst: true,
+      text: "(UTC-06:00) Central Time (US & Canada)",
+      utc: [
         "America/Chicago",
         "America/Indiana/Knox",
         "America/Indiana/Tell_City",
@@ -469,41 +500,38 @@ export class Utils {
         "America/Rankin_Inlet",
         "America/Resolute",
         "America/Winnipeg",
-        "CST6CDT"
-      ]
+        "CST6CDT",
+      ],
     },
     {
-      "value": "Central Standard Time (Mexico)",
-      "abbr": "CDT",
-      "offset": -5,
-      "isdst": true,
-      "text": "(UTC-06:00) Guadalajara, Mexico City, Monterrey",
-      "utc": [
+      value: "Central Standard Time (Mexico)",
+      abbr: "CDT",
+      offset: -5,
+      isdst: true,
+      text: "(UTC-06:00) Guadalajara, Mexico City, Monterrey",
+      utc: [
         "America/Bahia_Banderas",
         "America/Cancun",
         "America/Merida",
         "America/Mexico_City",
-        "America/Monterrey"
-      ]
+        "America/Monterrey",
+      ],
     },
     {
-      "value": "Canada Central Standard Time",
-      "abbr": "CCST",
-      "offset": -6,
-      "isdst": false,
-      "text": "(UTC-06:00) Saskatchewan",
-      "utc": [
-        "America/Regina",
-        "America/Swift_Current"
-      ]
+      value: "Canada Central Standard Time",
+      abbr: "CCST",
+      offset: -6,
+      isdst: false,
+      text: "(UTC-06:00) Saskatchewan",
+      utc: ["America/Regina", "America/Swift_Current"],
     },
     {
-      "value": "SA Pacific Standard Time",
-      "abbr": "SPST",
-      "offset": -5,
-      "isdst": false,
-      "text": "(UTC-05:00) Bogota, Lima, Quito",
-      "utc": [
+      value: "SA Pacific Standard Time",
+      abbr: "SPST",
+      offset: -5,
+      isdst: false,
+      text: "(UTC-05:00) Bogota, Lima, Quito",
+      utc: [
         "America/Bogota",
         "America/Cayman",
         "America/Coral_Harbour",
@@ -513,16 +541,16 @@ export class Utils {
         "America/Lima",
         "America/Panama",
         "America/Rio_Branco",
-        "Etc/GMT+5"
-      ]
+        "Etc/GMT+5",
+      ],
     },
     {
-      "value": "Eastern Standard Time",
-      "abbr": "EST",
-      "offset": -5,
-      "isdst": false,
-      "text": "(UTC-05:00) Eastern Time (US & Canada)",
-      "utc": [
+      value: "Eastern Standard Time",
+      abbr: "EST",
+      offset: -5,
+      isdst: false,
+      text: "(UTC-05:00) Eastern Time (US & Canada)",
+      utc: [
         "America/Detroit",
         "America/Havana",
         "America/Indiana/Petersburg",
@@ -538,16 +566,16 @@ export class Utils {
         "America/Pangnirtung",
         "America/Port-au-Prince",
         "America/Thunder_Bay",
-        "America/Toronto"
-      ]
+        "America/Toronto",
+      ],
     },
     {
-      "value": "Eastern Daylight Time",
-      "abbr": "EDT",
-      "offset": -4,
-      "isdst": true,
-      "text": "(UTC-04:00) Eastern Daylight Time (US & Canada)",
-      "utc": [
+      value: "Eastern Daylight Time",
+      abbr: "EDT",
+      offset: -4,
+      isdst: true,
+      text: "(UTC-04:00) Eastern Daylight Time (US & Canada)",
+      utc: [
         "America/Detroit",
         "America/Havana",
         "America/Indiana/Petersburg",
@@ -563,74 +591,67 @@ export class Utils {
         "America/Pangnirtung",
         "America/Port-au-Prince",
         "America/Thunder_Bay",
-        "America/Toronto"
-      ]
+        "America/Toronto",
+      ],
     },
     {
-      "value": "US Eastern Standard Time",
-      "abbr": "UEDT",
-      "offset": -5,
-      "isdst": false,
-      "text": "(UTC-05:00) Indiana (East)",
-      "utc": [
+      value: "US Eastern Standard Time",
+      abbr: "UEDT",
+      offset: -5,
+      isdst: false,
+      text: "(UTC-05:00) Indiana (East)",
+      utc: [
         "America/Indiana/Marengo",
         "America/Indiana/Vevay",
-        "America/Indianapolis"
-      ]
+        "America/Indianapolis",
+      ],
     },
     {
-      "value": "Venezuela Standard Time",
-      "abbr": "VST",
-      "offset": -4.5,
-      "isdst": false,
-      "text": "(UTC-04:30) Caracas",
-      "utc": [
-        "America/Caracas"
-      ]
+      value: "Venezuela Standard Time",
+      abbr: "VST",
+      offset: -4.5,
+      isdst: false,
+      text: "(UTC-04:30) Caracas",
+      utc: ["America/Caracas"],
     },
     {
-      "value": "Paraguay Standard Time",
-      "abbr": "PYT",
-      "offset": -4,
-      "isdst": false,
-      "text": "(UTC-04:00) Asuncion",
-      "utc": [
-        "America/Asuncion"
-      ]
+      value: "Paraguay Standard Time",
+      abbr: "PYT",
+      offset: -4,
+      isdst: false,
+      text: "(UTC-04:00) Asuncion",
+      utc: ["America/Asuncion"],
     },
     {
-      "value": "Atlantic Standard Time",
-      "abbr": "ADT",
-      "offset": -3,
-      "isdst": true,
-      "text": "(UTC-04:00) Atlantic Time (Canada)",
-      "utc": [
+      value: "Atlantic Standard Time",
+      abbr: "ADT",
+      offset: -3,
+      isdst: true,
+      text: "(UTC-04:00) Atlantic Time (Canada)",
+      utc: [
         "America/Glace_Bay",
         "America/Goose_Bay",
         "America/Halifax",
         "America/Moncton",
         "America/Thule",
-        "Atlantic/Bermuda"
-      ]
+        "Atlantic/Bermuda",
+      ],
     },
     {
-      "value": "Central Brazilian Standard Time",
-      "abbr": "CBST",
-      "offset": -4,
-      "isdst": false,
-      "text": "(UTC-04:00) Cuiaba",
-      "utc": [
-        "America/Campo_Grande",
-        "America/Cuiaba"
-      ]
+      value: "Central Brazilian Standard Time",
+      abbr: "CBST",
+      offset: -4,
+      isdst: false,
+      text: "(UTC-04:00) Cuiaba",
+      utc: ["America/Campo_Grande", "America/Cuiaba"],
     },
     {
-      "value": "SA Western Standard Time",
-      "abbr": "SWST",
-      "offset": -4,
-      "isdst": false,
-      "text": "(UTC-04:00) Georgetown, La Paz, Manaus, San Juan",
-      "utc": [
+      value: "SA Western Standard Time",
+      abbr: "SWST",
+      offset: -4,
+      isdst: false,
+      text: "(UTC-04:00) Georgetown, La Paz, Manaus, San Juan",
+      utc: [
         "America/Anguilla",
         "America/Antigua",
         "America/Aruba",
@@ -660,47 +681,40 @@ export class Utils {
         "America/St_Thomas",
         "America/St_Vincent",
         "America/Tortola",
-        "Etc/GMT+4"
-      ]
+        "Etc/GMT+4",
+      ],
     },
     {
-      "value": "Pacific SA Standard Time",
-      "abbr": "PSST",
-      "offset": -4,
-      "isdst": false,
-      "text": "(UTC-04:00) Santiago",
-      "utc": [
-        "America/Santiago",
-        "Antarctica/Palmer"
-      ]
+      value: "Pacific SA Standard Time",
+      abbr: "PSST",
+      offset: -4,
+      isdst: false,
+      text: "(UTC-04:00) Santiago",
+      utc: ["America/Santiago", "Antarctica/Palmer"],
     },
     {
-      "value": "Newfoundland Standard Time",
-      "abbr": "NDT",
-      "offset": -2.5,
-      "isdst": true,
-      "text": "(UTC-03:30) Newfoundland",
-      "utc": [
-        "America/St_Johns"
-      ]
+      value: "Newfoundland Standard Time",
+      abbr: "NDT",
+      offset: -2.5,
+      isdst: true,
+      text: "(UTC-03:30) Newfoundland",
+      utc: ["America/St_Johns"],
     },
     {
-      "value": "E. South America Standard Time",
-      "abbr": "ESAST",
-      "offset": -3,
-      "isdst": false,
-      "text": "(UTC-03:00) Brasilia",
-      "utc": [
-        "America/Sao_Paulo"
-      ]
+      value: "E. South America Standard Time",
+      abbr: "ESAST",
+      offset: -3,
+      isdst: false,
+      text: "(UTC-03:00) Brasilia",
+      utc: ["America/Sao_Paulo"],
     },
     {
-      "value": "Argentina Standard Time",
-      "abbr": "AST",
-      "offset": -3,
-      "isdst": false,
-      "text": "(UTC-03:00) Buenos Aires",
-      "utc": [
+      value: "Argentina Standard Time",
+      abbr: "AST",
+      offset: -3,
+      isdst: false,
+      text: "(UTC-03:00) Buenos Aires",
+      utc: [
         "America/Argentina/Buenos_Aires",
         "America/Argentina/Catamarca",
         "America/Argentina/Cordoba",
@@ -717,16 +731,16 @@ export class Utils {
         "America/Catamarca",
         "America/Cordoba",
         "America/Jujuy",
-        "America/Mendoza"
-      ]
+        "America/Mendoza",
+      ],
     },
     {
-      "value": "SA Eastern Standard Time",
-      "abbr": "SEST",
-      "offset": -3,
-      "isdst": false,
-      "text": "(UTC-03:00) Cayenne, Fortaleza",
-      "utc": [
+      value: "SA Eastern Standard Time",
+      abbr: "SEST",
+      offset: -3,
+      isdst: false,
+      text: "(UTC-03:00) Cayenne, Fortaleza",
+      utc: [
         "America/Araguaina",
         "America/Belem",
         "America/Cayenne",
@@ -737,150 +751,128 @@ export class Utils {
         "America/Santarem",
         "Antarctica/Rothera",
         "Atlantic/Stanley",
-        "Etc/GMT+3"
-      ]
+        "Etc/GMT+3",
+      ],
     },
     {
-      "value": "Greenland Standard Time",
-      "abbr": "GDT",
-      "offset": -3,
-      "isdst": true,
-      "text": "(UTC-03:00) Greenland",
-      "utc": [
-        "America/Godthab"
-      ]
+      value: "Greenland Standard Time",
+      abbr: "GDT",
+      offset: -3,
+      isdst: true,
+      text: "(UTC-03:00) Greenland",
+      utc: ["America/Godthab"],
     },
     {
-      "value": "Montevideo Standard Time",
-      "abbr": "MST",
-      "offset": -3,
-      "isdst": false,
-      "text": "(UTC-03:00) Montevideo",
-      "utc": [
-        "America/Montevideo"
-      ]
+      value: "Montevideo Standard Time",
+      abbr: "MST",
+      offset: -3,
+      isdst: false,
+      text: "(UTC-03:00) Montevideo",
+      utc: ["America/Montevideo"],
     },
     {
-      "value": "Bahia Standard Time",
-      "abbr": "BST",
-      "offset": -3,
-      "isdst": false,
-      "text": "(UTC-03:00) Salvador",
-      "utc": [
-        "America/Bahia"
-      ]
+      value: "Bahia Standard Time",
+      abbr: "BST",
+      offset: -3,
+      isdst: false,
+      text: "(UTC-03:00) Salvador",
+      utc: ["America/Bahia"],
     },
     {
-      "value": "UTC-02",
-      "abbr": "U",
-      "offset": -2,
-      "isdst": false,
-      "text": "(UTC-02:00) Coordinated Universal Time-02",
-      "utc": [
-        "America/Noronha",
-        "Atlantic/South_Georgia",
-        "Etc/GMT+2"
-      ]
+      value: "UTC-02",
+      abbr: "U",
+      offset: -2,
+      isdst: false,
+      text: "(UTC-02:00) Coordinated Universal Time-02",
+      utc: ["America/Noronha", "Atlantic/South_Georgia", "Etc/GMT+2"],
     },
     {
-      "value": "Mid-Atlantic Standard Time",
-      "abbr": "MDT",
-      "offset": -1,
-      "isdst": true,
-      "text": "(UTC-02:00) Mid-Atlantic - Old",
-      "utc": []
+      value: "Mid-Atlantic Standard Time",
+      abbr: "MDT",
+      offset: -1,
+      isdst: true,
+      text: "(UTC-02:00) Mid-Atlantic - Old",
+      utc: [],
     },
     {
-      "value": "Azores Standard Time",
-      "abbr": "ADT",
-      "offset": 0,
-      "isdst": true,
-      "text": "(UTC-01:00) Azores",
-      "utc": [
-        "America/Scoresbysund",
-        "Atlantic/Azores"
-      ]
+      value: "Azores Standard Time",
+      abbr: "ADT",
+      offset: 0,
+      isdst: true,
+      text: "(UTC-01:00) Azores",
+      utc: ["America/Scoresbysund", "Atlantic/Azores"],
     },
     {
-      "value": "Cape Verde Standard Time",
-      "abbr": "CVST",
-      "offset": -1,
-      "isdst": false,
-      "text": "(UTC-01:00) Cape Verde Is.",
-      "utc": [
-        "Atlantic/Cape_Verde",
-        "Etc/GMT+1"
-      ]
+      value: "Cape Verde Standard Time",
+      abbr: "CVST",
+      offset: -1,
+      isdst: false,
+      text: "(UTC-01:00) Cape Verde Is.",
+      utc: ["Atlantic/Cape_Verde", "Etc/GMT+1"],
     },
     {
-      "value": "Morocco Standard Time",
-      "abbr": "MDT",
-      "offset": 1,
-      "isdst": true,
-      "text": "(UTC) Casablanca",
-      "utc": [
-        "Africa/Casablanca",
-        "Africa/El_Aaiun"
-      ]
+      value: "Morocco Standard Time",
+      abbr: "MDT",
+      offset: 1,
+      isdst: true,
+      text: "(UTC) Casablanca",
+      utc: ["Africa/Casablanca", "Africa/El_Aaiun"],
     },
     {
-      "value": "UTC",
-      "abbr": "UTC",
-      "offset": 0,
-      "isdst": false,
-      "text": "(UTC) Coordinated Universal Time",
-      "utc": [
-        "America/Danmarkshavn",
-        "Etc/GMT"
-      ]
+      value: "UTC",
+      abbr: "UTC",
+      offset: 0,
+      isdst: false,
+      text: "(UTC) Coordinated Universal Time",
+      utc: ["America/Danmarkshavn", "Etc/GMT"],
     },
     {
-      "value": "GMT Standard Time",
-      "abbr": "GMT",
-      "offset": 0,
-      "isdst": false,
-      "text": "(UTC) Edinburgh, London",
-      "utc": [
+      value: "GMT Standard Time",
+      abbr: "GMT",
+      offset: 0,
+      isdst: false,
+      text: "(UTC) Edinburgh, London",
+      utc: [
         "Europe/Isle_of_Man",
         "Europe/Guernsey",
         "Europe/Jersey",
-        "Europe/London"
-      ]
+        "Europe/London",
+      ],
     },
     {
-      "value": "British Summer Time",
-      "abbr": "BST",
-      "offset": 1,
-      "isdst": true,
-      "text": "(UTC+01:00) Edinburgh, London",
-      "utc": [
+      value: "British Summer Time",
+      abbr: "BST",
+      offset: 1,
+      isdst: true,
+      text: "(UTC+01:00) Edinburgh, London",
+      utc: [
         "Europe/Isle_of_Man",
         "Europe/Guernsey",
         "Europe/Jersey",
-        "Europe/London"
-      ]
+        "Europe/London",
+      ],
     },
     {
-      "value": "GMT Standard Time",
-      "abbr": "GDT",
-      "offset": 1,
-      "isdst": true,
-      "text": "(UTC) Dublin, Lisbon",
-      "utc": [
+      value: "GMT Standard Time",
+      abbr: "GDT",
+      offset: 1,
+      isdst: true,
+      text: "(UTC) Dublin, Lisbon",
+      utc: [
         "Atlantic/Canary",
         "Atlantic/Faeroe",
         "Atlantic/Madeira",
         "Europe/Dublin",
-        "Europe/Lisbon"
-      ]
+        "Europe/Lisbon",
+      ],
     },
     {
-      "value": "Greenwich Standard Time",
-      "abbr": "GST",
-      "offset": 0,
-      "isdst": false,
-      "text": "(UTC) Monrovia, Reykjavik",
-      "utc": [
+      value: "Greenwich Standard Time",
+      abbr: "GST",
+      offset: 0,
+      isdst: false,
+      text: "(UTC) Monrovia, Reykjavik",
+      utc: [
         "Africa/Abidjan",
         "Africa/Accra",
         "Africa/Bamako",
@@ -895,16 +887,16 @@ export class Utils {
         "Africa/Ouagadougou",
         "Africa/Sao_Tome",
         "Atlantic/Reykjavik",
-        "Atlantic/St_Helena"
-      ]
+        "Atlantic/St_Helena",
+      ],
     },
     {
-      "value": "W. Europe Standard Time",
-      "abbr": "WEDT",
-      "offset": 2,
-      "isdst": true,
-      "text": "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna",
-      "utc": [
+      value: "W. Europe Standard Time",
+      abbr: "WEDT",
+      offset: 2,
+      isdst: true,
+      text: "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna",
+      utc: [
         "Arctic/Longyearbyen",
         "Europe/Amsterdam",
         "Europe/Andorra",
@@ -921,59 +913,59 @@ export class Utils {
         "Europe/Vaduz",
         "Europe/Vatican",
         "Europe/Vienna",
-        "Europe/Zurich"
-      ]
+        "Europe/Zurich",
+      ],
     },
     {
-      "value": "Central Europe Standard Time",
-      "abbr": "CEDT",
-      "offset": 2,
-      "isdst": true,
-      "text": "(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague",
-      "utc": [
+      value: "Central Europe Standard Time",
+      abbr: "CEDT",
+      offset: 2,
+      isdst: true,
+      text: "(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague",
+      utc: [
         "Europe/Belgrade",
         "Europe/Bratislava",
         "Europe/Budapest",
         "Europe/Ljubljana",
         "Europe/Podgorica",
         "Europe/Prague",
-        "Europe/Tirane"
-      ]
+        "Europe/Tirane",
+      ],
     },
     {
-      "value": "Romance Standard Time",
-      "abbr": "RDT",
-      "offset": 2,
-      "isdst": true,
-      "text": "(UTC+01:00) Brussels, Copenhagen, Madrid, Paris",
-      "utc": [
+      value: "Romance Standard Time",
+      abbr: "RDT",
+      offset: 2,
+      isdst: true,
+      text: "(UTC+01:00) Brussels, Copenhagen, Madrid, Paris",
+      utc: [
         "Africa/Ceuta",
         "Europe/Brussels",
         "Europe/Copenhagen",
         "Europe/Madrid",
-        "Europe/Paris"
-      ]
+        "Europe/Paris",
+      ],
     },
     {
-      "value": "Central European Standard Time",
-      "abbr": "CEDT",
-      "offset": 2,
-      "isdst": true,
-      "text": "(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb",
-      "utc": [
+      value: "Central European Standard Time",
+      abbr: "CEDT",
+      offset: 2,
+      isdst: true,
+      text: "(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb",
+      utc: [
         "Europe/Sarajevo",
         "Europe/Skopje",
         "Europe/Warsaw",
-        "Europe/Zagreb"
-      ]
+        "Europe/Zagreb",
+      ],
     },
     {
-      "value": "W. Central Africa Standard Time",
-      "abbr": "WCAST",
-      "offset": 1,
-      "isdst": false,
-      "text": "(UTC+01:00) West Central Africa",
-      "utc": [
+      value: "W. Central Africa Standard Time",
+      abbr: "WCAST",
+      offset: 1,
+      isdst: false,
+      text: "(UTC+01:00) West Central Africa",
+      utc: [
         "Africa/Algiers",
         "Africa/Bangui",
         "Africa/Brazzaville",
@@ -987,69 +979,61 @@ export class Utils {
         "Africa/Niamey",
         "Africa/Porto-Novo",
         "Africa/Tunis",
-        "Etc/GMT-1"
-      ]
+        "Etc/GMT-1",
+      ],
     },
     {
-      "value": "Namibia Standard Time",
-      "abbr": "NST",
-      "offset": 1,
-      "isdst": false,
-      "text": "(UTC+01:00) Windhoek",
-      "utc": [
-        "Africa/Windhoek"
-      ]
+      value: "Namibia Standard Time",
+      abbr: "NST",
+      offset: 1,
+      isdst: false,
+      text: "(UTC+01:00) Windhoek",
+      utc: ["Africa/Windhoek"],
     },
     {
-      "value": "GTB Standard Time",
-      "abbr": "GDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) Athens, Bucharest",
-      "utc": [
+      value: "GTB Standard Time",
+      abbr: "GDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) Athens, Bucharest",
+      utc: [
         "Asia/Nicosia",
         "Europe/Athens",
         "Europe/Bucharest",
-        "Europe/Chisinau"
-      ]
+        "Europe/Chisinau",
+      ],
     },
     {
-      "value": "Middle East Standard Time",
-      "abbr": "MEDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) Beirut",
-      "utc": [
-        "Asia/Beirut"
-      ]
+      value: "Middle East Standard Time",
+      abbr: "MEDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) Beirut",
+      utc: ["Asia/Beirut"],
     },
     {
-      "value": "Egypt Standard Time",
-      "abbr": "EST",
-      "offset": 2,
-      "isdst": false,
-      "text": "(UTC+02:00) Cairo",
-      "utc": [
-        "Africa/Cairo"
-      ]
+      value: "Egypt Standard Time",
+      abbr: "EST",
+      offset: 2,
+      isdst: false,
+      text: "(UTC+02:00) Cairo",
+      utc: ["Africa/Cairo"],
     },
     {
-      "value": "Syria Standard Time",
-      "abbr": "SDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) Damascus",
-      "utc": [
-        "Asia/Damascus"
-      ]
+      value: "Syria Standard Time",
+      abbr: "SDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) Damascus",
+      utc: ["Asia/Damascus"],
     },
     {
-      "value": "E. Europe Standard Time",
-      "abbr": "EEDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) E. Europe",
-      "utc": [
+      value: "E. Europe Standard Time",
+      abbr: "EEDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) E. Europe",
+      utc: [
         "Asia/Nicosia",
         "Europe/Athens",
         "Europe/Bucharest",
@@ -1063,17 +1047,16 @@ export class Utils {
         "Europe/Tallinn",
         "Europe/Uzhgorod",
         "Europe/Vilnius",
-        "Europe/Zaporozhye"
-  
-      ]
+        "Europe/Zaporozhye",
+      ],
     },
     {
-      "value": "South Africa Standard Time",
-      "abbr": "SAST",
-      "offset": 2,
-      "isdst": false,
-      "text": "(UTC+02:00) Harare, Pretoria",
-      "utc": [
+      value: "South Africa Standard Time",
+      abbr: "SAST",
+      offset: 2,
+      isdst: false,
+      text: "(UTC+02:00) Harare, Pretoria",
+      utc: [
         "Africa/Blantyre",
         "Africa/Bujumbura",
         "Africa/Gaborone",
@@ -1085,16 +1068,16 @@ export class Utils {
         "Africa/Maputo",
         "Africa/Maseru",
         "Africa/Mbabane",
-        "Etc/GMT-2"
-      ]
+        "Etc/GMT-2",
+      ],
     },
     {
-      "value": "FLE Standard Time",
-      "abbr": "FDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius",
-      "utc": [
+      value: "FLE Standard Time",
+      abbr: "FDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius",
+      utc: [
         "Europe/Helsinki",
         "Europe/Kiev",
         "Europe/Mariehamn",
@@ -1103,90 +1086,78 @@ export class Utils {
         "Europe/Tallinn",
         "Europe/Uzhgorod",
         "Europe/Vilnius",
-        "Europe/Zaporozhye"
-      ]
+        "Europe/Zaporozhye",
+      ],
     },
     {
-      "value": "Turkey Standard Time",
-      "abbr": "TDT",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Istanbul",
-      "utc": [
-        "Europe/Istanbul"
-      ]
+      value: "Turkey Standard Time",
+      abbr: "TDT",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Istanbul",
+      utc: ["Europe/Istanbul"],
     },
     {
-      "value": "Israel Standard Time",
-      "abbr": "JDT",
-      "offset": 3,
-      "isdst": true,
-      "text": "(UTC+02:00) Jerusalem",
-      "utc": [
-        "Asia/Jerusalem"
-      ]
+      value: "Israel Standard Time",
+      abbr: "JDT",
+      offset: 3,
+      isdst: true,
+      text: "(UTC+02:00) Jerusalem",
+      utc: ["Asia/Jerusalem"],
     },
     {
-      "value": "Libya Standard Time",
-      "abbr": "LST",
-      "offset": 2,
-      "isdst": false,
-      "text": "(UTC+02:00) Tripoli",
-      "utc": [
-        "Africa/Tripoli"
-      ]
+      value: "Libya Standard Time",
+      abbr: "LST",
+      offset: 2,
+      isdst: false,
+      text: "(UTC+02:00) Tripoli",
+      utc: ["Africa/Tripoli"],
     },
     {
-      "value": "Jordan Standard Time",
-      "abbr": "JST",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Amman",
-      "utc": [
-        "Asia/Amman"
-      ]
+      value: "Jordan Standard Time",
+      abbr: "JST",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Amman",
+      utc: ["Asia/Amman"],
     },
     {
-      "value": "Arabic Standard Time",
-      "abbr": "AST",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Baghdad",
-      "utc": [
-        "Asia/Baghdad"
-      ]
+      value: "Arabic Standard Time",
+      abbr: "AST",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Baghdad",
+      utc: ["Asia/Baghdad"],
     },
     {
-      "value": "Kaliningrad Standard Time",
-      "abbr": "KST",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+02:00) Kaliningrad",
-      "utc": [
-        "Europe/Kaliningrad"
-      ]
+      value: "Kaliningrad Standard Time",
+      abbr: "KST",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+02:00) Kaliningrad",
+      utc: ["Europe/Kaliningrad"],
     },
     {
-      "value": "Arab Standard Time",
-      "abbr": "AST",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Kuwait, Riyadh",
-      "utc": [
+      value: "Arab Standard Time",
+      abbr: "AST",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Kuwait, Riyadh",
+      utc: [
         "Asia/Aden",
         "Asia/Bahrain",
         "Asia/Kuwait",
         "Asia/Qatar",
-        "Asia/Riyadh"
-      ]
+        "Asia/Riyadh",
+      ],
     },
     {
-      "value": "E. Africa Standard Time",
-      "abbr": "EAST",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Nairobi",
-      "utc": [
+      value: "E. Africa Standard Time",
+      abbr: "EAST",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Nairobi",
+      utc: [
         "Africa/Addis_Ababa",
         "Africa/Asmera",
         "Africa/Dar_es_Salaam",
@@ -1200,116 +1171,94 @@ export class Utils {
         "Etc/GMT-3",
         "Indian/Antananarivo",
         "Indian/Comoro",
-        "Indian/Mayotte"
-      ]
+        "Indian/Mayotte",
+      ],
     },
     {
-      "value": "Moscow Standard Time",
-      "abbr": "MSK",
-      "offset": 3,
-      "isdst": false,
-      "text": "(UTC+03:00) Moscow, St. Petersburg, Volgograd, Minsk",
-      "utc": [
-          "Europe/Kirov",
+      value: "Moscow Standard Time",
+      abbr: "MSK",
+      offset: 3,
+      isdst: false,
+      text: "(UTC+03:00) Moscow, St. Petersburg, Volgograd, Minsk",
+      utc: [
+        "Europe/Kirov",
         "Europe/Moscow",
         "Europe/Simferopol",
         "Europe/Volgograd",
-        "Europe/Minsk"
-      ]
+        "Europe/Minsk",
+      ],
     },
     {
-      "value": "Samara Time",
-      "abbr": "SAMT",
-      "offset": 4,
-      "isdst": false,
-      "text": "(UTC+04:00) Samara, Ulyanovsk, Saratov",
-      "utc": [
-          "Europe/Astrakhan",
-        "Europe/Samara",
-          "Europe/Ulyanovsk"
-      ]
+      value: "Samara Time",
+      abbr: "SAMT",
+      offset: 4,
+      isdst: false,
+      text: "(UTC+04:00) Samara, Ulyanovsk, Saratov",
+      utc: ["Europe/Astrakhan", "Europe/Samara", "Europe/Ulyanovsk"],
     },
     {
-      "value": "Iran Standard Time",
-      "abbr": "IDT",
-      "offset": 4.5,
-      "isdst": true,
-      "text": "(UTC+03:30) Tehran",
-      "utc": [
-        "Asia/Tehran"
-      ]
+      value: "Iran Standard Time",
+      abbr: "IDT",
+      offset: 4.5,
+      isdst: true,
+      text: "(UTC+03:30) Tehran",
+      utc: ["Asia/Tehran"],
     },
     {
-      "value": "Arabian Standard Time",
-      "abbr": "AST",
-      "offset": 4,
-      "isdst": false,
-      "text": "(UTC+04:00) Abu Dhabi, Muscat",
-      "utc": [
-        "Asia/Dubai",
-        "Asia/Muscat",
-        "Etc/GMT-4"
-      ]
+      value: "Arabian Standard Time",
+      abbr: "AST",
+      offset: 4,
+      isdst: false,
+      text: "(UTC+04:00) Abu Dhabi, Muscat",
+      utc: ["Asia/Dubai", "Asia/Muscat", "Etc/GMT-4"],
     },
     {
-      "value": "Azerbaijan Standard Time",
-      "abbr": "ADT",
-      "offset": 5,
-      "isdst": true,
-      "text": "(UTC+04:00) Baku",
-      "utc": [
-        "Asia/Baku"
-      ]
+      value: "Azerbaijan Standard Time",
+      abbr: "ADT",
+      offset: 5,
+      isdst: true,
+      text: "(UTC+04:00) Baku",
+      utc: ["Asia/Baku"],
     },
     {
-      "value": "Mauritius Standard Time",
-      "abbr": "MST",
-      "offset": 4,
-      "isdst": false,
-      "text": "(UTC+04:00) Port Louis",
-      "utc": [
-        "Indian/Mahe",
-        "Indian/Mauritius",
-        "Indian/Reunion"
-      ]
+      value: "Mauritius Standard Time",
+      abbr: "MST",
+      offset: 4,
+      isdst: false,
+      text: "(UTC+04:00) Port Louis",
+      utc: ["Indian/Mahe", "Indian/Mauritius", "Indian/Reunion"],
     },
     {
-      "value": "Georgian Standard Time",
-      "abbr": "GET",
-      "offset": 4,
-      "isdst": false,
-      "text": "(UTC+04:00) Tbilisi",
-      "utc": [
-        "Asia/Tbilisi"
-      ]
+      value: "Georgian Standard Time",
+      abbr: "GET",
+      offset: 4,
+      isdst: false,
+      text: "(UTC+04:00) Tbilisi",
+      utc: ["Asia/Tbilisi"],
     },
     {
-      "value": "Caucasus Standard Time",
-      "abbr": "CST",
-      "offset": 4,
-      "isdst": false,
-      "text": "(UTC+04:00) Yerevan",
-      "utc": [
-        "Asia/Yerevan"
-      ]
+      value: "Caucasus Standard Time",
+      abbr: "CST",
+      offset: 4,
+      isdst: false,
+      text: "(UTC+04:00) Yerevan",
+      utc: ["Asia/Yerevan"],
     },
     {
-      "value": "Afghanistan Standard Time",
-      "abbr": "AST",
-      "offset": 4.5,
-      "isdst": false,
-      "text": "(UTC+04:30) Kabul",
-      "utc": [
-        "Asia/Kabul"
-      ]
+      value: "Afghanistan Standard Time",
+      abbr: "AST",
+      offset: 4.5,
+      isdst: false,
+      text: "(UTC+04:30) Kabul",
+      utc: ["Asia/Kabul"],
     },
     {
-      "value": "West Asia Standard Time",
-      "abbr": "WAST",
-      "offset": 5,
-      "isdst": false,
-      "text": "(UTC+05:00) Ashgabat, Tashkent",
-      "utc": [
+      value: "West Asia Standard Time",
+      abbr: "WAST",
+      offset: 5,
+      isdst: false,
+      text: "(UTC+05:00) Ashgabat, Tashkent",
+      utc: [
         "Antarctica/Mawson",
         "Asia/Aqtau",
         "Asia/Aqtobe",
@@ -1320,105 +1269,88 @@ export class Utils {
         "Asia/Tashkent",
         "Etc/GMT-5",
         "Indian/Kerguelen",
-        "Indian/Maldives"
-      ]
+        "Indian/Maldives",
+      ],
     },
     {
-      "value": "Yekaterinburg Time",
-      "abbr": "YEKT",
-      "offset": 5,
-      "isdst": false,
-      "text": "(UTC+05:00) Yekaterinburg",
-      "utc": [
-        "Asia/Yekaterinburg"
-      ]
+      value: "Yekaterinburg Time",
+      abbr: "YEKT",
+      offset: 5,
+      isdst: false,
+      text: "(UTC+05:00) Yekaterinburg",
+      utc: ["Asia/Yekaterinburg"],
     },
     {
-      "value": "Pakistan Standard Time",
-      "abbr": "PKT",
-      "offset": 5,
-      "isdst": false,
-      "text": "(UTC+05:00) Islamabad, Karachi",
-      "utc": [
-        "Asia/Karachi"
-      ]
+      value: "Pakistan Standard Time",
+      abbr: "PKT",
+      offset: 5,
+      isdst: false,
+      text: "(UTC+05:00) Islamabad, Karachi",
+      utc: ["Asia/Karachi"],
     },
     {
-      "value": "India Standard Time",
-      "abbr": "IST",
-      "offset": 5.5,
-      "isdst": false,
-      "text": "(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi",
-      "utc": [
-        "Asia/Kolkata",
-        "Asia/Calcutta"
-      ]
+      value: "India Standard Time",
+      abbr: "IST",
+      offset: 5.5,
+      isdst: false,
+      text: "(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi",
+      utc: ["Asia/Kolkata", "Asia/Calcutta"],
     },
     {
-      "value": "Sri Lanka Standard Time",
-      "abbr": "SLST",
-      "offset": 5.5,
-      "isdst": false,
-      "text": "(UTC+05:30) Sri Jayawardenepura",
-      "utc": [
-        "Asia/Colombo"
-      ]
+      value: "Sri Lanka Standard Time",
+      abbr: "SLST",
+      offset: 5.5,
+      isdst: false,
+      text: "(UTC+05:30) Sri Jayawardenepura",
+      utc: ["Asia/Colombo"],
     },
     {
-      "value": "Nepal Standard Time",
-      "abbr": "NST",
-      "offset": 5.75,
-      "isdst": false,
-      "text": "(UTC+05:45) Kathmandu",
-      "utc": [
-        "Asia/Kathmandu"
-      ]
+      value: "Nepal Standard Time",
+      abbr: "NST",
+      offset: 5.75,
+      isdst: false,
+      text: "(UTC+05:45) Kathmandu",
+      utc: ["Asia/Kathmandu"],
     },
     {
-      "value": "Central Asia Standard Time",
-      "abbr": "CAST",
-      "offset": 6,
-      "isdst": false,
-      "text": "(UTC+06:00) Nur-Sultan (Astana)",
-      "utc": [
+      value: "Central Asia Standard Time",
+      abbr: "CAST",
+      offset: 6,
+      isdst: false,
+      text: "(UTC+06:00) Nur-Sultan (Astana)",
+      utc: [
         "Antarctica/Vostok",
         "Asia/Almaty",
         "Asia/Bishkek",
         "Asia/Qyzylorda",
         "Asia/Urumqi",
         "Etc/GMT-6",
-        "Indian/Chagos"
-      ]
+        "Indian/Chagos",
+      ],
     },
     {
-      "value": "Bangladesh Standard Time",
-      "abbr": "BST",
-      "offset": 6,
-      "isdst": false,
-      "text": "(UTC+06:00) Dhaka",
-      "utc": [
-        "Asia/Dhaka",
-        "Asia/Thimphu"
-      ]
+      value: "Bangladesh Standard Time",
+      abbr: "BST",
+      offset: 6,
+      isdst: false,
+      text: "(UTC+06:00) Dhaka",
+      utc: ["Asia/Dhaka", "Asia/Thimphu"],
     },
     {
-      "value": "Myanmar Standard Time",
-      "abbr": "MST",
-      "offset": 6.5,
-      "isdst": false,
-      "text": "(UTC+06:30) Yangon (Rangoon)",
-      "utc": [
-        "Asia/Rangoon",
-        "Indian/Cocos"
-      ]
+      value: "Myanmar Standard Time",
+      abbr: "MST",
+      offset: 6.5,
+      isdst: false,
+      text: "(UTC+06:30) Yangon (Rangoon)",
+      utc: ["Asia/Rangoon", "Indian/Cocos"],
     },
     {
-      "value": "SE Asia Standard Time",
-      "abbr": "SAST",
-      "offset": 7,
-      "isdst": false,
-      "text": "(UTC+07:00) Bangkok, Hanoi, Jakarta",
-      "utc": [
+      value: "SE Asia Standard Time",
+      abbr: "SAST",
+      offset: 7,
+      isdst: false,
+      text: "(UTC+07:00) Bangkok, Hanoi, Jakarta",
+      utc: [
         "Antarctica/Davis",
         "Asia/Bangkok",
         "Asia/Hovd",
@@ -1428,253 +1360,205 @@ export class Utils {
         "Asia/Saigon",
         "Asia/Vientiane",
         "Etc/GMT-7",
-        "Indian/Christmas"
-      ]
+        "Indian/Christmas",
+      ],
     },
     {
-      "value": "N. Central Asia Standard Time",
-      "abbr": "NCAST",
-      "offset": 7,
-      "isdst": false,
-      "text": "(UTC+07:00) Novosibirsk",
-      "utc": [
-        "Asia/Novokuznetsk",
-        "Asia/Novosibirsk",
-        "Asia/Omsk"
-      ]
+      value: "N. Central Asia Standard Time",
+      abbr: "NCAST",
+      offset: 7,
+      isdst: false,
+      text: "(UTC+07:00) Novosibirsk",
+      utc: ["Asia/Novokuznetsk", "Asia/Novosibirsk", "Asia/Omsk"],
     },
     {
-      "value": "China Standard Time",
-      "abbr": "CST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi",
-      "utc": [
-        "Asia/Hong_Kong",
-        "Asia/Macau",
-        "Asia/Shanghai"
-      ]
+      value: "China Standard Time",
+      abbr: "CST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi",
+      utc: ["Asia/Hong_Kong", "Asia/Macau", "Asia/Shanghai"],
     },
     {
-      "value": "North Asia Standard Time",
-      "abbr": "NAST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Krasnoyarsk",
-      "utc": [
-        "Asia/Krasnoyarsk"
-      ]
+      value: "North Asia Standard Time",
+      abbr: "NAST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Krasnoyarsk",
+      utc: ["Asia/Krasnoyarsk"],
     },
     {
-      "value": "Singapore Standard Time",
-      "abbr": "MPST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Kuala Lumpur, Singapore",
-      "utc": [
+      value: "Singapore Standard Time",
+      abbr: "MPST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Kuala Lumpur, Singapore",
+      utc: [
         "Asia/Brunei",
         "Asia/Kuala_Lumpur",
         "Asia/Kuching",
         "Asia/Makassar",
         "Asia/Manila",
         "Asia/Singapore",
-        "Etc/GMT-8"
-      ]
+        "Etc/GMT-8",
+      ],
     },
     {
-      "value": "W. Australia Standard Time",
-      "abbr": "WAST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Perth",
-      "utc": [
-        "Antarctica/Casey",
-        "Australia/Perth"
-      ]
+      value: "W. Australia Standard Time",
+      abbr: "WAST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Perth",
+      utc: ["Antarctica/Casey", "Australia/Perth"],
     },
     {
-      "value": "Taipei Standard Time",
-      "abbr": "TST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Taipei",
-      "utc": [
-        "Asia/Taipei"
-      ]
+      value: "Taipei Standard Time",
+      abbr: "TST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Taipei",
+      utc: ["Asia/Taipei"],
     },
     {
-      "value": "Ulaanbaatar Standard Time",
-      "abbr": "UST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Ulaanbaatar",
-      "utc": [
-        "Asia/Choibalsan",
-        "Asia/Ulaanbaatar"
-      ]
+      value: "Ulaanbaatar Standard Time",
+      abbr: "UST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Ulaanbaatar",
+      utc: ["Asia/Choibalsan", "Asia/Ulaanbaatar"],
     },
     {
-      "value": "North Asia East Standard Time",
-      "abbr": "NAEST",
-      "offset": 8,
-      "isdst": false,
-      "text": "(UTC+08:00) Irkutsk",
-      "utc": [
-        "Asia/Irkutsk"
-      ]
+      value: "North Asia East Standard Time",
+      abbr: "NAEST",
+      offset: 8,
+      isdst: false,
+      text: "(UTC+08:00) Irkutsk",
+      utc: ["Asia/Irkutsk"],
     },
     {
-      "value": "Japan Standard Time",
-      "abbr": "JST",
-      "offset": 9,
-      "isdst": false,
-      "text": "(UTC+09:00) Osaka, Sapporo, Tokyo",
-      "utc": [
+      value: "Japan Standard Time",
+      abbr: "JST",
+      offset: 9,
+      isdst: false,
+      text: "(UTC+09:00) Osaka, Sapporo, Tokyo",
+      utc: [
         "Asia/Dili",
         "Asia/Jayapura",
         "Asia/Tokyo",
         "Etc/GMT-9",
-        "Pacific/Palau"
-      ]
+        "Pacific/Palau",
+      ],
     },
     {
-      "value": "Korea Standard Time",
-      "abbr": "KST",
-      "offset": 9,
-      "isdst": false,
-      "text": "(UTC+09:00) Seoul",
-      "utc": [
-        "Asia/Pyongyang",
-        "Asia/Seoul"
-      ]
+      value: "Korea Standard Time",
+      abbr: "KST",
+      offset: 9,
+      isdst: false,
+      text: "(UTC+09:00) Seoul",
+      utc: ["Asia/Pyongyang", "Asia/Seoul"],
     },
     {
-      "value": "Cen. Australia Standard Time",
-      "abbr": "CAST",
-      "offset": 9.5,
-      "isdst": false,
-      "text": "(UTC+09:30) Adelaide",
-      "utc": [
-        "Australia/Adelaide",
-        "Australia/Broken_Hill"
-      ]
+      value: "Cen. Australia Standard Time",
+      abbr: "CAST",
+      offset: 9.5,
+      isdst: false,
+      text: "(UTC+09:30) Adelaide",
+      utc: ["Australia/Adelaide", "Australia/Broken_Hill"],
     },
     {
-      "value": "AUS Central Standard Time",
-      "abbr": "ACST",
-      "offset": 9.5,
-      "isdst": false,
-      "text": "(UTC+09:30) Darwin",
-      "utc": [
-        "Australia/Darwin"
-      ]
+      value: "AUS Central Standard Time",
+      abbr: "ACST",
+      offset: 9.5,
+      isdst: false,
+      text: "(UTC+09:30) Darwin",
+      utc: ["Australia/Darwin"],
     },
     {
-      "value": "E. Australia Standard Time",
-      "abbr": "EAST",
-      "offset": 10,
-      "isdst": false,
-      "text": "(UTC+10:00) Brisbane",
-      "utc": [
-        "Australia/Brisbane",
-        "Australia/Lindeman"
-      ]
+      value: "E. Australia Standard Time",
+      abbr: "EAST",
+      offset: 10,
+      isdst: false,
+      text: "(UTC+10:00) Brisbane",
+      utc: ["Australia/Brisbane", "Australia/Lindeman"],
     },
     {
-      "value": "AUS Eastern Standard Time",
-      "abbr": "AEST",
-      "offset": 10,
-      "isdst": false,
-      "text": "(UTC+10:00) Canberra, Melbourne, Sydney",
-      "utc": [
-        "Australia/Melbourne",
-        "Australia/Sydney"
-      ]
+      value: "AUS Eastern Standard Time",
+      abbr: "AEST",
+      offset: 10,
+      isdst: false,
+      text: "(UTC+10:00) Canberra, Melbourne, Sydney",
+      utc: ["Australia/Melbourne", "Australia/Sydney"],
     },
     {
-      "value": "West Pacific Standard Time",
-      "abbr": "WPST",
-      "offset": 10,
-      "isdst": false,
-      "text": "(UTC+10:00) Guam, Port Moresby",
-      "utc": [
+      value: "West Pacific Standard Time",
+      abbr: "WPST",
+      offset: 10,
+      isdst: false,
+      text: "(UTC+10:00) Guam, Port Moresby",
+      utc: [
         "Antarctica/DumontDUrville",
         "Etc/GMT-10",
         "Pacific/Guam",
         "Pacific/Port_Moresby",
         "Pacific/Saipan",
-        "Pacific/Truk"
-      ]
+        "Pacific/Truk",
+      ],
     },
     {
-      "value": "Tasmania Standard Time",
-      "abbr": "TST",
-      "offset": 10,
-      "isdst": false,
-      "text": "(UTC+10:00) Hobart",
-      "utc": [
-        "Australia/Currie",
-        "Australia/Hobart"
-      ]
+      value: "Tasmania Standard Time",
+      abbr: "TST",
+      offset: 10,
+      isdst: false,
+      text: "(UTC+10:00) Hobart",
+      utc: ["Australia/Currie", "Australia/Hobart"],
     },
     {
-      "value": "Yakutsk Standard Time",
-      "abbr": "YST",
-      "offset": 9,
-      "isdst": false,
-      "text": "(UTC+09:00) Yakutsk",
-      "utc": [
-        "Asia/Chita",
-        "Asia/Khandyga",
-        "Asia/Yakutsk"
-      ]
+      value: "Yakutsk Standard Time",
+      abbr: "YST",
+      offset: 9,
+      isdst: false,
+      text: "(UTC+09:00) Yakutsk",
+      utc: ["Asia/Chita", "Asia/Khandyga", "Asia/Yakutsk"],
     },
     {
-      "value": "Central Pacific Standard Time",
-      "abbr": "CPST",
-      "offset": 11,
-      "isdst": false,
-      "text": "(UTC+11:00) Solomon Is., New Caledonia",
-      "utc": [
+      value: "Central Pacific Standard Time",
+      abbr: "CPST",
+      offset: 11,
+      isdst: false,
+      text: "(UTC+11:00) Solomon Is., New Caledonia",
+      utc: [
         "Antarctica/Macquarie",
         "Etc/GMT-11",
         "Pacific/Efate",
         "Pacific/Guadalcanal",
         "Pacific/Kosrae",
         "Pacific/Noumea",
-        "Pacific/Ponape"
-      ]
+        "Pacific/Ponape",
+      ],
     },
     {
-      "value": "Vladivostok Standard Time",
-      "abbr": "VST",
-      "offset": 11,
-      "isdst": false,
-      "text": "(UTC+11:00) Vladivostok",
-      "utc": [
-        "Asia/Sakhalin",
-        "Asia/Ust-Nera",
-        "Asia/Vladivostok"
-      ]
+      value: "Vladivostok Standard Time",
+      abbr: "VST",
+      offset: 11,
+      isdst: false,
+      text: "(UTC+11:00) Vladivostok",
+      utc: ["Asia/Sakhalin", "Asia/Ust-Nera", "Asia/Vladivostok"],
     },
     {
-      "value": "New Zealand Standard Time",
-      "abbr": "NZST",
-      "offset": 12,
-      "isdst": false,
-      "text": "(UTC+12:00) Auckland, Wellington",
-      "utc": [
-        "Antarctica/McMurdo",
-        "Pacific/Auckland"
-      ]
+      value: "New Zealand Standard Time",
+      abbr: "NZST",
+      offset: 12,
+      isdst: false,
+      text: "(UTC+12:00) Auckland, Wellington",
+      utc: ["Antarctica/McMurdo", "Pacific/Auckland"],
     },
     {
-      "value": "UTC+12",
-      "abbr": "U",
-      "offset": 12,
-      "isdst": false,
-      "text": "(UTC+12:00) Coordinated Universal Time+12",
-      "utc": [
+      value: "UTC+12",
+      abbr: "U",
+      offset: 12,
+      isdst: false,
+      text: "(UTC+12:00) Coordinated Universal Time+12",
+      utc: [
         "Etc/GMT-12",
         "Pacific/Funafuti",
         "Pacific/Kwajalein",
@@ -1682,64 +1566,58 @@ export class Utils {
         "Pacific/Nauru",
         "Pacific/Tarawa",
         "Pacific/Wake",
-        "Pacific/Wallis"
-      ]
+        "Pacific/Wallis",
+      ],
     },
     {
-      "value": "Fiji Standard Time",
-      "abbr": "FST",
-      "offset": 12,
-      "isdst": false,
-      "text": "(UTC+12:00) Fiji",
-      "utc": [
-        "Pacific/Fiji"
-      ]
+      value: "Fiji Standard Time",
+      abbr: "FST",
+      offset: 12,
+      isdst: false,
+      text: "(UTC+12:00) Fiji",
+      utc: ["Pacific/Fiji"],
     },
     {
-      "value": "Magadan Standard Time",
-      "abbr": "MST",
-      "offset": 12,
-      "isdst": false,
-      "text": "(UTC+12:00) Magadan",
-      "utc": [
+      value: "Magadan Standard Time",
+      abbr: "MST",
+      offset: 12,
+      isdst: false,
+      text: "(UTC+12:00) Magadan",
+      utc: [
         "Asia/Anadyr",
         "Asia/Kamchatka",
         "Asia/Magadan",
-        "Asia/Srednekolymsk"
-      ]
+        "Asia/Srednekolymsk",
+      ],
     },
     {
-      "value": "Kamchatka Standard Time",
-      "abbr": "KDT",
-      "offset": 13,
-      "isdst": true,
-      "text": "(UTC+12:00) Petropavlovsk-Kamchatsky - Old",
-      "utc": [
-        "Asia/Kamchatka"
-      ]
+      value: "Kamchatka Standard Time",
+      abbr: "KDT",
+      offset: 13,
+      isdst: true,
+      text: "(UTC+12:00) Petropavlovsk-Kamchatsky - Old",
+      utc: ["Asia/Kamchatka"],
     },
     {
-      "value": "Tonga Standard Time",
-      "abbr": "TST",
-      "offset": 13,
-      "isdst": false,
-      "text": "(UTC+13:00) Nuku'alofa",
-      "utc": [
+      value: "Tonga Standard Time",
+      abbr: "TST",
+      offset: 13,
+      isdst: false,
+      text: "(UTC+13:00) Nuku'alofa",
+      utc: [
         "Etc/GMT-13",
         "Pacific/Enderbury",
         "Pacific/Fakaofo",
-        "Pacific/Tongatapu"
-      ]
+        "Pacific/Tongatapu",
+      ],
     },
     {
-      "value": "Samoa Standard Time",
-      "abbr": "SST",
-      "offset": 13,
-      "isdst": false,
-      "text": "(UTC+13:00) Samoa",
-      "utc": [
-        "Pacific/Apia"
-      ]
-    }
-  ]  
+      value: "Samoa Standard Time",
+      abbr: "SST",
+      offset: 13,
+      isdst: false,
+      text: "(UTC+13:00) Samoa",
+      utc: ["Pacific/Apia"],
+    },
+  ]
 }

@@ -17,9 +17,9 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  *
- *  Copyright(c) 2023-24 F4JDN - Jean-Michel Cohen
- *  
-*/
+ *  Copyright(c) 2023-26 F4JDN - Jean-Michel Cohen
+ *
+ */
 
 // each session contains the username of the user and the time at which it expires
 export class Session {
@@ -27,11 +27,11 @@ export class Session {
   private _expiresAt_: number = 0
 
   constructor(ipaddress: string, expiresAt: number) {
-      this._ipaddress_ = ipaddress
-      this._expiresAt_ = expiresAt
+    this._ipaddress_ = ipaddress
+    this._expiresAt_ = expiresAt
   }
 
-  get ipaddress() : string {
+  get ipaddress(): string {
     return this._ipaddress_
   }
 
@@ -41,7 +41,7 @@ export class Session {
 
   // we'll use this method later to determine if the session has expired
   isExpired(): boolean {
-      return this._expiresAt_ < Date.now()
+    return this._expiresAt_ < Date.now()
   }
 }
 

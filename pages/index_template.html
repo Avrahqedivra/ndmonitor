@@ -532,7 +532,7 @@ function dragElement(elmnt) {
       callback(cacheItem)
     } else {
 			const proxyurl = "http://" + document.location.hostname + ":" + document.location.port + "/";
-      const url = "https://www.qrz.com/lookup/"
+      const url = "https://www.qrz.com/db/"
 
       fetch(proxyurl + url + callsign).then((response) => {
         return response.text()
